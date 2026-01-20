@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>João Ricardo | Game Developer & Instrutor de Tech</title>
+    <meta name="title" content="João Ricardo | Game Developer & Instrutor de Tech">
+    <meta name="description" content="Game Developer focado em Unity e C#, instrutor de tecnologia no SENAI Floripa e entusiasta de sistemas interativos.">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://joaoricardo.dev/">
+    <meta property="og:title" content="João Ricardo | Game Developer & Instrutor de Tech">
+    <meta property="og:description" content="Desenvolvedor de jogos e educador técnico. Explore meus projetos de GameDev, IoT e recursos para desenvolvedores.">
+    <meta property="og:image" content="https://joaoricardo.dev/assets/img/og-image.png">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://joaoricardo.dev/">
+    <meta property="twitter:title" content="João Ricardo | Game Developer & Instrutor de Tech">
+    <meta property="twitter:description" content="Desenvolvedor de jogos e educador técnico. Explore meus projetos de GameDev, IoT e recursos para desenvolvedores.">
+    <meta property="twitter:image" content="https://joaoricardo.dev/assets/img/og-image.png">
+
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: { 950: '#020617' },
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-300 font-sans flex flex-col min-h-screen selection:bg-cyan-500/30 selection:text-cyan-200">
+
+    <div id="header-placeholder" class="sticky top-0 z-50 backdrop-blur-sm bg-slate-950/80 border-b border-slate-800/50"></div>
+    
+    <main class="flex-grow container mx-auto px-6 py-12 md:py-20 flex items-center">
+        
+        <article class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+            
+            <section class="relative group order-1 lg:order-1 flex justify-center lg:block animate-fade-in">
+                <div class="absolute -inset-1 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-700"></div>
+                
+                <div class="relative rounded-2xl overflow-hidden ring-1 ring-slate-800 shadow-2xl bg-slate-900">
+                    <img src="assets/img/Eu.jpeg" alt="João Ricardo" class="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105 filter contrast-[1.05]">
+                    
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-60"></div>
+
+                    <div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                        <div class="bg-slate-950/80 backdrop-blur px-3 py-1.5 rounded border border-slate-700 text-xs font-mono text-cyan-400">
+                            <span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                            Open for Work
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="order-2 lg:order-2 space-y-8 animate-fade-in" style="animation-delay: 0.1s;">
+                
+                <div class="space-y-2 border-l-4 border-cyan-500 pl-6">
+                    <h1 class="text-3xl md:text-5xl font-bold text-white leading-tight">
+                        João Ricardo
+                    </h1>
+                    <h2 class="text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400 font-medium">
+                        Game Developer & Instrutor de Tech
+                    </h2>
+                </div>
+
+                <div class="prose prose-invert prose-slate max-w-none text-slate-300 leading-relaxed text-lg">
+                    <p>
+                        Desenvolvedor de jogos com foco em <strong class="text-white">C# e Unity</strong>, atualmente preparando meu primeiro título para lançamento na Steam. Minha jornada é movida pela criação de experiências interativas e pelo compartilhamento de conhecimento.
+                    </p>
+                    <p class="mt-4">
+                        Como instrutor no <strong class="text-white">SENAI Florianópolis</strong>, leciono nos cursos técnicos de Desenvolvimento de Sistemas e Jogos Digitais, unindo a lógica de programação ao hardware com projetos de IoT. Prefiro o ambiente Linux (Arch) para produtividade, mas meu foco real está em entregar códigos limpos e mecânicas de jogo sólidas.
+                    </p>
+                </div>
+
+                <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-6 relative overflow-hidden group hover:border-cyan-500/30 transition-colors">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyan-500 to-transparent opacity-50"></div>
+                    <h3 class="font-mono text-cyan-400 mb-3 text-sm tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        Visão GameDev
+                    </h3>
+                    <p class="text-slate-400 italic">
+                        "Acredito que um bom jogo nasce do equilíbrio entre sistemas bem estruturados e o feedback para o jogador. Para mim, o desenvolvimento de jogos é um campo de estudo constante, onde cada projeto é uma oportunidade de refinar minhas habilidades de gamedev e criar algo que eu mesmo gostaria de jogar."
+                    </p>
+                </div>
+
+                <div class="space-y-5 pt-2">
+                    
+                    <div>
+                        <span class="text-xs font-mono text-cyan-500 uppercase tracking-widest mb-2 block">Core Development</span>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded bg-cyan-950/30 border border-cyan-500/30 text-cyan-300 text-sm font-medium shadow-[0_0_10px_-5px_rgba(34,211,238,0.3)]">Unity3D <span class="opacity-60 text-xs ml-1">★ Master</span></span>
+                            <span class="px-3 py-1 rounded bg-cyan-950/30 border border-cyan-500/30 text-cyan-300 text-sm font-medium">C#</span>
+                            <span class="px-3 py-1 rounded bg-cyan-950/30 border border-cyan-500/30 text-cyan-300 text-sm font-medium">C++</span>
+                            <span class="px-3 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400 text-sm">UE5 <span class="text-yellow-500 text-xs ml-1">● Learning</span></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-xs font-mono text-violet-500 uppercase tracking-widest mb-2 block">Tools & Creative</span>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded bg-violet-950/30 border border-violet-500/30 text-violet-300 text-sm font-medium">Blender</span>
+                            <span class="px-3 py-1 rounded bg-violet-950/30 border border-violet-500/30 text-violet-300 text-sm font-medium">I.A. Generativa</span>
+                            <span class="px-3 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400 text-sm">Itch.io</span>
+                            <span class="px-3 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400 text-sm">Steamworks <span class="text-yellow-500 text-xs ml-1">● Learning</span></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-xs font-mono text-emerald-500 uppercase tracking-widest mb-2 block">Tech & Teaching</span>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 text-sm font-medium">Arduino / ESP32</span>
+                            <span class="px-3 py-1 rounded bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 text-sm font-medium">Linux (Arch)</span>
+                            <span class="px-3 py-1 rounded bg-slate-900 border border-slate-700 text-slate-400 text-sm">Metodologias de Ensino</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-8 flex flex-wrap gap-4 border-t border-slate-800 mt-8">
+    
+                    <a href="https://www.youtube.com/@SPECCANAL" target="_blank" class="group flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-red-600 border border-slate-700 hover:border-red-500 text-white font-medium rounded transition-all duration-300">
+                        <svg class="w-5 h-5 group-hover:animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                        </svg>
+                        YouTube
+                    </a>
+
+                    <a href="https://github.com/JoaoSantos-Dev" target="_blank" class="group flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-white border border-slate-700 hover:border-white text-white hover:text-slate-950 font-medium rounded transition-all duration-300">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        GitHub
+                    </a>
+                    
+                    <a href="https://joaosantos-dev.itch.io/" target="_blank" class="group flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-[#fa5c5c] border border-slate-700 hover:border-[#fa5c5c] text-white font-medium rounded transition-all duration-300">
+    <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M17,6H7A6,6 0 0,0 1,12V16A2,2 0 0,0 3,18H6A1,1 0 0,0 7,17V15H17V17A1,1 0 0,0 18,18H21A2,2 0 0,0 23,16V12A6,6 0 0,0 17,6M6.5,13A1.5,1.5 0 1,1 8,11.5,1.5,1.5 0 0,1 6.5,13M10,13H9V12A1,1 0 0,0 8,12V13H8A1,1 0 0,0 8,14H10A1,1 0 0,0 10,13M17.5,13A1.5,1.5 0 1,1 19,11.5,1.5,1.5 0 0,1 17.5,13M16,13H15V14A1,1 0 0,0 14,14V13H13V12H14V11A1,1 0 0,0 15,11V12H16Z"/>
+    </svg>
+    Itch.io
+</a>
+
+<a href="https://www.instagram.com/joao.d_santos?igsh=YW1tN3cxM2pkZHZr" target="_blank" class="group flex items-center gap-2 px-5 py-3 bg-slate-900 border border-slate-700 text-white font-medium rounded transition-all duration-300 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    
+    <div class="relative z-10 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/>
+        </svg>
+        Instagram
+    </div>
+</a>
+
+                </div>
+
+            </section>
+        </article>
+    </main>
+
+    <div id="footer-placeholder" class="mt-auto"></div>
+    <script src="assets/js/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+/* Estilos globais adicionais e resets específicos */
+body {
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Scrollbar personalizada (Estética Tech) */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #020617; 
+}
+::-webkit-scrollbar-thumb {
+    background: #4b5563; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #22d3ee; /* cyan-400 */
+}
+/* Adicione ao final do arquivo */
+
+/* Animação "Hero Glow" 
+  Simula a oscilação de energia de um material emissivo em motores de jogo.
+  Uso de múltiplos drop-shadows para criar profundidade (núcleo ciano, aura violeta).
+*/
+@keyframes hero-glow {
+    0% {
+        filter: drop-shadow(0 0 2px rgba(34, 211, 238, 0.4))  /* Cyan Core (Baixo) */
+                drop-shadow(0 0 8px rgba(139, 92, 246, 0.2)); /* Violet Aura (Baixo) */
+        opacity: 0.9;
+    }
+    100% {
+        filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.7))   /* Cyan Core (Alto - Bloom) */
+                drop-shadow(0 0 25px rgba(139, 92, 246, 0.5)); /* Violet Aura (Alto - Bloom) */
+        opacity: 1;
+    }
+}
+
+.unreal-glow {
+    /* Performance: Avisa o browser que o filtro vai mudar, evitando repaints pesados */
+    will-change: filter;
+    
+    /* Configuração da animação */
+    animation: hero-glow 5s ease-in-out infinite alternate;
+}

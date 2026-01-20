@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Generator | João Ricardo Dev</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 950: '#020617' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Ajustes da Barra de Ferramentas */
+        .ql-toolbar.ql-snow {
+            border-color: #334155 !important;
+            background-color: #0f172a;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        .ql-toolbar .ql-stroke {
+            stroke: #94a3b8 !important;
+        }
+        .ql-toolbar .ql-fill {
+            fill: #94a3b8 !important;
+        }
+        .ql-toolbar .ql-picker {
+            color: #94a3b8 !important;
+        }
+        
+        /* Ajustes da Área de Texto */
+        .ql-container.ql-snow {
+            border-color: #334155 !important;
+            background-color: #1e293b;
+            color: #e2e8f0;
+            border-radius: 0 0 0.5rem 0.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+        }
+        .ql-editor {
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen p-6 font-sans">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 flex justify-between items-center border-b border-slate-800 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">
+                    Gerador de <span class="text-cyan-400">Recursos.json</span>
+                </h1>
+                <p class="text-slate-500 text-sm mt-1">Ferramenta interna para criação de cards e modais.</p>
+            </div>
+            <div class="text-xs font-mono text-slate-600 border border-slate-800 px-3 py-1 rounded">
+                v1.0.0 Alpha
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            
+            <section class="space-y-6">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-400 uppercase mb-2">ID (Número)</label>
+                        <input type="number" id="inp-id" class="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-cyan-400 focus:outline-none transition-colors" placeholder="Ex: 3">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-400 uppercase mb-2">Categoria</label>
+                        <select id="inp-categoria" class="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-cyan-400 focus:outline-none transition-colors">
+                            <option value="Gamedev">Gamedev</option>
+                            <option value="IoT">IoT</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-cyan-400 uppercase mb-2">Título do Projeto</label>
+                    <input type="text" id="inp-titulo" class="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-cyan-400 focus:outline-none" placeholder="Ex: Unity Shader Graph Master">
+                </div>
+
+                <div>
+    <label class="block text-xs font-bold text-cyan-400 uppercase mb-2">Data de Postagem</label>
+    <input type="text" id="inp-data" class="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-cyan-400 focus:outline-none font-mono" placeholder="Ex: 19/01/2026">
+</div>
+
+                <div>
+                    <label class="block text-xs font-bold text-cyan-400 uppercase mb-2">Descrição Curta (Card)</label>
+                    <textarea id="inp-descricao" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded p-3 focus:border-cyan-400 focus:outline-none" placeholder="Resumo que aparece no card inicial..."></textarea>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-400 uppercase mb-2">URL Imagem do Card (Capa)</label>
+                        <input type="text" id="inp-imagem" class="w-full bg-slate-900 border border-slate-700 rounded p-3 text-sm font-mono focus:border-cyan-400 focus:outline-none" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-violet-400 uppercase mb-2">URL Mídia Destaque (Topo da Modal)</label>
+                        <input type="text" id="inp-midia" class="w-full bg-slate-900 border border-slate-700 rounded p-3 text-sm font-mono focus:border-violet-400 focus:outline-none" placeholder="Deixe vazio para usar a mesma da capa">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-cyan-400 uppercase mb-2">Conteúdo Detalhado (Modal)</label>
+                    <div id="editor-container"></div>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-lg border border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="block text-xs font-bold text-cyan-400 uppercase">Links Extras</label>
+                        <button onclick="addLinkField()" class="text-xs bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1 rounded transition-colors">
+                            + Adicionar Link
+                        </button>
+                    </div>
+                    
+                    <div id="links-container" class="space-y-3">
+                        </div>
+                </div>
+
+            </section>
+
+
+            <section class="lg:sticky lg:top-6">
+                <div class="bg-slate-900 rounded-xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-100px)]">
+                    
+                    <div class="bg-slate-950 p-4 border-b border-slate-800 flex justify-between items-center">
+                        <span class="text-sm font-mono text-slate-400">preview_output.json</span>
+                        <div class="flex gap-2">
+                            <button onclick="copiarJSON()" id="btn-copy" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white rounded border border-slate-700 transition-all">
+                                Copiar JSON
+                            </button>
+                            <button onclick="baixarArquivo()" class="px-3 py-1.5 text-xs font-medium bg-cyan-600 hover:bg-cyan-500 text-white rounded transition-all">
+                                Baixar Arquivo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-4 overflow-auto flex-grow bg-[#0d1117]">
+                        <pre><code id="json-output" class="text-sm font-mono text-green-400 whitespace-pre-wrap break-all">{}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // 1. Inicializar Quill
+        var quill = new Quill('#editor-container', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['image'] // Permite inserir imagem no corpo do texto
+                ]
+            },
+            placeholder: 'Escreva os detalhes técnicos do projeto aqui...'
+        });
+
+        // 2. Elementos DOM
+        const inputs = document.querySelectorAll('input, select, textarea');
+        const output = document.getElementById('json-output');
+        const linksContainer = document.getElementById('links-container');
+
+        // 3. Atualizar JSON (Live Preview)
+        function updateJSON() {
+        // Coleta dados dos inputs simples
+        const id = document.getElementById('inp-id').value;
+        const links = [];
+
+        // Coleta links dinâmicos
+        document.querySelectorAll('.link-group').forEach(group => {
+            const label = group.querySelector('.link-label').value;
+            const url = group.querySelector('.link-url').value;
+            if(label && url) {
+                links.push({ label, url });
+            }
+        });
+
+        // Monta o Objeto (É AQUI QUE VOCÊ ALTERA)
+        const data = {
+            id: id ? parseInt(id) : "AUTO_ID",
+            titulo: document.getElementById('inp-titulo').value || "Título do Projeto",
+            
+            // --- NOVA LINHA AQUI ---
+            dataPostagem: document.getElementById('inp-data').value || "", 
+            // -----------------------
+
+            descricao: document.getElementById('inp-descricao').value || "Descrição curta...",
+            categoria: document.getElementById('inp-categoria').value,
+            imagem: document.getElementById('inp-imagem').value || "https://placehold.co/600x400",
+            midiaDestaque: document.getElementById('inp-midia').value || null,
+            conteudoDetalhado: quill.root.innerHTML,
+            linksExtras: links
+        };
+
+        // Renderiza no Preview
+        output.textContent = JSON.stringify(data, null, 2);
+    }
+
+        // 4. Adicionar Link Dinâmico
+        function addLinkField() {
+            const div = document.createElement('div');
+            div.className = 'link-group flex gap-2 items-center animate-pulse-once';
+            div.innerHTML = `
+                <input type="text" placeholder="Label (ex: GitHub)" class="link-label w-1/3 bg-slate-950 border border-slate-700 rounded p-2 text-sm focus:border-cyan-400 focus:outline-none">
+                <input type="text" placeholder="URL" class="link-url w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm font-mono focus:border-cyan-400 focus:outline-none">
+                <button onclick="this.parentElement.remove(); updateJSON()" class="text-slate-500 hover:text-red-400 p-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            `;
+            linksContainer.appendChild(div);
+            
+            // Adiciona listener nos novos inputs para atualizar o JSON
+            div.querySelectorAll('input').forEach(i => i.addEventListener('input', updateJSON));
+        }
+
+        // 5. Funções de Ação
+        function copiarJSON() {
+            const text = output.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('btn-copy');
+                const originalText = btn.textContent;
+                btn.textContent = "Copiado!";
+                btn.classList.add('bg-green-600', 'border-green-500');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-green-600', 'border-green-500');
+                }, 2000);
+            });
+        }
+
+        function baixarArquivo() {
+            const text = output.textContent;
+            const blob = new Blob([text], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recurso-${document.getElementById('inp-id').value || 'novo'}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 6. Listeners Globais
+        inputs.forEach(el => el.addEventListener('input', updateJSON));
+        quill.on('text-change', updateJSON);
+
+        // Inicializa com um link vazio e JSON padrão
+        addLinkField();
+        updateJSON();
+
+    </script>
+</body>
+</html>

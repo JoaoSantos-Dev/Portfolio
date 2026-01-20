@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>João Ricardo | Game Developer & Instrutor de Tech</title>
+    <meta name="title" content="João Ricardo | Game Developer & Instrutor de Tech">
+    <meta name="description" content="Game Developer focado em Unity e C#, instrutor de tecnologia no SENAI Floripa e entusiasta de sistemas interativos.">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://joaoricardo.dev/">
+    <meta property="og:title" content="João Ricardo | Game Developer & Instrutor de Tech">
+    <meta property="og:description" content="Desenvolvedor de jogos e educador técnico. Explore meus projetos de GameDev, IoT e recursos para desenvolvedores.">
+    <meta property="og:image" content="https://joaoricardo.dev/assets/img/og-image.png">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://joaoricardo.dev/">
+    <meta property="twitter:title" content="João Ricardo | Game Developer & Instrutor de Tech">
+    <meta property="twitter:description" content="Desenvolvedor de jogos e educador técnico. Explore meus projetos de GameDev, IoT e recursos para desenvolvedores.">
+    <meta property="twitter:image" content="https://joaoricardo.dev/assets/img/og-image.png">
+
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: { 950: '#020617' },
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-200 flex flex-col min-h-screen">
+    <div id="header-placeholder" class="sticky top-0 z-50 backdrop-blur-sm bg-slate-950/80 border-b border-slate-800/50"></div>
+    
+    <main class="flex-grow container mx-auto px-6 py-12">
+    <header class="mb-12 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-6">
+        <div>
+            <h2 class="text-3xl font-bold text-white mb-2">Recursos & Assets</h2>
+            <p class="text-slate-400">Ferramentas, bibliotecas e demos que desenvolvi.</p>
+        </div>
+        
+        <div class="flex gap-2 bg-slate-900 p-1 rounded-lg border border-slate-800" role="group" aria-label="Filtros de categoria">
+            <button class="filter-btn px-4 py-2 text-sm font-medium rounded transition-all bg-violet-600 text-white border border-violet-500 shadow-lg" 
+                    data-filter="all" aria-pressed="true">
+                Todos
+            </button>
+            <button class="filter-btn px-4 py-2 text-sm font-medium rounded transition-all bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600" 
+                    data-filter="Gamedev" aria-pressed="false">
+                Gamedev
+            </button>
+            <button class="filter-btn px-4 py-2 text-sm font-medium rounded transition-all bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600" 
+                    data-filter="IoT" aria-pressed="false">
+                IoT
+            </button>
+        </div>
+    </header>
+
+    <div id="recursos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+</main>
+
+<div id="modal-overlay" class="fixed inset-0 z-50 hidden flex items-center justify-center" aria-modal="true" role="dialog">
+    
+    <div id="modal-backdrop" class="absolute inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"></div>
+
+    <div class="relative bg-slate-900 border border-slate-700 w-full max-w-3xl max-h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden animate-fade-in-up mx-4">
+        
+        <div class="flex justify-between items-center p-6 border-b border-slate-800 bg-slate-900/50">
+            <h3 id="modal-title" class="text-2xl font-bold text-white tracking-tight"></h3>
+            <button id="modal-close-btn" class="text-slate-400 hover:text-cyan-400 transition-colors p-2 rounded hover:bg-slate-800" aria-label="Fechar modal">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="overflow-y-auto p-6 custom-scrollbar">
+            <div class="mb-6 rounded-lg overflow-hidden border border-slate-700 bg-slate-950">
+                <img id="modal-image" src="" alt="Destaque" class="w-full h-auto object-cover max-h-[400px]">
+            </div>
+
+            <div id="modal-body" class="prose prose-invert prose-cyan max-w-none text-slate-300">
+                </div>
+
+            <div id="modal-links" class="mt-8 pt-6 border-t border-slate-800 flex flex-wrap gap-4">
+                </div>
+        </div>
+    </div>
+</div>
+
+<script src="assets/js/recursos.js" defer></script>
+
+    <div id="footer-placeholder" class="mt-auto"></div>
+    <script src="assets/js/main.js" defer></script>
+</body>
+</html>
