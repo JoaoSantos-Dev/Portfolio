@@ -55,3 +55,33 @@ document.addEventListener('DOMContentLoaded', () => {
     loadComponent('header-placeholder', 'components/header.html');
     loadComponent('footer-placeholder', 'components/footer.html');
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Seleciona todos os itens da timeline
+    const timelineItems = document.querySelectorAll('.timeline-item');
+
+    // Configuração do Observer
+    const observerOptions = {
+        threshold: 0.2, // Dispara quando 20% do item estiver visível
+        rootMargin: "0px 0px -50px 0px" // Um pequeno offset para não disparar muito cedo
+    };
+
+    const timelineObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Remove as classes de estado "invisível"
+                entry.target.classList.remove('opacity-0', 'translate-y-8');
+                // Adiciona classes de estado "visível" (se necessário, ou deixa o padrão do elemento)
+                // Como removemos o opacity-0, ele voltará para opacity-100 (padrão)
+                
+                // Parar de observar este item após a animação acontecer
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // Ativa o observer para cada item
+    timelineItems.forEach(item => {
+        timelineObserver.observe(item);
+    });
+});
