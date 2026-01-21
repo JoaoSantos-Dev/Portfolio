@@ -1,25 +1,5 @@
 [
 {
-  "id": 4,
-  "titulo": "Unity Survival Framework & FPS Systems",
-  "dataPostagem": "20/01/2026",
-  "descricao": "Protótipo de FPS/Survival Horror demonstrando arquitetura complexa: Inventário Grid-Based, Balística Realista e IA Sensorial (FSM).",
-  "categoria": "Gamedev",
-  "imagem": "https://img.itch.zone/aW1nLzE3NjIwMDM4LnBuZw==/347x500/emyYET.png",
-  "midiaDestaque": null,
-  "conteudoDetalhado": "<div class=\"space-y-6 text-slate-300 font-sans\"><div class=\"relative w-full aspect-video rounded-lg overflow-hidden border border-slate-700 shadow-2xl mb-6\"> <iframe class=\"absolute top-0 left-0 w-full h-full\" src=\"https://www.youtube.com/embed/5bkfm2LHxlw?si=IFaDoAUXnmdW0v-3\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe> </div> <section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">Conceito &amp; Ambientação <span class=\"text-xs font-normal text-amber-400 border border-amber-400/30 px-2 py-0.5 rounded ml-2\">Em Desenvolvimento</span></h4> <p class=\"leading-relaxed\">Uma experiência imersiva de terror e sobrevivência que transporta o jogador para cenários rurais e sombrios do Sul do Brasil. O projeto combina a tensão do <strong>Survival Horror clássico</strong> com a liberdade de exploração de um RPG, onde o gerenciamento de recursos é vital para sobreviver a criaturas sobrenaturais.</p> </section> <section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">Engenharia de Sistemas (Unity C#)</h4> <div class=\"grid grid-cols-1 gap-4\"> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-orange-500\"> <strong class=\"text-orange-400 block mb-1\">🎒 Gestão de Inventário Complexo</strong> <p class=\"text-sm text-slate-400\">Arquitetura baseada em <em>slots limitados</em>, empilhamento (stackable) e peso dinâmico influenciado por equipamentos (mochilas). Inclui loadout dedicado: Primária, Secundária, Melee e Utilitários.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-red-500\"> <strong class=\"text-red-400 block mb-1\">🔫 Weapon Handling &amp; Balística</strong> <p class=\"text-sm text-slate-400\">Foco no \"Game Feel\". Implementação de <em>Recoil procedural</em>, <em>Weapon Sway</em> (respiração/movimento), transição ADS suave e lógica completa de recarregamento.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-purple-500\"> <strong class=\"text-purple-400 block mb-1\">🧠 Inteligência Artificial (FSM)</strong> <p class=\"text-sm text-slate-400\">Máquina de Estados Finitos com sensores simulados de <strong>visão e audição</strong>. Comportamentos: <em>Idle, Patrol, Chase, Attack</em> com seleção lógica de alvo.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-emerald-500\"> <strong class=\"text-emerald-400 block mb-1\">🌲 Level Design &amp; Atmosfera</strong> <p class=\"text-sm text-slate-400\">Terreno autoral esculpido (Unity Terrain) focado na topografia regional, com sistema de <em>Loot Spawning</em> para incentivar a exploração.</p> </div> </div> </section> <section class=\"grid md:grid-cols-2 gap-6\"> <div> <h4 class=\"text-lg font-bold text-white mb-2\">🎮 Controles (Tech Demo)</h4> <ul class=\"space-y-2 text-sm\"> <li class=\"flex items-center gap-2\"><span class=\"bg-slate-800 text-cyan-300 px-2 py-1 rounded text-xs font-mono\">WASD </span> <span>Movimentação do personagem.</span></li> <li class=\"flex items-center gap-2\"><span class=\"bg-slate-800 text-cyan-300 px-2 py-1 rounded text-xs font-mono\">F</span> <span>Raycast para coleta de itens e interação.</span></li> <li class=\"flex items-center gap-2\"><span class=\"bg-slate-800 text-cyan-300 px-2 py-1 rounded text-xs font-mono\">Mouse 2</span> <span>Alternância tática de mira.</span></li> <li class=\"flex items-center gap-2\"><span class=\"bg-slate-800 text-cyan-300 px-2 py-1 rounded text-xs font-mono\">K </span> <span>Spawn de inimigos para stress test.</span></li> </ul> </div> <div class=\"bg-slate-800/30 p-4 rounded border border-slate-700\"> <h4 class=\"text-lg font-bold text-slate-200 mb-2\">🚧 Status do Projeto</h4> <p class=\"text-sm text-slate-400 italic\">Atualmente serve como base de estudos para arquitetura FPS e RPG na Unity. Planos de retomada futura para polimento e expansão narrativa.</p> </div> </section></div>",
-  "linksExtras": [
-    {
-      "label": "Jogar no Itch.io",
-      "url": "https://joaosantos-dev.itch.io/fps-survival-prototype"
-    },
-    {
-      "label": "Ver Gameplay Completa",
-      "url": "https://www.youtube.com/watch?v=5bkfm2LHxlw"
-    }
-  ]
-},
-{
   "id": 11,
   "titulo": "TCC de Excelência: Serious Game \"O Contestado\"",
   "dataPostagem": "21/01/2026",
@@ -52,6 +32,26 @@
     {
       "label": "Link do Vídeo",
       "url": "http://youtube.com/watch?v=wy50AAqArY8"
+    }
+  ]
+},
+{
+  "id": 4,
+  "titulo": "Unity Survival Framework & FPS Systems",
+  "dataPostagem": "20/01/2026",
+  "descricao": "Protótipo de FPS/Survival Horror demonstrando arquitetura complexa: Inventário Grid-Based, Balística Realista e IA Sensorial (FSM).",
+  "categoria": "Gamedev",
+  "imagem": "https://img.itch.zone/aW1nLzE3NjIwMDM4LnBuZw==/347x500/emyYET.png",
+  "midiaDestaque": null,
+  "conteudoDetalhado": "<div class=\"space-y-6 text-slate-300 font-sans\"><div class=\"relative w-full aspect-video rounded-lg overflow-hidden border border-slate-700 shadow-2xl mb-6\"> <iframe class=\"absolute top-0 left-0 w-full h-full\" src=\"https://www.youtube.com/embed/5bkfm2LHxlw?si=IFaDoAUXnmdW0v-3\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe> </div> <section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">Conceito &amp; Ambientação <span class=\"text-xs font-normal text-amber-400 border border-amber-400/30 px-2 py-0.5 rounded ml-2\">Em Desenvolvimento</span></h4> <p class=\"leading-relaxed\">Uma experiência imersiva de terror e sobrevivência que transporta o jogador para cenários rurais e sombrios do Sul do Brasil. O projeto combina a tensão do <strong>Survival Horror clássico</strong> com a liberdade de exploração de um RPG, onde o gerenciamento de recursos é vital para sobreviver a criaturas sobrenaturais.</p> </section> <section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">Engenharia de Sistemas (Unity C#)</h4> <div class=\"grid grid-cols-1 gap-4\"> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-orange-500\"> <strong class=\"text-orange-400 block mb-1\">🎒 Gestão de Inventário Complexo</strong> <p class=\"text-sm text-slate-400\">Arquitetura baseada em <em>slots limitados</em>, empilhamento (stackable) e peso dinâmico influenciado por equipamentos (mochilas). Inclui loadout dedicado: Primária, Secundária, Melee e Utilitários.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-red-500\"> <strong class=\"text-red-400 block mb-1\">🔫 Weapon Handling &amp; Balística</strong> <p class=\"text-sm text-slate-400\">Foco no \"Game Feel\". Implementação de <em>Recoil procedural</em>, <em>Weapon Sway</em> (respiração/movimento), transição ADS suave e lógica completa de recarregamento.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-purple-500\"> <strong class=\"text-purple-400 block mb-1\">🧠 Inteligência Artificial (FSM)</strong> <p class=\"text-sm text-slate-400\">Máquina de Estados Finitos com sensores simulados de <strong>visão e audição</strong>. Comportamentos: <em>Idle, Patrol, Chase, Attack</em> com seleção lógica de alvo.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-emerald-500\"> <strong class=\"text-emerald-400 block mb-1\">🌲 Level Design &amp; Atmosfera</strong> <p class=\"text-sm text-slate-400\">Terreno autoral esculpido (Unity Terrain) focado na topografia regional, com sistema de <em>Loot Spawning</em> para incentivar a exploração.</p> </div> </div> </section> <section class=\"grid md:grid-cols-2 gap-6\"> <div> <h4 class=\"text-lg font-bold text-white mb-2\">🎮 Controles (Tech Demo)</h4> <ul class=\"space-y-2 text-sm\"> <li class=\"flex items-center gap-2\"><span class=\"bg-slate-800 text-cyan-300 px-2 py-1 rounded text-xs font-mono\">WASD </span> <span>Movimentação do personagem.</span></li> <li class=\"flex items-center gap-2\"><span class=\"bg-slate-800 text-cyan-300 px-2 py-1 rounded text-xs font-mono\">F</span> <span>Raycast para coleta de itens e interação.</span></li> <li class=\"flex items-center gap-2\"><span class=\"bg-slate-800 text-cyan-300 px-2 py-1 rounded text-xs font-mono\">Mouse 2</span> <span>Alternância tática de mira.</span></li> <li class=\"flex items-center gap-2\"><span class=\"bg-slate-800 text-cyan-300 px-2 py-1 rounded text-xs font-mono\">K </span> <span>Spawn de inimigos para stress test.</span></li> </ul> </div> <div class=\"bg-slate-800/30 p-4 rounded border border-slate-700\"> <h4 class=\"text-lg font-bold text-slate-200 mb-2\">🚧 Status do Projeto</h4> <p class=\"text-sm text-slate-400 italic\">Atualmente serve como base de estudos para arquitetura FPS e RPG na Unity. Planos de retomada futura para polimento e expansão narrativa.</p> </div> </section></div>",
+  "linksExtras": [
+    {
+      "label": "Jogar no Itch.io",
+      "url": "https://joaosantos-dev.itch.io/fps-survival-prototype"
+    },
+    {
+      "label": "Ver Gameplay Completa",
+      "url": "https://www.youtube.com/watch?v=5bkfm2LHxlw"
     }
   ]
 },
