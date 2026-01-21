@@ -16,26 +16,6 @@
   ]
 },
 {
-  "id": 6,
-  "titulo": "Ninja Blitz Battle (12h Dev Challenge)",
-  "dataPostagem": "20/01/2026",
-  "descricao": "Um Fan Game de sobrevivência em arena (Horde Mode) desenvolvido inteiramente durante um desafio técnico de 12 horas. O projeto foca no ciclo completo de gameplay: combate frenético, gestão de recursos (stamina/economia) e...",
-  "categoria": "Gamedev",
-  "imagem": "https://img.itch.zone/aW1hZ2UvMzAxNTE5MS8xODAzMjY3Ny5wbmc=/347x500/secLmr.png",
-  "midiaDestaque": null,
-  "conteudoDetalhado": "<div class=\"space-y-6 text-slate-300 font-sans\"><section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">O Desafio (Rapid Prototyping)</h4> <p class=\"leading-relaxed\">O objetivo deste projeto foi testar limites de produtividade e foco: criar um jogo completo, do zero, em apenas 12 horas. O resultado é um <em>Fan Game</em> inspirado no universo de Naruto, onde o foco total foi direcionado à programação das mecânicas e ao loop de gameplay, utilizando formas primitivas (cápsulas) para representar os personagens e priorizar a fluidez do código sobre a modelagem 3D.</p> </section> <section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">Mecânicas &amp; Sistemas Implementados</h4> <div class=\"grid grid-cols-1 gap-4\"> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-orange-500 shadow-sm transition hover:bg-slate-900\"> <strong class=\"text-orange-400 block mb-2\">Sistema de Hordas &amp; Escalabilidade:</strong> <p class=\"text-sm text-slate-300\">Implementação de um algoritmo de dificuldade progressiva. Os inimigos (Clones) não apenas aumentam em quantidade, mas evoluem seus atributos (velocidade e dano) baseados no tempo de sobrevivência e contagem de abates.</p> <div class=\"mt-3 bg-slate-800/50 p-2 rounded text-xs text-slate-400 border border-slate-700\"> <em class=\"text-orange-300 not-italic font-bold\">Feedback Visual:</em> Um sistema de mudança de cor procedural (de Laranja a Roxo Escuro) indica visualmente o nível de perigo de cada entidade instanciada. </div> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-cyan-500 shadow-sm transition hover:bg-slate-900\"> <strong class=\"text-cyan-400 block mb-2\">Player Controller &amp; Resource Management:</strong> <p class=\"text-sm text-slate-300\">Movimentação arcade de alta velocidade com gerenciamento tático de <strong class=\"text-white\">Stamina</strong>. O jogador deve equilibrar o uso do <em>Sprint</em> (Shift) para escapar da horda com a necessidade de recarregar a energia parando momentaneamente, criando um risco/recompensa constante.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-yellow-500 shadow-sm transition hover:bg-slate-900\"> <strong class=\"text-yellow-400 block mb-2\">Economia In-Game &amp; Loja:</strong> <p class=\"text-sm text-slate-300\">Sistema completo de pontuação convertido em moeda. O jogador pode acessar uma loja (Menu) para desbloquear equipamentos icônicos (Shuriken, Kusarigatana, Espada Totsuka), incentivando a rejogabilidade para alcançar pontuações maiores.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-emerald-500 shadow-sm transition hover:bg-slate-900\"> <strong class=\"text-emerald-400 block mb-2\">Level Design Autoral:</strong> <p class=\"text-sm text-slate-300\">Reimaginação do cenário \"Vale do Fim\" construído com ferramentas nativas da Unity, focado em criar uma arena aberta que favorece a movimentação contínua (Kiting).</p> </div> </div> </section> <section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">Mídia &amp; Processo</h4> <div class=\"relative w-full aspect-video rounded-lg overflow-hidden border border-slate-700 shadow-2xl mb-6\"> <iframe class=\"absolute top-0 left-0 w-full h-full\" src=\"https://www.youtube.com/embed/5bkfm2LHxlw?si=IFaDoAUXnmdW0v-3\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe> </div> </section> <div class=\"bg-slate-950 p-6 rounded-lg border border-slate-800 border-l-4 border-l-purple-500 shadow-lg\"> <p class=\"italic text-slate-300\"> <strong class=\"text-purple-400 not-italic block mb-2\">Nota do Desenvolvedor:</strong> \"Para cumprir o prazo rígido de 12 horas, optei por uma abordagem de 'Programmer Art', utilizando cápsulas com indicadores visuais simples (bandanas). Isso permitiu focar 100% do tempo na robustez do código e na diversão da mecânica de combate.\" </p> </div></div>",
-  "linksExtras": [
-    {
-      "label": "Acesse o Jogo",
-      "url": "https://joaosantos-dev.itch.io/ninja-blitz-battle"
-    },
-    {
-      "label": "Link do Vídeo",
-      "url": "http://youtube.com/watch?v=wy50AAqArY8"
-    }
-  ]
-},
-{
   "id": 4,
   "titulo": "Unity Survival Framework & FPS Systems",
   "dataPostagem": "20/01/2026",
@@ -52,6 +32,26 @@
     {
       "label": "Ver Gameplay Completa",
       "url": "https://www.youtube.com/watch?v=5bkfm2LHxlw"
+    }
+  ]
+},
+{
+  "id": 6,
+  "titulo": "Ninja Blitz Battle (12h Dev Challenge)",
+  "dataPostagem": "20/01/2026",
+  "descricao": "Um Fan Game de sobrevivência em arena (Horde Mode) desenvolvido inteiramente durante um desafio técnico de 12 horas. O projeto foca no ciclo completo de gameplay: combate frenético, gestão de recursos (stamina/economia) e...",
+  "categoria": "Gamedev",
+  "imagem": "https://img.itch.zone/aW1hZ2UvMzAxNTE5MS8xODAzMjY3Ny5wbmc=/347x500/secLmr.png",
+  "midiaDestaque": null,
+  "conteudoDetalhado": "<div class=\"space-y-6 text-slate-300 font-sans\"><section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">O Desafio (Rapid Prototyping)</h4> <p class=\"leading-relaxed\">O objetivo deste projeto foi testar limites de produtividade e foco: criar um jogo completo, do zero, em apenas 12 horas. O resultado é um <em>Fan Game</em> inspirado no universo de Naruto, onde o foco total foi direcionado à programação das mecânicas e ao loop de gameplay, utilizando formas primitivas (cápsulas) para representar os personagens e priorizar a fluidez do código sobre a modelagem 3D.</p> </section> <section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">Mecânicas &amp; Sistemas Implementados</h4> <div class=\"grid grid-cols-1 gap-4\"> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-orange-500 shadow-sm transition hover:bg-slate-900\"> <strong class=\"text-orange-400 block mb-2\">Sistema de Hordas &amp; Escalabilidade:</strong> <p class=\"text-sm text-slate-300\">Implementação de um algoritmo de dificuldade progressiva. Os inimigos (Clones) não apenas aumentam em quantidade, mas evoluem seus atributos (velocidade e dano) baseados no tempo de sobrevivência e contagem de abates.</p> <div class=\"mt-3 bg-slate-800/50 p-2 rounded text-xs text-slate-400 border border-slate-700\"> <em class=\"text-orange-300 not-italic font-bold\">Feedback Visual:</em> Um sistema de mudança de cor procedural (de Laranja a Roxo Escuro) indica visualmente o nível de perigo de cada entidade instanciada. </div> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-cyan-500 shadow-sm transition hover:bg-slate-900\"> <strong class=\"text-cyan-400 block mb-2\">Player Controller &amp; Resource Management:</strong> <p class=\"text-sm text-slate-300\">Movimentação arcade de alta velocidade com gerenciamento tático de <strong class=\"text-white\">Stamina</strong>. O jogador deve equilibrar o uso do <em>Sprint</em> (Shift) para escapar da horda com a necessidade de recarregar a energia parando momentaneamente, criando um risco/recompensa constante.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-yellow-500 shadow-sm transition hover:bg-slate-900\"> <strong class=\"text-yellow-400 block mb-2\">Economia In-Game &amp; Loja:</strong> <p class=\"text-sm text-slate-300\">Sistema completo de pontuação convertido em moeda. O jogador pode acessar uma loja (Menu) para desbloquear equipamentos icônicos (Shuriken, Kusarigatana, Espada Totsuka), incentivando a rejogabilidade para alcançar pontuações maiores.</p> </div> <div class=\"bg-slate-900/50 p-4 rounded border-l-4 border-emerald-500 shadow-sm transition hover:bg-slate-900\"> <strong class=\"text-emerald-400 block mb-2\">Level Design Autoral:</strong> <p class=\"text-sm text-slate-300\">Reimaginação do cenário \"Vale do Fim\" construído com ferramentas nativas da Unity, focado em criar uma arena aberta que favorece a movimentação contínua (Kiting).</p> </div> </div> </section> <section> <h4 class=\"text-xl font-bold text-cyan-400 border-b border-slate-700 pb-2 mb-4\">Mídia &amp; Processo</h4> <div class=\"relative w-full aspect-video rounded-lg overflow-hidden border border-slate-700 shadow-2xl mb-6\"> <iframe class=\"absolute top-0 left-0 w-full h-full\" src=\"https://www.youtube.com/embed/5bkfm2LHxlw?si=IFaDoAUXnmdW0v-3\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen></iframe> </div> </section> <div class=\"bg-slate-950 p-6 rounded-lg border border-slate-800 border-l-4 border-l-purple-500 shadow-lg\"> <p class=\"italic text-slate-300\"> <strong class=\"text-purple-400 not-italic block mb-2\">Nota do Desenvolvedor:</strong> \"Para cumprir o prazo rígido de 12 horas, optei por uma abordagem de 'Programmer Art', utilizando cápsulas com indicadores visuais simples (bandanas). Isso permitiu focar 100% do tempo na robustez do código e na diversão da mecânica de combate.\" </p> </div></div>",
+  "linksExtras": [
+    {
+      "label": "Acesse o Jogo",
+      "url": "https://joaosantos-dev.itch.io/ninja-blitz-battle"
+    },
+    {
+      "label": "Link do Vídeo",
+      "url": "http://youtube.com/watch?v=wy50AAqArY8"
     }
   ]
 },
