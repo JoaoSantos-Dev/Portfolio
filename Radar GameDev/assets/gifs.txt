@@ -1,0 +1,16 @@
+# Catálogo de GIFs/animações do Radar GameDev.
+#
+# Padrão:
+# nome-do-arquivo.webp
+#
+# Como usar:
+# 1. coloque o arquivo em assets/gifs/
+# 2. copie uma linha deste arquivo
+# 3. troque apenas o nome do arquivo
+#
+# Linhas começando com # são comentários e serão ignoradas.
+# Formatos aceitos: .gif e .webp animado.
+
+better-call-saul.webp
+8-better-call-saul.webp
+download.gif

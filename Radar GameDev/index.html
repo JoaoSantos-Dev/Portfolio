@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Radar GameDev: curadoria de recursos para estudantes de Jogos Digitais." />
+  <title>Radar GameDev</title>
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("radar-theme");
+      document.documentElement.dataset.theme =
+        savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+    } catch (error) {
+      document.documentElement.dataset.theme = "dark";
+    }
+  </script>
+  <link rel="icon" href="Icon.webp" type="image/webp" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Radar GameDev - Início">
+      <img src="Logo.webp" alt="Radar GameDev" class="brand-logo" />
+    </a>
+
+    <div class="header-actions">
+      <nav class="category-nav" aria-label="Categorias principais">
+        <div class="section-list" id="sectionList"></div>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar tema">
+        <span class="theme-toggle__track" aria-hidden="true">
+          <span class="theme-toggle__thumb">
+            <span class="theme-toggle__icon">☾</span>
+          </span>
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <aside class="admin-dock" id="sessionActions" aria-label="Painel administrativo" hidden>
+    <div class="admin-dock__header">
+      <span class="admin-dock__badge">Admin ativo</span>
+      <strong>Painel Admin</strong>
+      <p>Gerencie a curadoria do Radar GameDev</p>
+    </div>
+    <div class="admin-dock__stats">
+      <span id="adminLocalCount">Recursos locais: 0</span>
+      <span id="adminDraftStatus" hidden>Rascunho salvo</span>
+    </div>
+    <a class="admin-dock__button admin-dock__button--primary" href="admin-card.html">
+      Novo card
+    </a>
+    <button class="admin-dock__button" id="adminButton" type="button">
+      Painel adm
+    </button>
+    <button class="admin-dock__button" id="viewResourcesButton" type="button">
+      Ver recursos
+    </button>
+    <button class="admin-dock__button" id="migrateLocalButton" type="button" hidden>
+      Migrar locais
+    </button>
+    <button class="admin-dock__button" id="logoutButton" type="button">
+      Sair
+    </button>
+  </aside>
+
+  <main>
+    <section class="search-strip" aria-label="Busca de recursos">
+      <div class="controls-panel">
+        <label class="search-box" for="searchInput">
+          <span class="search-icon" aria-hidden="true"></span>
+          <input id="searchInput" type="search" placeholder="Buscar recursos, tags ou país" autocomplete="off" />
+        </label>
+
+        <div class="filter-meta">
+          <p id="resultCount" aria-live="polite">0 recursos encontrados</p>
+          <button class="clear-button" id="clearFilters" type="button">
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+      <div class="section-context">
+        <p id="sectionContext">Cursos, ferramentas, referências e conteúdos úteis para evoluir em GameDev.</p>
+      </div>
+      <nav class="type-filter-nav" aria-label="Filtros da seção atual">
+        <div class="category-list category-list--secondary" id="categoryList"></div>
+      </nav>
+    </section>
+
+    <section class="resources-section" aria-label="Mural de recursos">
+      <div class="resource-grid" id="resourceGrid"></div>
+
+      <div class="empty-state" id="emptyState" hidden>
+        <img src="Icon.webp" alt="" aria-hidden="true" />
+        <h3>Nenhum sinal encontrado</h3>
+        <p>
+          Tente buscar por outro termo ou limpe os filtros para voltar ao
+          mural completo.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <img src="Icon.webp" alt="" aria-hidden="true" />
+    <span>Radar GameDev MVP</span>
+  </footer>
+
+  <dialog class="app-dialog auth-dialog" id="authDialog">
+    <form class="dialog-card auth-card" method="dialog">
+      <div class="dialog-header">
+        <div>
+          <p class="dialog-kicker">Acesso restrito</p>
+          <h2>Radar Admin</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog>
+          ×
+        </button>
+      </div>
+
+      <div class="auth-tabs" role="tablist" aria-label="Acesso admin">
+        <button class="auth-tab is-active" type="button" data-auth-mode="login">
+          Entrar
+        </button>
+        <button class="auth-tab" type="button" data-auth-mode="register">
+          Cadastrar
+        </button>
+      </div>
+
+      <div class="auth-panel" id="loginPanel">
+        <label>
+          Email
+          <input id="loginEmail" type="email" autocomplete="email" required />
+        </label>
+        <label>
+          Senha
+          <input id="loginPassword" type="password" autocomplete="current-password" required />
+        </label>
+        <button class="primary-button" id="loginSubmit" type="button">
+          Entrar
+        </button>
+      </div>
+
+      <div class="auth-panel" id="registerPanel" hidden>
+        <label>
+          Nome
+          <input id="registerName" type="text" autocomplete="name" required />
+        </label>
+        <label>
+          Email
+          <input id="registerEmail" type="email" autocomplete="email" required />
+        </label>
+        <label>
+          Senha
+          <input id="registerPassword" type="password" autocomplete="new-password" minlength="6" required />
+        </label>
+        <button class="primary-button" id="registerSubmit" type="button">
+          Solicitar acesso
+        </button>
+        <p class="form-note">
+          O cadastro fica pendente até ser aprovado no Firebase.
+        </p>
+      </div>
+
+      <p class="auth-message" id="authMessage" role="status"></p>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog" id="adminPanelDialog">
+    <div class="dialog-card">
+      <div class="dialog-header">
+        <div>
+          <p class="dialog-kicker">Painel</p>
+          <h2>Admin</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog>
+          ×
+        </button>
+      </div>
+      <button class="primary-button" id="openPendingUsers" type="button">
+        Gerenciar usuários
+      </button>
+    </div>
+  </dialog>
+
+  <dialog class="app-dialog" id="pendingUsersDialog">
+    <div class="dialog-card pending-card">
+      <div class="dialog-header">
+        <div>
+          <p class="dialog-kicker">Equipe</p>
+          <h2>Usuários</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-dialog>
+          ×
+        </button>
+      </div>
+      <section class="users-section" aria-labelledby="pendingUsersTitle">
+        <div class="users-section__header">
+          <h3 id="pendingUsersTitle">Pendentes</h3>
+          <span id="pendingUsersCount">0</span>
+        </div>
+        <div class="pending-list" id="pendingUsersList"></div>
+        <p class="form-note">
+          Recusar remove os perfis pendentes do Firestore. Contas do Firebase
+          Auth exigem exclusão pelo console ou Cloud Function.
+        </p>
+        <button class="danger-button" id="rejectAllPending" type="button">
+          Recusar todos pendentes
+        </button>
+      </section>
+
+      <section class="users-section" aria-labelledby="approvedUsersTitle">
+        <div class="users-section__header">
+          <h3 id="approvedUsersTitle">Aprovados</h3>
+          <span id="approvedUsersCount">0</span>
+        </div>
+        <div class="pending-list" id="approvedUsersList"></div>
+        <p class="form-note">
+          Banir altera o status do perfil para bloqueado e impede novos logins
+          no Radar GameDev.
+        </p>
+      </section>
+    </div>
+  </dialog>
+
+  <script src="js/gif-library.js?v=1"></script>
+  <script src="js/data.js?v=4"></script>
+  <script type="module" src="js/firebase.js?v=4"></script>
+  <script src="js/app.js?v=15"></script>
+</body>
+
+</html>
