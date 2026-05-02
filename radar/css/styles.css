@@ -678,6 +678,10 @@ a {
     inset 0 3px 0 color-mix(in srgb, var(--color-teal) 80%, transparent);
 }
 
+.resource-card.is-pinned {
+  border-color: color-mix(in srgb, var(--color-teal) 72%, var(--color-line));
+}
+
 .resource-card.text-card:nth-child(5n + 2) {
   background:
     linear-gradient(180deg, rgba(51, 199, 187, 0.06), transparent 44%),
@@ -754,6 +758,23 @@ a {
   color: var(--color-muted);
   font-size: 0.74rem;
   font-weight: 780;
+}
+
+.pinned-label {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 24px;
+  margin: 0 0 8px;
+  padding: 3px 8px;
+  border: 1px solid var(--color-chip-border);
+  border-radius: 999px;
+  color: var(--color-teal);
+  background: var(--color-chip);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .resource-card h3 {

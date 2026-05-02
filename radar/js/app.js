@@ -225,6 +225,7 @@
       section: normalizeSection(resource.section, resource.type),
       tags: Array.isArray(resource.tags) ? resource.tags : [],
       special: Boolean(resource.special),
+      pinned: Boolean(resource.pinned),
       wallpaper: Boolean(resource.wallpaper),
       imagePositionY: Number.isFinite(Number(resource.imagePositionY))
         ? Number(resource.imagePositionY)
@@ -414,7 +415,7 @@
       .join("");
 
     return `
-      <article class="resource-card ${resource.featured ? "is-featured" : ""} ${resource.special ? "resource-card--special" : ""} ${hasMedia ? "has-image" : "text-card"} ${isCoverMedia ? "resource-card--wallpaper" : ""}">
+      <article class="resource-card ${resource.featured ? "is-featured" : ""} ${resource.special ? "resource-card--special" : ""} ${resource.pinned ? "is-pinned" : ""} ${hasMedia ? "has-image" : "text-card"} ${isCoverMedia ? "resource-card--wallpaper" : ""}">
         ${editMarkup}
         ${mediaMarkup}
         <div class="card-content">
@@ -422,6 +423,7 @@
             <span class="type-label">${resource.type}</span>
             <span class="country-label">${resource.country}</span>
           </div>
+          ${resource.pinned ? '<span class="pinned-label">Fixado</span>' : ""}
           <h3>${resource.title}</h3>
           <p>${resource.description}</p>
           <div class="tag-list">${tagsMarkup}</div>

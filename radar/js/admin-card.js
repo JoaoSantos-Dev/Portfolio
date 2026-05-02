@@ -20,6 +20,7 @@
     featured: document.querySelector("#resourceFeatured"),
     wallpaper: document.querySelector("#resourceWallpaper"),
     special: document.querySelector("#resourceSpecial"),
+    pinned: document.querySelector("#resourcePinned"),
     imagePositionY: document.querySelector("#resourceImagePositionY"),
     useLibraryGif: document.querySelector("#resourceUseLibraryGif"),
     libraryGifKey: document.querySelector("#resourceLibraryGifKey"),
@@ -325,6 +326,7 @@
       featured: fields.featured.checked,
       wallpaper: fields.wallpaper.checked,
       special: fields.special.checked,
+      pinned: fields.pinned.checked,
       imagePositionY: getImagePositionY(),
       useLibraryGif: fields.useLibraryGif.checked,
       libraryGifKey: fields.libraryGifKey.value,
@@ -356,6 +358,7 @@
       libraryGifPositionY: data.libraryGifMode === "cover" ? data.libraryGifPositionY : 50,
       featured: data.featured,
       special: Boolean(data.special),
+      pinned: Boolean(data.pinned),
       status: data.status,
       createdAt: originalResource?.createdAt || now,
       updatedAt: now,
@@ -435,13 +438,14 @@
       .join("");
 
     elements.preview.innerHTML = `
-      <article class="resource-card ${data.featured ? "is-featured" : ""} ${data.special ? "resource-card--special" : ""} ${media.hasMedia ? "has-image" : "text-card"} ${media.isCover ? "resource-card--wallpaper" : ""}">
+      <article class="resource-card ${data.featured ? "is-featured" : ""} ${data.special ? "resource-card--special" : ""} ${data.pinned ? "is-pinned" : ""} ${media.hasMedia ? "has-image" : "text-card"} ${media.isCover ? "resource-card--wallpaper" : ""}">
         ${media.markup}
         <div class="card-content">
           <div class="card-topline">
             <span class="type-label">${type}</span>
             <span class="country-label">${country}</span>
           </div>
+          ${data.pinned ? '<span class="pinned-label">Fixado</span>' : ""}
           <h3>${title}</h3>
           <p>${description}</p>
           <div class="tag-list">${tagsMarkup}</div>
@@ -496,6 +500,7 @@
     fields.featured.checked = Boolean(resource.featured);
     fields.wallpaper.checked = Boolean(resource.wallpaper);
     fields.special.checked = Boolean(resource.special);
+    fields.pinned.checked = Boolean(resource.pinned);
     fields.imagePositionY.value = Number.isFinite(Number(resource.imagePositionY))
       ? String(clamp(Number(resource.imagePositionY), 0, 100))
       : "50";
@@ -562,6 +567,7 @@
         data.featured ||
         data.wallpaper ||
         data.special ||
+        data.pinned ||
         data.imagePositionY !== 50 ||
         data.useLibraryGif ||
         data.libraryGifKey ||
@@ -609,6 +615,7 @@
     populateTypeOptions("curadoria");
     fields.wallpaper.checked = false;
     fields.special.checked = false;
+    fields.pinned.checked = false;
     fields.imagePositionY.value = "50";
     fields.useLibraryGif.checked = false;
     fields.libraryGifKey.value = "";

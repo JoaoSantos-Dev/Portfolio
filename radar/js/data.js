@@ -23,6 +23,7 @@
 //   libraryGifPositionY: 50,
 //   featured: false,
 //   special: false,
+//   pinned: false,
 //   status: "published",
 //   createdAt: "2026-05-02T00:00:00.000Z",
 //   source: "static"

@@ -63,6 +63,7 @@ Cada documento em `resources` segue este formato:
   libraryGifMode: "cover",
   libraryGifPositionY: 50,
   special: false,
+  pinned: false,
   status: "published",
   featured: true,
   createdAt: serverTimestamp(),
@@ -75,6 +76,7 @@ Cada documento em `resources` segue este formato:
 Para adicionar imagem em um card, use upload WEBP pelo painel admin.
 Use `wallpaper: true` quando a imagem deve preencher a área visual com corte (`object-fit: cover`). Quando `imageUrl` fica vazio, o card é textual.
 Use `special: true` para cards com destaque animado e brilho sutil, como avisos ou recomendações importantes.
+Use `pinned: true` para fixar no topo. Apenas um card deve ficar fixado por vez; `featured` e `special` são apenas marcações visuais.
 
 ## Arquitetura editorial
 

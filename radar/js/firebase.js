@@ -179,6 +179,7 @@ function normalizeResourceSnapshot(snapshot) {
     image: data.imageUrl || "",
     wallpaper: Boolean(data.wallpaper),
     special: Boolean(data.special),
+    pinned: Boolean(data.pinned),
     useLibraryGif: Boolean(data.useLibraryGif),
     libraryGifKey: data.libraryGifKey || "",
     imagePositionY: Number.isFinite(Number(data.imagePositionY))
@@ -215,8 +216,29 @@ function sanitizeResourcePayload(resource) {
       : 50,
     featured: Boolean(resource.featured),
     special: Boolean(resource.special),
+    pinned: Boolean(resource.pinned),
     status: resource.status === "draft" ? "draft" : "published"
   };
+}
+
+async function unpinOtherResources(activeResourceId) {
+  const pinnedQuery = query(collection(db, "resources"), where("pinned", "==", true));
+  const snapshot = await getDocs(pinnedQuery);
+  const batch = writeBatch(db);
+  let hasUpdates = false;
+
+  snapshot.docs.forEach((resourceDoc) => {
+    if (resourceDoc.id === activeResourceId) {
+      return;
+    }
+
+    batch.update(resourceDoc.ref, { pinned: false });
+    hasUpdates = true;
+  });
+
+  if (hasUpdates) {
+    await batch.commit();
+  }
 }
 
 function validateImageFile(file) {
@@ -381,18 +403,25 @@ async function getResources() {
   );
   const snapshot = await getDocs(resourcesQuery);
 
-  return snapshot.docs
+  const resources = snapshot.docs
     .map(normalizeResourceSnapshot)
-    .sort((a, b) => {
-      const priority = Number(Boolean(b.featured || b.special)) - Number(Boolean(a.featured || a.special));
-      if (priority !== 0) {
-        return priority;
-      }
-
-      return String(b.updatedAt || b.createdAt || "").localeCompare(
+    .sort((a, b) =>
+      String(b.updatedAt || b.createdAt || "").localeCompare(
         String(a.updatedAt || a.createdAt || "")
-      );
-    });
+      )
+    );
+  const pinnedResource = resources.find((resource) => resource.pinned);
+
+  if (!pinnedResource) {
+    return resources;
+  }
+
+  return [
+    pinnedResource,
+    ...resources
+      .filter((resource) => resource.id !== pinnedResource.id)
+      .map((resource) => (resource.pinned ? { ...resource, pinned: false } : resource))
+  ];
 }
 
 async function getResourceById(resourceId) {
@@ -409,6 +438,10 @@ async function createResource(resource, imageFile) {
 
   if (imageFile) {
     imageData = await uploadResourceImage(resourceRef.id, imageFile);
+  }
+
+  if (payload.pinned) {
+    await unpinOtherResources(resourceRef.id);
   }
 
   await setDoc(resourceRef, {
@@ -448,6 +481,10 @@ async function updateResource(resourceId, resource, imageFile, removeImage = fal
     }
   }
 
+  if (payload.pinned) {
+    await unpinOtherResources(resourceId);
+  }
+
   await updateDoc(resourceRef, {
     ...payload,
     ...imageData,
@@ -483,6 +520,10 @@ async function migrateLocalResources(resources) {
 
     if (imageBlob) {
       imageData = await uploadResourceImage(resourceRef.id, imageBlob);
+    }
+
+    if (payload.pinned) {
+      await unpinOtherResources(resourceRef.id);
     }
 
     await setDoc(resourceRef, {
