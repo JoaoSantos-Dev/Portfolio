@@ -996,7 +996,11 @@
       state.section = button.dataset.section;
       state.category = "";
       state.tag = "";
-      window.location.hash = state.section;
+      if (state.section === "curadoria") {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      } else {
+        window.location.hash = state.section;
+      }
       renderSections();
       renderCategories();
       renderSectionContext();
@@ -1149,12 +1153,6 @@
   function init() {
     initTheme();
     state.section = getSectionFromHash();
-    if (
-      window.location.hash !== "#radar-admin" &&
-      !sections.some((section) => window.location.hash === `#${section.key}`)
-    ) {
-      window.history.replaceState(null, "", "#curadoria");
-    }
     stateAuth.profile = getCachedProfile();
     updateSessionUi();
     renderSections();
