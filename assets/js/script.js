@@ -93,7 +93,7 @@ const COPY = {
                 visualClass: 'visual-radar',
                 visualLabel: 'Curadoria GameDev',
                 image: 'assets/images/Radar Gamedev/Imagens.png',
-                accessUrl: 'Radar GameDev/index.html'
+                accessUrl: '/radar'
             },
             {
                 title: 'Projeto de Jam',
@@ -256,7 +256,7 @@ const COPY = {
                 visualClass: 'visual-radar',
                 visualLabel: 'GameDev curation',
                 image: 'assets/images/Radar Gamedev/Imagens.png',
-                accessUrl: 'Radar GameDev/index.html'
+                accessUrl: '/radar'
             },
             {
                 title: 'Jam Project',
