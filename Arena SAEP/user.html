@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Usuário | Quiz Caça ao Tesouro</title>
+    <link rel="stylesheet" href="./user.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="topbar">
+            <a class="button-link button-secondary" href="./cacaaotesouro.html">Lobby</a>
+            <a class="button-link button-secondary" href="./ranking.html">Ranking</a>
+            <a id="adminLink" class="button-link hidden" href="./admin.html">Admin</a>
+            <button id="topLogoutButton" type="button">Sair</button>
+        </div>
+
+        <h1>Perfil do usuário</h1>
+        <p>Veja os dados da sua conta, atualize seu nickname do jogo e troque sua senha com confirmação da senha atual.</p>
+
+        <div id="userStatus" class="status info">Carregando perfil...</div>
+        <div id="userEmpty" class="empty-state" hidden>
+            Sessão não encontrada. Volte ao lobby para fazer login.
+        </div>
+
+        <div id="userSummary" class="card" hidden>
+            <h2>Seus dados</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">Nome</span>
+                    <span class="summary-value" id="userDisplayName">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">E-mail</span>
+                    <span class="summary-value summary-email" id="userDisplayEmail">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Sala</span>
+                    <span class="summary-value" id="userDisplayRoom">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Perfil</span>
+                    <span class="summary-value" id="userDisplayRole">-</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Nickname do jogador</h2>
+                <label for="profileNameInput">Alterar nickname usado no jogo</label>
+                <input type="text" id="profileNameInput" maxlength="40" />
+                <div class="button-group">
+                    <button id="updateProfileNameButton" type="button">Salvar nickname</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Trocar senha</h2>
+                <label for="currentPasswordInput">Senha atual</label>
+                <input type="password" id="currentPasswordInput" autocomplete="current-password" />
+                <label for="newPasswordInput">Nova senha</label>
+                <input type="password" id="newPasswordInput" autocomplete="new-password" />
+                <label for="confirmPasswordInput">Confirmar nova senha</label>
+                <input type="password" id="confirmPasswordInput" autocomplete="new-password" />
+                <div class="button-group">
+                    <button id="changePasswordButton" type="button">Atualizar senha</button>
+                    <button id="logoutButton" class="button-secondary" type="button">Sair</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./user.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Quiz Caça ao Tesouro</title>
+    <link rel="stylesheet" href="./admin.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="topbar">
+            <a class="button-link button-secondary" href="./cacaaotesouro.html">Lobby</a>
+            <a class="button-link button-secondary" href="./ranking.html">Ranking</a>
+            <a id="userLink" class="button-link button-secondary hidden" href="./user.html">Usuário</a>
+            <button id="adminLogoutButton" type="button" class="hidden">Sair</button>
+        </div>
+
+        <h1>Painel Admin</h1>
+        <p>Gerencie usuários, salas e desafios do Quiz Caça ao Tesouro.</p>
+        <p>Exclusão remove o perfil e os registros do Firestore. Sem backend/Admin SDK, a conta do Firebase Auth pode continuar existindo.</p>
+
+        <div id="adminStatus" class="status info">Verificando permissões...</div>
+        <div id="adminEmpty" class="empty-state" hidden>
+            Você não tem acesso ao painel administrativo.
+        </div>
+
+        <div id="adminPanel" hidden>
+            <h2>Desafios</h2>
+            <div class="toolbar">
+                <input type="text" id="challengeTitleInput" placeholder="Título do desafio (opcional)" />
+                <input type="number" id="challengeQuestionCountInput" min="1" max="144" placeholder="Quantidade de questões" />
+                <input type="datetime-local" id="challengeStartInput" />
+                <input type="datetime-local" id="challengeEndInput" />
+                <button id="createChallengeButton" type="button">Criar desafio</button>
+                <button id="generateReportButton" type="button" class="button-secondary">Gerar relatório</button>
+                <button id="openSuspectsButton" type="button" class="button-secondary">Suspeitos</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Questões</th>
+                        <th>Período</th>
+                        <th>Status</th>
+                        <th>Participantes</th>
+                        <th>Concluídos</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="challengesBody"></tbody>
+            </table>
+
+            <div class="section-link-row">
+                <a class="button-link button-secondary" href="./admin-users.html">Gerenciar usuários</a>
+            </div>
+
+            <div class="toolbar">
+                <input type="text" id="newRoomInput" placeholder="Nome da nova sala" />
+                <button id="createRoomButton" type="button">Criar sala</button>
+            </div>
+
+            <h2>Salas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Ordem</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="roomsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="challengeModalOverlay" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-badge">Gerenciar desafio</div>
+                    <h2 id="challengeModalTitle">Desafio</h2>
+                </div>
+                <button id="closeChallengeModalButton" type="button" class="button-secondary">Fechar</button>
+            </div>
+
+            <div id="challengeModalStatus" class="status info">Detalhes do desafio.</div>
+
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">Status</span>
+                    <span class="summary-value" id="challengeModalVisualStatus">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Questões</span>
+                    <span class="summary-value" id="challengeModalQuestionCount">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Início</span>
+                    <span class="summary-value" id="challengeModalStart">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Fim</span>
+                    <span class="summary-value" id="challengeModalEnd">-</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Prolongar prazo</h3>
+                <div class="toolbar">
+                    <input type="datetime-local" id="challengeExtendInput" />
+                    <button id="extendChallengeButton" type="button">Salvar novo prazo</button>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <button id="activateChallengeNowButton" type="button">Ativar agora</button>
+                <button id="endChallengeButton" type="button" class="button-secondary">Encerrar antes do prazo</button>
+                <button id="cancelChallengeButton" type="button" class="danger-button">Cancelar desafio</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="suspectsModalOverlay" class="modal-overlay hidden">
+        <div class="modal-card modal-card-wide">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-badge">Apuração</div>
+                    <h2>Suspeitos</h2>
+                </div>
+                <button id="closeSuspectsModalButton" type="button" class="button-secondary">Fechar</button>
+            </div>
+
+            <div id="suspectsStatus" class="status info">Carregando casos suspeitos...</div>
+
+            <div class="toolbar">
+                <button id="refreshSuspectsButton" type="button" class="button-secondary">Atualizar lista</button>
+                <button id="generateSuspectsReportButton" type="button">Relatório de suspeitos</button>
+            </div>
+
+            <div id="suspectsEmpty" class="empty-state hidden">Nenhum suspeito pendente no momento.</div>
+
+            <table id="suspectsTable">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Sala</th>
+                        <th>Tempo original</th>
+                        <th>Erros</th>
+                        <th>Motivo</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="suspectsBody"></tbody>
+            </table>
+
+            <div id="suspectSimulationPanel" class="card hidden">
+                <h3 id="suspectSimulationTitle">Tentativa em simulado</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Tempo do simulado</span>
+                        <span class="summary-value" id="suspectSimulationTime">00:00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Erros do simulado</span>
+                        <span class="summary-value" id="suspectSimulationErrors">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Questão</span>
+                        <span class="summary-value" id="suspectSimulationProgress">-</span>
+                    </div>
+                </div>
+
+                <div id="suspectSimulationQuestion" class="suspect-simulation-question"></div>
+                <div id="suspectSimulationResult" class="status info hidden"></div>
+
+                <div class="toolbar">
+                    <button id="restartSuspectSimulationButton" type="button" class="button-secondary">Gerar nova tentativa de suspeito</button>
+                    <button id="closeSuspectCaseButton" type="button" class="danger-button">Encerrar caso</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script type="module" src="./admin.js"></script>
+</body>
+
+</html>

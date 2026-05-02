@@ -1,0 +1,524 @@
+ROADMAP DE MIGRACAO
+Quiz Caca ao Tesouro
+Objetivo: migrar do modelo atual com Firebase para backend proprio de forma segura, incremental e sem perder o comportamento do sistema
+
+1. OBJETIVO DO ROADMAP
+
+Este documento organiza a migracao em fases praticas.
+
+Ele nao descreve apenas o estado final.
+Ele descreve:
+- por onde comecar
+- o que migrar primeiro
+- o que manter no Firebase por mais tempo
+- como validar cada etapa
+- quando desligar partes antigas
+
+O principio central desta migracao e:
+- nao reescrever tudo de uma vez
+- nao quebrar o sistema que ja funciona
+- migrar por camadas
+- validar cada fase antes de avancar
+
+2. CENARIO ATUAL
+
+Hoje o sistema usa:
+- Firebase Authentication
+- Firestore
+- frontend web modular em HTML/CSS/JS
+
+Hoje o sistema ja possui:
+- login e cadastro
+- aprovacao de usuario
+- lobby
+- desafios
+- participacoes
+- ranking
+- historico
+- painel admin
+
+O problema atual nao e funcionalidade.
+O problema futuro e escalabilidade, controle e evolucao arquitetural.
+
+Por isso a migracao deve focar em:
+- centralizar regra de negocio no backend
+- sair de agregacoes pesadas no frontend
+- aumentar previsibilidade
+- preparar ambiente proprio na Oracle
+
+3. ESTRATEGIA GERAL
+
+Migracao recomendada:
+- manter o frontend atual por um tempo
+- criar o novo backend em paralelo
+- migrar endpoint por endpoint
+- trocar o provedor de dados sem reconstruir tudo do zero
+
+Sequencia ideal:
+1. montar backend
+2. subir banco
+3. implementar API
+4. validar com dados de teste
+5. conectar frontend gradualmente
+6. congelar escrita no Firebase
+7. desligar dependencia do Firebase
+
+4. FASE 0 - PREPARACAO E INVENTARIO
+
+Objetivo:
+- organizar o terreno antes de migrar
+
+Tarefas:
+- congelar a arquitetura atual em documentacao
+- revisar arquivos criados:
+  - documentacao_sistema.txt
+  - documentacao_regras_jogo.txt
+  - desenvolvimento.txt
+  - migracao_dotnet_postgresql.txt
+- levantar todas as colecoes atuais do Firestore
+- revisar o que esta em uso real e o que e legado
+- identificar dependencias sensiveis do frontend atual
+- decidir a hospedagem inicial do backend na Oracle
+
+Entregas:
+- lista oficial de colecoes e campos
+- lista oficial de telas e fluxos
+- lista oficial de regras que nao podem mudar
+
+Critério de saida:
+- voce consegue explicar o sistema atual sem abrir o codigo
+
+5. FASE 1 - MVP DO BACKEND
+
+Objetivo:
+- subir a primeira versao funcional da API e do banco
+
+Escopo minimo:
+- usuarios
+- salas
+- desafios
+- participacoes
+
+Tarefas:
+- criar solution .NET
+- configurar PostgreSQL
+- criar migrations iniciais
+- criar seed de salas
+- criar admin inicial
+- criar estrutura de autenticacao JWT
+- criar endpoints de health check
+- configurar logs
+
+Entregas:
+- API sobe localmente
+- banco sobe localmente
+- migrations executam sem erro
+- ambiente de dev fica reproduzivel
+
+Critério de saida:
+- backend sobe com um comando claro e consistente
+
+6. FASE 2 - AUTENTICACAO E USUARIOS
+
+Objetivo:
+- migrar o fluxo de conta antes da logica de jogo
+
+Tarefas:
+- implementar cadastro com restricao de dominio
+- implementar hash de senha
+- implementar login
+- implementar confirmacao de e-mail
+- implementar aprovacao de usuario
+- implementar perfil do usuario
+- implementar troca de senha
+- implementar edicao de nickname do jogador
+
+Recomendacao:
+- nesta fase, o frontend ainda pode continuar falando com Firebase para o resto do sistema
+- mas auth e perfil ja podem ser testados no backend novo em paralelo
+
+Entregas:
+- usuario consegue cadastrar no backend novo
+- admin consegue aprovar
+- usuario consegue logar e receber token
+
+Critério de saida:
+- o ciclo cadastro -> confirmacao -> aprovacao -> login funciona no backend novo
+
+7. FASE 3 - SALAS E ADMINISTRACAO BASICA
+
+Objetivo:
+- migrar dados administrativos com baixo risco
+
+Tarefas:
+- implementar CRUD de salas
+- implementar reordenacao de salas
+- bloquear exclusao de sala em uso
+- implementar listagem de usuarios
+- implementar mudanca de sala
+- implementar mudanca de status ativo/inativo
+- implementar mudanca de role admin/jogador
+
+Entregas:
+- admin consegue manter salas sem Firebase
+- admin consegue gerenciar usuarios no backend novo
+
+Critério de saida:
+- painel admin de salas e usuarios funciona contra a API nova
+
+8. FASE 4 - DESAFIOS
+
+Objetivo:
+- mover a logica de desafios para o backend
+
+Tarefas:
+- criar endpoints de desafio
+- implementar:
+  - criar desafio
+  - listar desafios
+  - buscar desafio atual
+  - encerrar desafio
+  - cancelar desafio
+  - prolongar desafio
+  - ativar desafio agendado
+- implementar fechamento automatico por prazo
+
+Entregas:
+- admin controla desafios no backend novo
+- estado do desafio atual e consistente
+
+Critério de saida:
+- o frontend consegue consultar o desafio atual pela API nova
+
+9. FASE 5 - PARTICIPACOES E PARTIDA
+
+Objetivo:
+- migrar o nucleo do jogo
+
+Tarefas:
+- implementar inicio de participacao
+- implementar retomada
+- implementar bloqueio por tentativa unica
+- implementar persistencia de progresso
+- implementar finalizacao de participacao
+- implementar expiracao de participacao quando necessario
+
+Importante:
+- manter snapshot de perguntas e charadas na participacao
+- isso facilita reproduzir exatamente o comportamento atual
+
+Entregas:
+- jogador consegue iniciar ou retomar o desafio
+- jogador conclui e a participacao e salva no backend novo
+
+Critério de saida:
+- o fluxo lobby -> partida -> resultado funciona sem Firestore
+
+10. FASE 6 - PONTUACAO, TITULOS E RANKING
+
+Objetivo:
+- migrar a logica mais sensivel de agregacao
+
+Tarefas:
+- implementar calculadora de score
+- implementar ranking individual acumulado
+- implementar ranking por sala
+- implementar titulos
+- implementar medalhas
+- implementar cache ou agregacao incremental
+- implementar quadro de titulos
+
+Recomendacao:
+- nao recalcular tudo em toda requisicao
+- usar agregacao incremental ou tabela de cache
+
+Entregas:
+- ranking bate com o comportamento atual
+- lobby consegue mostrar resumo equivalente
+- resultado final consegue mostrar posicoes e titulos
+
+Critério de saida:
+- ranking novo e validado contra cenarios reais
+
+11. FASE 7 - HISTORICO E RESULTADO FINAL
+
+Objetivo:
+- fechar o ciclo completo do jogador
+
+Tarefas:
+- implementar historico de desafios
+- montar resumo final completo
+- suportar status:
+  - nao iniciado
+  - em andamento
+  - concluido
+  - expirado
+  - cancelado
+- garantir consistencia visual entre frontend e backend
+
+Entregas:
+- historico funciona no backend novo
+- resultado final usa apenas a API nova
+
+Critério de saida:
+- o jogador ja consegue passar por todo o ciclo sem consultar Firebase para dados do jogo
+
+12. FASE 8 - ADAPTACAO DO FRONTEND
+
+Objetivo:
+- trocar a origem dos dados no frontend atual
+
+Estratégia recomendada:
+- nao reescrever interface de uma vez
+- criar camada de adaptacao de API
+- substituir chamadas do Firebase por chamadas HTTP gradualmente
+
+Ordem sugerida:
+1. login e perfil
+2. lobby
+3. desafios
+4. participacao
+5. ranking
+6. historico
+7. admin
+
+Entregas:
+- frontend atual funcionando com a API nova
+
+Critério de saida:
+- frontend usa backend proprio como fonte principal
+
+13. FASE 9 - OPERACAO PARALELA CONTROLADA
+
+Objetivo:
+- rodar os dois modelos por um curto periodo, com controle
+
+Opcoes:
+
+Opcao A - migracao limpa
+- parar escrita no Firebase
+- importar dados
+- virar frontend para API nova
+
+Opcao B - transicao curta
+- frontend de producao passa a escrever no backend novo
+- Firebase fica apenas como referencia historica temporaria
+
+Recomendacao:
+- evitar dupla escrita por muito tempo
+- dupla escrita complica consistencia
+
+Entregas:
+- plano de corte aprovado
+- data de virada definida
+
+Critério de saida:
+- existe uma data clara para o backend novo virar fonte oficial
+
+14. FASE 10 - MIGRACAO DE DADOS
+
+Objetivo:
+- levar os dados necessarios do Firebase para PostgreSQL
+
+Dados que realmente importam:
+- usuarios
+- salas
+- desafios
+- participacoes validas
+
+Decisao importante:
+- definir se dados antigos legados vao ou nao migrar
+
+Recomendacao:
+- migrar apenas o que impacta:
+  - acesso atual
+  - ranking historico relevante
+  - desafios e participacoes que precisam continuar visiveis
+
+Tarefas:
+- exportar Firestore
+- transformar para modelo relacional
+- importar no PostgreSQL
+- validar consistencia por amostragem
+
+Entregas:
+- script de migracao
+- relatorio de importacao
+- relatorio de falhas
+
+Critério de saida:
+- dados essenciais estao no banco novo e conferidos
+
+15. FASE 11 - CORTE OFICIAL
+
+Objetivo:
+- tornar o backend novo a fonte unica de verdade
+
+Passos:
+- congelar escrita no Firebase
+- apontar frontend para a API nova
+- monitorar erros
+- validar fluxo de:
+  - login
+  - lobby
+  - desafio
+  - resultado
+  - ranking
+  - historico
+  - admin
+
+Entregas:
+- sistema rodando em producao com backend proprio
+
+Critério de saida:
+- nao ha dependencia funcional do Firebase no uso normal
+
+16. FASE 12 - POS-MIGRACAO
+
+Objetivo:
+- estabilizar e melhorar
+
+Tarefas:
+- remover codigo legado nao usado
+- remover dependencia antiga do Firebase do frontend
+- monitorar performance
+- ajustar queries e indices
+- revisar seguranca
+- revisar logs e auditoria
+- planejar melhorias futuras
+
+Entregas:
+- sistema estabilizado
+- documentacao atualizada
+
+Critério de saida:
+- equipe consegue manter o sistema novo sem consultar o legado toda hora
+
+17. ESTRATEGIA DE RISCO
+
+Principais riscos:
+- mudar regra sem perceber
+- quebrar ranking
+- perder retomada de participacao
+- divergencia entre dados migrados e dados atuais
+- frontend continuar acoplado demais ao Firebase
+
+Mitigacoes:
+- migrar por fases
+- validar casos reais
+- comparar backend novo com comportamento atual
+- manter ambiente de homologacao
+- testar com poucos usuarios antes da virada completa
+
+18. O QUE NAO FAZER
+
+Evitar:
+- reescrever frontend e backend ao mesmo tempo sem fases
+- migrar tudo em um unico deploy
+- manter dupla escrita por muito tempo
+- mudar regras de negocio durante a migracao
+- mexer em pontuacao e titulos antes de estabilizar o backend
+
+19. CHECKLIST DE VALIDACAO POR FASE
+
+Fase 1
+- backend sobe
+- banco sobe
+- migrations ok
+
+Fase 2
+- cadastro ok
+- login ok
+- confirmacao ok
+- aprovacao ok
+
+Fase 3
+- salas ok
+- usuarios ok
+- permissoes admin ok
+
+Fase 4
+- desafio atual correto
+- janelas corretas
+- acoes admin corretas
+
+Fase 5
+- tentativa unica ok
+- retomada ok
+- finalizacao ok
+
+Fase 6
+- score correto
+- ranking correto
+- titulos corretos
+
+Fase 7
+- historico correto
+- resultado final correto
+
+Fase 8
+- frontend funcionando contra API nova
+
+Fase 9 a 11
+- corte limpo
+- operacao estavel
+
+20. ORDEM RECOMENDADA DE EXECUCAO REAL
+
+Sequencia pratica:
+
+Semana 1
+- preparar solution
+- modelar banco
+- criar auth basica
+
+Semana 2
+- usuarios
+- salas
+- admin basico
+
+Semana 3
+- desafios
+- participacoes
+- snapshots
+
+Semana 4
+- score
+- ranking
+- titulos
+
+Semana 5
+- historico
+- resultado final
+- jobs
+
+Semana 6
+- adaptar frontend
+- homologacao
+
+Semana 7
+- migracao de dados
+- virada controlada
+
+Esse calendario e apenas referencia. O importante e a ordem, nao o numero exato de semanas.
+
+21. RECOMENDACAO FINAL
+
+O caminho mais seguro e:
+- usar o sistema atual como especificacao viva
+- reconstruir o backend primeiro
+- manter o frontend atual o maximo possivel no inicio
+- migrar a fonte dos dados antes de redesenhar interface
+
+Se a migracao for feita assim, voce reduz:
+- risco de regressao
+- risco de divergencia de regra
+- tempo de parada
+
+E ganha:
+- backend controlado
+- banco relacional
+- melhor escalabilidade
+- melhor manutencao futura
+
+Fim do roadmap.

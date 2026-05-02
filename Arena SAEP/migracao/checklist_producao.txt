@@ -1,0 +1,465 @@
+CHECKLIST DE PRODUCAO
+Quiz Caca ao Tesouro
+Objetivo: orientar a ida do sistema para producao com backend proprio
+Contexto alvo: Oracle + .NET + PostgreSQL
+
+1. OBJETIVO DESTE CHECKLIST
+
+Este documento existe para evitar esquecimentos na hora de publicar o sistema.
+
+Ele deve ser usado antes de:
+- primeiro deploy em servidor proprio
+- troca do Firebase para backend proprio
+- abertura do sistema para alunos em ambiente real
+
+O foco e:
+- seguranca
+- estabilidade
+- observabilidade
+- recuperacao
+- operacao diaria
+
+2. DECISOES INICIAIS DE PRODUCAO
+
+Antes de publicar, confirmar:
+- qual sera o dominio principal
+- qual sera o servidor da Oracle
+- qual sera a versao do .NET em producao
+- se o banco PostgreSQL sera local na VM ou gerenciado externamente
+- quem tera acesso root/ssh
+- quem tera acesso ao banco
+- quem tera acesso ao painel admin
+
+Definir responsaveis:
+- responsavel tecnico pelo backend
+- responsavel tecnico pelo banco
+- responsavel pelo dominio e DNS
+- responsavel pelo e-mail de sistema
+
+3. CHECKLIST DE INFRAESTRUTURA
+
+3.1 Servidor
+- VM criada na Oracle
+- sistema operacional definido
+- timezone correta
+- usuario administrativo criado
+- acesso root protegido
+- acesso ssh por chave configurado
+- senha forte ou root desabilitado para login direto
+- atualizacoes basicas do sistema aplicadas
+
+3.2 Rede
+- IP publico confirmado
+- portas abertas somente quando necessario
+- HTTP 80
+- HTTPS 443
+- SSH restrito
+- firewall configurado
+
+3.3 Dominio
+- dominio configurado
+- subdominio da API definido
+- DNS apontando corretamente
+- TTL coerente para migracao
+
+4. CHECKLIST DO BACKEND
+
+4.1 Build
+- projeto compila em modo Release
+- dependencias restauram sem erro
+- migrations aplicam sem erro
+- logs sobem sem falha
+
+4.2 Configuracao
+- appsettings.Production.json revisado
+- segredos nao estao hardcoded no repositorio
+- connection string de producao definida
+- chave JWT definida
+- expiracao de token revisada
+- politicas de CORS definidas
+- urls do frontend permitidas corretamente
+
+4.3 Variaveis de ambiente
+Definir claramente:
+- ASPNETCORE_ENVIRONMENT=Production
+- ConnectionStrings__DefaultConnection
+- Jwt__Issuer
+- Jwt__Audience
+- Jwt__Key
+- Email__Host
+- Email__Port
+- Email__User
+- Email__Password
+- Email__From
+- Frontend__BaseUrl
+- App__AllowedEmailDomains
+
+4.4 Validacoes
+- cadastro com dominio permitido validado
+- confirmacao de e-mail funcionando
+- aprovacao de usuario funcionando
+- endpoints admin protegidos
+- endpoints autenticados exigem token
+
+5. CHECKLIST DO BANCO POSTGRESQL
+
+5.1 Instalacao
+- PostgreSQL instalado
+ou
+- instancia gerenciada criada
+
+5.2 Acesso
+- usuario da aplicacao criado
+- senha forte definida
+- permissao minima aplicada
+- acesso remoto restrito
+
+5.3 Estrutura
+- banco criado
+- schema criado
+- migrations aplicadas
+- indices criados
+- seeds iniciais aplicados
+
+5.4 Validacao
+- tabelas principais existem:
+  - users
+  - rooms
+  - challenges
+  - challenge_participations
+  - ranking_cache
+ou equivalentes reais
+- constraint de tentativa unica validada
+- indices de consulta principal validados
+
+6. CHECKLIST DE E-MAIL
+
+6.1 Conta de envio
+- conta institucional ou SMTP configurado
+- remetente oficial definido
+- credenciais validadas
+
+6.2 Fluxos
+- confirmacao de cadastro enviada
+- reenvio de confirmacao funcionando
+- links de confirmacao apontando para ambiente correto
+
+6.3 Entregabilidade
+- SPF configurado se necessario
+- DKIM configurado se necessario
+- DMARC configurado se necessario
+- testes feitos em inbox e spam
+
+7. CHECKLIST DE HTTPS E SEGURANCA
+
+7.1 Certificado
+- certificado SSL configurado
+- renovacao automatica configurada
+- redirecionamento HTTP -> HTTPS funcionando
+
+7.2 Headers e protecoes
+- HSTS avaliado
+- X-Content-Type-Options
+- X-Frame-Options ou CSP equivalente
+- SameSite de cookies se houver refresh token em cookie
+
+7.3 Autenticacao
+- senhas armazenadas com hash seguro
+- JWT com exp curta
+- refresh token seguro se usado
+- endpoints admin com policy propria
+
+7.4 Segredos
+- nada sensivel no git
+- nada sensivel em arquivo publico do frontend
+- segredos em variaveis de ambiente ou secret manager
+
+8. CHECKLIST DO FRONTEND
+
+8.1 Configuracao
+- frontend apontando para a API correta
+- dominio da API atualizado
+- variavel baseUrl revisada
+- ambiente de producao separado do local
+
+8.2 Fluxos principais
+- login funciona
+- cadastro funciona
+- confirmacao de e-mail funciona
+- lobby funciona
+- desafio funciona
+- resultado final funciona
+- ranking funciona
+- historico funciona
+- admin funciona
+
+8.3 Responsividade minima
+- celular abre sem quebrar
+- notebook abre sem quebrar
+- desktop abre sem quebrar
+
+9. CHECKLIST DE CONTEUDO
+
+9.1 Arquivos de questoes e charadas
+- questoes.txt valido
+- charadas.txt valido
+- parser backend testado com os arquivos reais
+
+9.2 Validacao real
+- desafio com a quantidade correta de questoes
+- charadas sorteadas corretamente
+- codigos aceitos corretamente
+- questoes mal formatadas geram erro controlado
+
+10. CHECKLIST DE REGRAS DE NEGOCIO
+
+Antes do go live, validar estes casos manualmente:
+
+Usuarios
+- usuario com e-mail invalido nao cadastra
+- usuario pendente nao entra
+- usuario recusado nao entra
+- usuario aprovado entra
+- admin entra
+
+Desafios
+- sem desafio ativo mostra mensagem correta
+- desafio agendado nao deixa jogar antes da hora
+- desafio ativo deixa jogar
+- desafio concluido nao pode ser repetido
+- desafio cancelado sai do ranking
+
+Participacoes
+- usuario novo cria participacao
+- usuario em andamento retoma
+- usuario concluido nao reinicia
+- progresso salva corretamente
+
+Pontuacao
+- score bate com a formula
+- dificuldade altera score
+- erros penalizam
+- tempo penaliza
+
+Ranking
+- ranking individual ordena certo
+- ranking da sala ordena certo
+- titulos aparecem corretamente
+- medalhas top 3 aparecem corretamente
+
+Historico
+- desafio concluido aparece como concluido
+- desafio expirado aparece como expirado
+- desafio cancelado aparece como cancelado
+
+11. CHECKLIST DE JOBS E TAREFAS AUTOMATICAS
+
+Se houver jobs:
+- expiracao automatica de desafios funcionando
+- rebuild de ranking funcionando
+- envio de e-mail funcionando
+
+Validar:
+- periodicidade correta
+- logs do job
+- tratamento de erro
+- reexecucao segura
+
+12. CHECKLIST DE LOGS
+
+12.1 Logs de aplicacao
+- requests registradas
+- falhas registradas
+- erros de autenticacao registrados
+- erros de integracao registrados
+- stack trace disponivel em logs internos
+
+12.2 Logs de negocio
+Ideal registrar:
+- login
+- cadastro
+- confirmacao de e-mail
+- aprovacao e recusa
+- criacao de desafio
+- cancelamento de desafio
+- encerramento de desafio
+- exclusao de usuario
+
+12.3 Regras
+- nao logar senha
+- nao logar token completo
+- mascarar dado sensivel quando necessario
+
+13. CHECKLIST DE MONITORAMENTO
+
+Minimo recomendado:
+- uptime da API
+- uso de CPU
+- uso de memoria
+- uso de disco
+- espaco do banco
+- latencia media
+- taxa de erro HTTP
+
+Idealmente:
+- alerta se API cair
+- alerta se banco cair
+- alerta se disco encher
+- alerta se erro 500 subir demais
+
+14. CHECKLIST DE BACKUP
+
+14.1 Banco
+- rotina de backup definida
+- frequencia definida
+- retencao definida
+- local de armazenamento definido
+
+14.2 Aplicacao
+- copia dos arquivos de configuracao segura
+- copia do conteudo versionado
+- estrategia para restaurar releases anteriores
+
+14.3 Teste real
+- um backup precisa ser restaurado em ambiente de teste
+- nao basta apenas "ter backup"
+
+15. CHECKLIST DE RESTORE E DESASTRE
+
+Definir claramente:
+- como restaurar o banco
+- como restaurar a API
+- como restaurar DNS se necessario
+- como voltar para release anterior
+- quem executa cada etapa
+
+Criar procedimento simples:
+1. parar escrita
+2. restaurar banco
+3. restaurar app
+4. validar health check
+5. liberar trafego
+
+16. CHECKLIST DE ROLLBACK
+
+Antes do deploy, definir rollback:
+- release anterior publicada e guardada
+- script de rollback conhecido
+- migration reversivel ou estrategia de roll-forward definida
+- banco com backup recente
+
+Regra importante:
+- se migration destrutiva for inevitavel, fazer backup imediatamente antes
+
+17. CHECKLIST DE DADOS INICIAIS
+
+Conferir:
+- salas iniciais criadas
+- admin inicial criado
+- usuario admin consegue entrar
+- permissoes admin funcionando
+
+18. CHECKLIST DE MIGRACAO DE DADOS
+
+Se houver migracao do Firebase:
+- export feito
+- transformacao validada
+- import executado
+- amostragem conferida
+- usuarios criticos conferidos
+- ranking conferido
+- historico conferido
+
+19. CHECKLIST DE TESTE COM USUARIOS REAIS
+
+Antes de abrir para todos os alunos:
+- testar com 2 ou 3 contas de aluno
+- testar com 1 conta admin
+- testar pelo menos 1 desafio completo
+- testar 1 desafio expirado
+- testar 1 desafio cancelado
+- testar ranking apos varias conclusoes
+
+20. CHECKLIST DE GO LIVE
+
+No dia da publicacao:
+- backend publicado
+- banco acessivel
+- dominio resolvendo
+- HTTPS ativo
+- e-mail funcionando
+- logs acompanhados
+- backup recente feito
+- admin validado
+- aluno validado
+
+21. CHECKLIST POS-DEPLOY IMEDIATO
+
+Apos publicar:
+- abrir a home
+- fazer login
+- criar usuario teste
+- testar confirmacao
+- aprovar usuario
+- entrar no lobby
+- iniciar desafio
+- concluir desafio
+- abrir ranking
+- abrir historico
+- abrir admin
+
+22. CHECKLIST DE OPERACAO DIARIA
+
+Rotina recomendada:
+- verificar uptime
+- verificar erros recentes
+- verificar backups
+- verificar uso de disco
+- verificar se jobs rodaram
+- verificar se ha desafio ativo quando esperado
+
+23. ALERTAS IMPORTANTES
+
+23.1 Nunca publicar sem:
+- backup
+- rollback
+- HTTPS
+- admin testado
+- ranking testado
+
+23.2 Nunca confiar apenas em:
+- "funcionou local"
+- "subiu sem erro"
+- "Swagger respondeu 200"
+
+Producao so esta pronta quando o fluxo real completo estiver validado.
+
+24. MINIMO VIAVEL PARA PRODUCAO SEGURA
+
+Se precisar simplificar, o minimo aceitavel e:
+- HTTPS
+- JWT funcionando
+- PostgreSQL com backup
+- confirmacao de e-mail funcionando
+- aprovacao de usuario funcionando
+- ranking correto
+- logs basicos
+- rollback possivel
+
+25. FECHAMENTO
+
+Quando todos os itens criticos deste checklist estiverem cumpridos, o sistema pode ser considerado pronto para producao com risco controlado.
+
+Checklist final resumido:
+- infra ok
+- banco ok
+- backend ok
+- e-mail ok
+- frontend ok
+- regras ok
+- logs ok
+- backup ok
+- rollback ok
+- testes reais ok
+
+Fim do checklist.

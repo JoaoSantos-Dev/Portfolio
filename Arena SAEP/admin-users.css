@@ -1,0 +1,77 @@
+@import "./admin.css";
+
+.collapsible-card {
+    margin-top: 22px;
+    border: 1px solid rgba(96, 165, 250, 0.14);
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(13, 25, 49, 0.96) 0%, rgba(9, 18, 36, 0.92) 100%);
+    box-shadow: 0 18px 36px rgba(2, 6, 23, 0.24);
+    overflow: hidden;
+}
+
+.collapse-toggle {
+    width: 100%;
+    justify-content: space-between;
+    padding: 18px 20px;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    color: #edf4ff;
+}
+
+.collapse-toggle:hover {
+    transform: none;
+    filter: none;
+    background: rgba(16, 33, 65, 0.72);
+}
+
+.collapse-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.16);
+    border: 1px solid rgba(96, 165, 250, 0.18);
+    color: #dcecff;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.collapse-content {
+    padding: 0 18px 18px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    color: var(--admin-muted);
+    font-weight: 700;
+}
+
+@media (max-width: 760px) {
+    .collapse-content {
+        padding: 0 12px 12px;
+    }
+
+    .pagination {
+        justify-content: stretch;
+    }
+
+    .pagination button {
+        width: 100%;
+    }
+
+    .pagination-info {
+        width: 100%;
+        text-align: center;
+    }
+}

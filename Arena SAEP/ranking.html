@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ranking do Caça ao Tesouro</title>
+    <link rel="stylesheet" href="./ranking.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="topbar">
+            <a class="button-link button-secondary" href="./user.html">Usuário</a>
+            <a id="rankingAdminLink" class="button-link hidden" href="./admin.html">Admin</a>
+            <button id="rankingLogoutButton" type="button" class="hidden">Sair</button>
+        </div>
+
+        <h1>Ranking do Caça ao Tesouro</h1>
+        <p class="subtitle">
+            Aqui aparecem o ranking individual acumulado por aluno e a média acumulada por sala.
+        </p>
+
+        <div class="toolbar">
+            <a class="button-link" href="./cacaaotesouro.html">Voltar ao lobby</a>
+            <button id="reloadButton" class="button-secondary" type="button">Atualizar ranking</button>
+        </div>
+
+        <div id="rankingStatus" class="status info">Carregando ranking...</div>
+        <div id="rankingEmpty" class="empty-state" hidden>Nenhum desafio concluído entrou no ranking ainda.</div>
+
+        <h2 class="section-title">Ranking individual</h2>
+        <table id="rankingTable" hidden>
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Nome</th>
+                    <th>Título</th>
+                    <th>Sala</th>
+                    <th>Pontuação</th>
+                    <th>Tempo</th>
+                    <th>Erros</th>
+                    <th>Desafios</th>
+                </tr>
+            </thead>
+            <tbody id="rankingBody"></tbody>
+        </table>
+        <section id="myRankingSection" class="my-ranking-card hidden" aria-label="Sua posição no ranking">
+            <div class="my-ranking-header">
+                <div>
+                    <div class="panel-badge">Sua posição</div>
+                    <h3>Seu desempenho no ranking geral</h3>
+                </div>
+                <div id="myRankingHint" class="my-ranking-hint">Você aparece aqui quando não estiver no top 10.</div>
+            </div>
+            <div id="myRankingGrid" class="my-ranking-grid"></div>
+        </section>
+
+        <h2 class="section-title">Ranking por sala</h2>
+        <table id="roomRankingTable" hidden>
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Sala</th>
+                    <th>Média</th>
+                    <th>Usuários ativos</th>
+                    <th>Soma de pontos</th>
+                </tr>
+            </thead>
+            <tbody id="roomRankingBody"></tbody>
+        </table>
+
+        <h2 class="section-title">Titulos em disputa</h2>
+        <section id="titleBoard" class="title-board"></section>
+    </div>
+
+    <div id="roomModalOverlay" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-badge">Ranking da sala</div>
+                    <h2 id="roomModalTitle">Sala</h2>
+                </div>
+                <button id="closeRoomModalButton" type="button" class="button-secondary">Fechar</button>
+            </div>
+            <p class="subtitle">Top 10 jogadores dessa sala com base na pontuação total acumulada.</p>
+            <div id="roomModalEmpty" class="empty-state hidden">Nenhum jogador dessa sala entrou no ranking ainda.</div>
+            <table id="roomPlayersTable">
+                <thead>
+                    <tr>
+                        <th>Posição</th>
+                        <th>Nome</th>
+                        <th>Título</th>
+                        <th>Pontuação</th>
+                        <th>Tempo</th>
+                        <th>Erros</th>
+                    </tr>
+                </thead>
+                <tbody id="roomPlayersBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, CONFIG, db } from "./game-config.js";
+        import { createAuthService } from "./game-auth.js";
+        import { createRoomService } from "./room-service.js";
+        import { createChallengeService } from "./challenge-service.js";
+
+        const rankingStatus = document.getElementById("rankingStatus");
+        const rankingTable = document.getElementById("rankingTable");
+        const rankingBody = document.getElementById("rankingBody");
+        const roomRankingTable = document.getElementById("roomRankingTable");
+        const roomRankingBody = document.getElementById("roomRankingBody");
+        const rankingEmpty = document.getElementById("rankingEmpty");
+        const reloadButton = document.getElementById("reloadButton");
+        const rankingUserLink = document.querySelector('.topbar a[href="./user.html"]');
+        const rankingAdminLink = document.getElementById("rankingAdminLink");
+        const rankingLogoutButton = document.getElementById("rankingLogoutButton");
+        const roomModalOverlay = document.getElementById("roomModalOverlay");
+        const roomModalTitle = document.getElementById("roomModalTitle");
+        const roomPlayersTable = document.getElementById("roomPlayersTable");
+        const roomPlayersBody = document.getElementById("roomPlayersBody");
+        const roomModalEmpty = document.getElementById("roomModalEmpty");
+        const closeRoomModalButton = document.getElementById("closeRoomModalButton");
+        const AuthService = createAuthService({
+            auth,
+            db,
+            CONFIG,
+            state: {
+                authResolved: false,
+                authUser: null,
+                authProfile: null
+            }
+        });
+        const RoomService = createRoomService({
+            db,
+            CONFIG,
+            state: {
+                rooms: [],
+                selectedRoom: null
+            }
+        });
+        const ChallengeService = createChallengeService({ db, CONFIG, AuthService });
+        let rooms = [];
+        let userRankingCache = [];
+        let roomRankingCache = [];
+        let titleBoardCache = [];
+        let currentUser = null;
+        let currentProfile = null;
+
+        function getTopClass(position) {
+            if (position === 1) {
+                return "top-rank top-rank-gold";
+            }
+
+            if (position === 2) {
+                return "top-rank top-rank-silver";
+            }
+
+            if (position === 3) {
+                return "top-rank top-rank-bronze";
+            }
+
+            return "";
+        }
+
+        function getRankIcon(position) {
+            if (position === 1) {
+                return "🥇";
+            }
+
+            if (position === 2) {
+                return "🥈";
+            }
+
+            if (position === 3) {
+                return "🥉";
+            }
+
+            return "#";
+        }
+
+        function getRoomLabel(roomId) {
+            return rooms.find(room => room.id === roomId)?.nome || "Sem sala";
+        }
+
+        function formatElapsedTime(totalSeconds) {
+            const safeSeconds = Number(totalSeconds) || 0;
+            const minutes = Math.floor(safeSeconds / 60).toString().padStart(2, "0");
+            const seconds = Math.floor(safeSeconds % 60).toString().padStart(2, "0");
+            return `${minutes}:${seconds}`;
+        }
+
+        function getContestedTitleSet() {
+            return new Set((titleBoardCache || []).map(titleInfo => titleInfo.key || titleInfo.label));
+        }
+
+        function getTitleBadgeClass(title) {
+            if (title === "Campeao em treino") {
+                return "title-badge title-badge-training";
+            }
+
+            if (getContestedTitleSet().has(title)) {
+                return "title-badge title-badge-contested";
+            }
+
+            return "title-badge title-badge-muted";
+        }
+
+        function renderTitleBadges(titles) {
+            const titleList = Array.isArray(titles) && titles.length > 0 ? titles : ["-"];
+            return `<div class="title-stack">${titleList.map(title => `
+                <span class="${getTitleBadgeClass(title)}">${title}</span>
+            `).join("")}</div>`;
+        }
+
+        function renderTitleBoard() {
+            const titleBoard = document.getElementById("titleBoard");
+
+            titleBoard.innerHTML = titleBoardCache.map(titleInfo => {
+                const holdersMarkup = titleInfo.holders.length > 0
+                    ? titleInfo.holders.map(holder => `
+                        <div class="title-holder">
+                            <strong>${holder.nome}</strong>
+                            <span>${getRoomLabel(holder.sala)} • ${holder.rank}º lugar • ${holder.pontuacaoTotal} pts</span>
+                        </div>
+                    `).join("")
+                    : `<div class="title-holder empty">Sem detentor no momento</div>`;
+
+                return `
+                    <article class="title-card">
+                        <div class="title-card-name">${titleInfo.label}</div>
+                        <div class="title-card-holders">${holdersMarkup}</div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        function renderMyRankingCard(entry) {
+            const myRankingSection = document.getElementById("myRankingSection");
+            const myRankingGrid = document.getElementById("myRankingGrid");
+            const myRankingHint = document.getElementById("myRankingHint");
+
+            if (!currentUser || !entry) {
+                myRankingSection.classList.add("hidden");
+                myRankingGrid.innerHTML = "";
+                return;
+            }
+
+            const isInTopVisible = entry.rank <= 10;
+            myRankingHint.textContent = isInTopVisible
+                ? "Sua linha também está destacada na tabela acima."
+                : "Você não está no top 10 visível, então sua colocação aparece resumida aqui.";
+
+            myRankingGrid.innerHTML = `
+                <div class="my-ranking-item">
+                    <span class="my-ranking-label">Posição</span>
+                    <strong>${getRankIcon(entry.rank)} ${entry.rank}º</strong>
+                </div>
+                <div class="my-ranking-item">
+                    <span class="my-ranking-label">Jogador</span>
+                    <strong>${entry.nome || "Sem nome"}</strong>
+                </div>
+                <div class="my-ranking-item">
+                    <span class="my-ranking-label">Titulos</span>
+                    <div class="my-ranking-titles">${renderTitleBadges(entry.titles)}</div>
+                </div>
+                <div class="my-ranking-item">
+                    <span class="my-ranking-label">Sala</span>
+                    <strong>${getRoomLabel(entry.sala)}</strong>
+                </div>
+                <div class="my-ranking-item">
+                    <span class="my-ranking-label">Pontuação</span>
+                    <strong>${entry.pontuacaoTotal ?? 0}</strong>
+                </div>
+                <div class="my-ranking-item">
+                    <span class="my-ranking-label">Melhor tempo</span>
+                    <strong>${formatElapsedTime(entry.melhorTempo ?? 0)}</strong>
+                </div>
+                <div class="my-ranking-item">
+                    <span class="my-ranking-label">Erros</span>
+                    <strong>${entry.totalErros ?? 0}</strong>
+                </div>
+                <div class="my-ranking-item">
+                    <span class="my-ranking-label">Desafios</span>
+                    <strong>${entry.totalDesafiosConcluidos ?? 0}</strong>
+                </div>
+            `;
+
+            myRankingSection.classList.remove("hidden");
+        }
+
+        function openRoomModal(roomId) {
+            const roomLabel = getRoomLabel(roomId);
+            const roomEntries = userRankingCache
+                .filter(entry => (entry.sala || "sem_sala") === roomId)
+                .slice(0, 10);
+
+            roomModalTitle.textContent = roomLabel;
+            roomPlayersBody.innerHTML = "";
+
+            if (roomEntries.length === 0) {
+                roomPlayersTable.hidden = true;
+                roomModalEmpty.classList.remove("hidden");
+            } else {
+                roomModalEmpty.classList.add("hidden");
+                roomPlayersTable.hidden = false;
+
+                roomEntries.forEach((entry, index) => {
+                    const row = document.createElement("tr");
+                    const position = index + 1;
+                    const topClass = getTopClass(position);
+                    const isCurrentUser = currentUser?.uid && entry.uid === currentUser.uid;
+                    row.className = [
+                        topClass,
+                        isCurrentUser ? "current-user-row" : ""
+                    ].filter(Boolean).join(" ");
+                    row.innerHTML = `
+                        <td data-label="Posição"><span class="rank-badge">${position}</span></td>
+                        <td data-label="Nome">${entry.nome || "Sem nome"}</td>
+                        <td data-label="Título">${renderTitleBadges(entry.titles)}</td>
+                        <td data-label="Pontuação">${entry.pontuacaoTotal ?? 0}</td>
+                        <td data-label="Tempo">${formatElapsedTime(entry.melhorTempo ?? 0)}</td>
+                        <td data-label="Erros">${entry.totalErros ?? 0}</td>
+                    `;
+                    roomPlayersBody.appendChild(row);
+                });
+            }
+
+            roomModalOverlay.classList.remove("hidden");
+        }
+
+        function closeRoomModal() {
+            roomModalOverlay.classList.add("hidden");
+        }
+
+        async function loadRanking() {
+            rankingStatus.textContent = "Carregando ranking...";
+            rankingStatus.className = "status info";
+            rankingTable.hidden = true;
+            roomRankingTable.hidden = true;
+            rankingEmpty.hidden = true;
+            rankingBody.innerHTML = "";
+            roomRankingBody.innerHTML = "";
+            document.getElementById("titleBoard").innerHTML = "";
+            document.getElementById("myRankingSection").classList.add("hidden");
+            document.getElementById("myRankingGrid").innerHTML = "";
+
+            try {
+                rooms = await RoomService.listRooms();
+                const rankingData = await ChallengeService.getRankingData();
+                const topPlayers = rankingData.userRanking.slice(0, 10);
+                userRankingCache = rankingData.userRanking;
+                roomRankingCache = rankingData.roomRanking;
+                titleBoardCache = rankingData.titleBoard || [];
+                const currentUserEntry = currentUser?.uid
+                    ? rankingData.userRanking.find(entry => entry.uid === currentUser.uid) || null
+                    : null;
+
+                if (topPlayers.length === 0 && roomRankingCache.every(entry => (entry.totalPontos ?? 0) === 0)) {
+                    renderTitleBoard();
+                    rankingStatus.textContent = "Ranking pronto. Ainda não há pontuações válidas para exibir.";
+                    rankingEmpty.hidden = false;
+                    return;
+                }
+
+                topPlayers.forEach((data, index) => {
+                    const row = document.createElement("tr");
+                    const position = index + 1;
+                    const topClass = getTopClass(position);
+                    const isCurrentUser = currentUser?.uid && data.uid === currentUser.uid;
+                    row.className = [
+                        topClass,
+                        isCurrentUser ? "current-user-row" : ""
+                    ].filter(Boolean).join(" ");
+
+                    row.innerHTML = `
+                        <td data-label="Posição"><span class="rank-badge">${position}</span></td>
+                        <td data-label="Nome">${data.nome || "Sem nome"}</td>
+                        <td data-label="Título">${renderTitleBadges(data.titles)}</td>
+                        <td data-label="Sala">${getRoomLabel(data.sala)}</td>
+                        <td data-label="Pontuação">${data.pontuacaoTotal ?? 0}</td>
+                        <td data-label="Tempo">${formatElapsedTime(data.melhorTempo ?? 0)}</td>
+                        <td data-label="Erros">${data.totalErros ?? 0}</td>
+                        <td data-label="Desafios">${data.totalDesafiosConcluidos ?? 0}</td>
+                    `;
+
+                    rankingBody.appendChild(row);
+                });
+
+                roomRankingCache.forEach((data, index) => {
+                    const row = document.createElement("tr");
+                    const roomName = getRoomLabel(data.sala);
+                    const position = index + 1;
+                    const topClass = getTopClass(position);
+                    const isCurrentRoom = currentProfile?.sala && data.sala === currentProfile.sala;
+                    row.className = [
+                        topClass,
+                        isCurrentRoom ? "current-room-row" : ""
+                    ].filter(Boolean).join(" ");
+
+                    row.innerHTML = `
+                        <td data-label="Posição"><span class="rank-badge">${position}</span></td>
+                        <td data-label="Sala"><button type="button" class="room-link-button" data-room="${data.sala}">${roomName}</button></td>
+                        <td data-label="Média">${data.media}</td>
+                        <td data-label="Usuários ativos">${data.totalUsuariosAtivos}</td>
+                        <td data-label="Soma de pontos">${data.totalPontos}</td>
+                    `;
+
+                    roomRankingBody.appendChild(row);
+                });
+
+                renderMyRankingCard(currentUserEntry);
+                renderTitleBoard();
+                rankingStatus.textContent = "Ranking atualizado com sucesso.";
+                rankingTable.hidden = topPlayers.length === 0;
+                roomRankingTable.hidden = false;
+            } catch (error) {
+                console.error("Erro ao carregar ranking:", error);
+                rankingStatus.textContent = "Não foi possível carregar o ranking agora.";
+                rankingStatus.className = "status error";
+            }
+        }
+
+        reloadButton.addEventListener("click", loadRanking);
+        roomRankingBody.addEventListener("click", event => {
+            const button = event.target.closest(".room-link-button");
+            if (!button) {
+                return;
+            }
+
+            openRoomModal(button.dataset.room);
+        });
+        closeRoomModalButton.addEventListener("click", closeRoomModal);
+        roomModalOverlay.addEventListener("click", event => {
+            if (event.target === roomModalOverlay) {
+                closeRoomModal();
+            }
+        });
+        rankingLogoutButton.addEventListener("click", async () => {
+            await AuthService.signOutUser();
+        });
+        AuthService.watchSession(async user => {
+            currentUser = user;
+            if (!user) {
+                currentProfile = null;
+                rankingUserLink.classList.add("hidden");
+                rankingAdminLink.classList.add("hidden");
+                rankingLogoutButton.classList.add("hidden");
+                loadRanking();
+                return;
+            }
+
+            const profile = await AuthService.loadProfile(user.uid);
+            currentProfile = profile;
+            rankingUserLink.classList.remove("hidden");
+            rankingAdminLink.classList.toggle("hidden", !["admin", "moderador"].includes(profile?.role));
+            rankingLogoutButton.classList.remove("hidden");
+            loadRanking();
+        });
+    </script>
+</body>
+
+</html>

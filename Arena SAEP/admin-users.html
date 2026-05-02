@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Usuários | Admin</title>
+    <link rel="stylesheet" href="./admin-users.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="topbar">
+            <a class="button-link button-secondary" href="./cacaaotesouro.html">Lobby</a>
+            <a class="button-link button-secondary" href="./admin.html">Painel</a>
+            <a class="button-link button-secondary" href="./ranking.html">Ranking</a>
+            <a id="adminUsersUserLink" class="button-link button-secondary hidden" href="./user.html">Usuário</a>
+            <button id="adminUsersLogoutButton" type="button" class="hidden">Sair</button>
+        </div>
+
+        <h1>Usuários</h1>
+        <p>Gerencie aprovações de cadastro e mantenha a base de usuários ativa da plataforma.</p>
+
+        <div id="adminUsersStatus" class="status info">Carregando usuários...</div>
+        <div id="adminUsersEmpty" class="empty-state hidden">
+            Você não tem acesso a esta área administrativa.
+        </div>
+
+        <div id="adminUsersPanel" hidden>
+            <div class="toolbar">
+                <input type="text" id="adminUsersSearchInput" placeholder="Buscar por nome ou e-mail" />
+                <button id="adminUsersSearchButton" type="button">Buscar</button>
+                <button id="syncRankingRoomsButton" type="button" class="button-secondary">Atualizar ranking</button>
+            </div>
+
+            <section class="collapsible-card">
+                <button id="activeUsersToggle" type="button" class="collapse-toggle" aria-expanded="false">
+                    <span>Usuários aprovados</span>
+                    <span id="activeUsersCount" class="collapse-count">0</span>
+                </button>
+                <div id="activeUsersSection" class="collapse-content hidden">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Sala</th>
+                                <th>Status</th>
+                                <th>Perfil</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activeUsersBody"></tbody>
+                    </table>
+                    <div class="pagination">
+                        <button id="activeUsersPrevButton" type="button" class="button-secondary">Anterior</button>
+                        <span id="activeUsersPageInfo" class="pagination-info">Página 1 de 1</span>
+                        <button id="activeUsersNextButton" type="button" class="button-secondary">Próxima</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="collapsible-card">
+                <button id="pendingUsersToggle" type="button" class="collapse-toggle" aria-expanded="false">
+                    <span>Usuários pendentes</span>
+                    <span id="pendingUsersCount" class="collapse-count">0</span>
+                </button>
+                <div id="pendingUsersSection" class="collapse-content hidden">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Sala</th>
+                                <th>Cadastro</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingUsersBody"></tbody>
+                    </table>
+                    <div id="pendingUsersEmptyState" class="empty-state hidden">Nenhum usuário pendente no momento.
+                    </div>
+                    <div class="pagination">
+                        <button id="pendingUsersPrevButton" type="button" class="button-secondary">Anterior</button>
+                        <span id="pendingUsersPageInfo" class="pagination-info">Página 1 de 1</span>
+                        <button id="pendingUsersNextButton" type="button" class="button-secondary">Próxima</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script type="module" src="./admin-users.js"></script>
+</body>
+
+</html>

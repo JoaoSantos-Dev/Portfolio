@@ -1,0 +1,635 @@
+PROMPTS MIGRACAO CODEX
+Guia de prompts para reconstruir o sistema "Quiz Caca ao Tesouro" em outra stack
+Objetivo: usar o Codex em sessoes futuras para recriar o projeto do zero com contexto consistente
+
+1. COMO USAR ESTE ARQUIVO
+
+Este arquivo organiza a migracao em prompts reutilizaveis.
+
+Recomendacao de uso:
+- usar uma sessao nova do Codex para cada fase grande
+- sempre comecar pelo Prompt 1
+- depois seguir a ordem sugerida
+- quando uma fase ficar grande demais, quebrar em subtarefas
+
+Regra importante:
+- nao pedir "migre tudo" de uma vez
+- sempre pedir leitura da documentacao e depois execucao incremental
+
+2. ARQUIVOS QUE DEVEM SER TRATADOS COMO FONTE DE VERDADE
+
+Em toda sessao de migracao, o Codex deve usar estes arquivos como base:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+- onepiece/checklist_producao.txt
+- onepiece/revisao_seguranca.txt
+
+3. ORDEM SUGERIDA DE EXECUCAO
+
+Prompt 1
+- leitura e alinhamento
+
+Prompt 2
+- scaffold da solution e infraestrutura inicial
+
+Prompt 3
+- modelagem de banco e entidades
+
+Prompt 4
+- autenticacao e autorizacao
+
+Prompt 5
+- usuarios, perfil e salas
+
+Prompt 6
+- desafios admin
+
+Prompt 7
+- inicio e retomada de participacoes
+
+Prompt 8
+- logica da partida, snapshots e finalizacao
+
+Prompt 9
+- pontuacao, ranking, titulos e medalhas
+
+Prompt 10
+- historico de desafios
+
+Prompt 11
+- adaptacao do frontend ou cliente
+
+Prompt 12
+- endurecimento, testes e preparacao de producao
+
+4. PROMPT 1 - LEITURA E ALINHAMENTO
+
+Use este prompt no inicio de qualquer sessao nova.
+
+PROMPT:
+
+Quero reconstruir o sistema "Quiz Caca ao Tesouro" em outra stack.
+
+Antes de implementar qualquer coisa, leia e trate como documentacao oficial do projeto os seguintes arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+- onepiece/checklist_producao.txt
+- onepiece/revisao_seguranca.txt
+
+Depois disso:
+1. resuma como voce entendeu o sistema atual
+2. resuma as regras de negocio que nao podem mudar
+3. resuma a arquitetura recomendada para a nova stack
+4. diga qual a primeira fase tecnica que devemos implementar
+5. nao implemente nada ainda
+
+5. PROMPT 2 - SCAFFOLD DA SOLUTION
+
+Use este prompt depois do alinhamento inicial.
+
+PROMPT:
+
+Agora quero iniciar a migracao do sistema "Quiz Caca ao Tesouro" para uma nova stack.
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+- onepiece/revisao_seguranca.txt
+
+Implemente apenas a estrutura inicial do projeto, sem tentar fazer a migracao completa.
+
+Objetivo desta rodada:
+- criar a solution base
+- criar os projetos principais
+- configurar a estrutura em camadas
+- preparar a base para .NET + PostgreSQL
+- incluir configuracoes iniciais de build e dependencias
+
+Escopo:
+- criar a estrutura recomendada de solution
+- criar os projetos Domain, Application, Infrastructure, Api e Contracts
+- configurar referencias entre projetos
+- adicionar pacotes principais necessarios
+- preparar configuracao inicial da API
+- nao implementar ainda a logica completa de negocio
+
+Ao final:
+1. me diga o que foi criado
+2. liste os arquivos alterados
+3. diga qual a proxima etapa recomendada
+
+6. PROMPT 3 - MODELAGEM DE BANCO E ENTIDADES
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/revisao_seguranca.txt
+
+Implemente apenas a modelagem inicial do dominio e do banco.
+
+Objetivo desta rodada:
+- criar entidades principais
+- criar enums
+- criar DbContext
+- criar mapeamentos EF Core
+- criar migrations iniciais
+- preparar seed inicial de salas
+
+Escopo:
+- User
+- Room
+- Challenge
+- ChallengeParticipation
+- RankingCache
+- enums de role, status, dificuldade
+- indices e constraints essenciais
+
+Nao implementar ainda:
+- endpoints completos
+- ranking completo
+- frontend
+
+Ao final:
+1. explique como ficou a modelagem
+2. liste os arquivos alterados
+3. destaque constraints importantes
+
+7. PROMPT 4 - AUTENTICACAO E AUTORIZACAO
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/revisao_seguranca.txt
+
+Implemente apenas a parte de autenticacao e autorizacao.
+
+Objetivo desta rodada:
+- cadastro
+- login
+- validacao de dominio institucional
+- confirmacao de e-mail
+- aprovacao de usuario
+- politicas de role
+- protecao de endpoints admin
+
+Escopo:
+- AuthService
+- AuthController
+- hash de senha
+- JWT
+- validacoes de aprovacao e email verificado
+- middleware ou policies de autorizacao
+
+Nao implementar ainda:
+- ranking
+- historico
+- partida completa
+
+Ao final:
+1. me diga o que foi implementado
+2. liste os endpoints criados
+3. diga quais fluxos ja estao testaveis
+
+8. PROMPT 5 - USUARIOS, PERFIL E SALAS
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+
+Implemente apenas:
+- perfil do usuario
+- atualizacao de nickname do jogador
+- troca de senha
+- CRUD e ordenacao de salas
+- gestao admin de usuarios
+
+Escopo:
+- UserService
+- RoomService
+- endpoints de perfil
+- endpoints admin de usuarios
+- endpoints admin de salas
+
+Comportamentos importantes:
+- nickname do jogador separado de nome de acesso
+- admin pode alterar sala de usuario
+- admin pode alterar status ativo
+- admin pode aprovar ou recusar usuarios
+- admin pode promover ou remover admin
+
+Ao final:
+1. liste as rotas implementadas
+2. descreva como os perfis foram protegidos
+3. destaque qualquer ponto pendente
+
+9. PROMPT 6 - DESAFIOS ADMIN
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+
+Implemente agora apenas a camada de desafios administrativos.
+
+Objetivo desta rodada:
+- criar desafios
+- listar desafios
+- calcular status visual
+- encerrar desafio
+- cancelar desafio
+- prolongar prazo
+- ativar desafio agendado
+- job ou rotina para marcar expirados
+
+Escopo:
+- ChallengeService
+- endpoints admin de desafios
+- regra de janela inicio/fim
+- regra de status ativo/encerrado/cancelado/agendado
+
+Nao implementar ainda:
+- fluxo completo do jogador dentro da partida
+
+Ao final:
+1. descreva as regras implementadas
+2. liste os endpoints
+3. diga como o sistema decide o desafio atual
+
+10. PROMPT 7 - INICIO E RETOMADA DE PARTICIPACOES
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+
+Implemente agora apenas:
+- inicio de participacao
+- retomada de participacao
+- tentativa unica por desafio
+- expiracao da participacao conforme regras do desafio
+
+Escopo:
+- ParticipationService
+- endpoint para iniciar ou retomar desafio atual
+- busca de participacao existente
+- bloqueio de nova tentativa quando concluido
+- retorno do estado: novo, retomar, concluido, expirado, sem_desafio
+
+Importante:
+- preserve a regra de tentativa unica
+- preserve a regra de retomar do ponto salvo
+
+Ao final:
+1. explique o fluxo implementado
+2. liste os endpoints criados
+3. destaque como a tentativa unica foi garantida
+
+11. PROMPT 8 - LOGICA DA PARTIDA, SNAPSHOTS E FINALIZACAO
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+
+Implemente agora a logica central da partida.
+
+Objetivo desta rodada:
+- carregar questoes e charadas
+- sortear questoes
+- sortear charadas
+- persistir snapshots na participacao
+- salvar progresso da partida
+- finalizar participacao
+
+Escopo:
+- ContentService
+- parser ou carregador de questoes/charadas
+- snapshots em JSON
+- endpoints de progresso
+- endpoint de finalizacao
+
+Importante:
+- preservar o comportamento atual:
+  - questoes aleatorias
+  - charadas aleatorias
+  - participacao guarda o snapshot do que foi sorteado
+
+Ao final:
+1. descreva como snapshots ficaram armazenados
+2. diga como o progresso e salvo
+3. liste os arquivos alterados
+
+12. PROMPT 9 - PONTUACAO, RANKING, TITULOS E MEDALHAS
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/revisao_seguranca.txt
+
+Implemente agora:
+- calculo de pontuacao
+- ranking individual
+- ranking por sala
+- titulos
+- medalhas
+- cache/agregacao de ranking
+
+Escopo:
+- ScoreCalculator
+- RankingCalculator
+- TitleCalculator
+- RankingService
+- endpoints de ranking
+- resumo de lobby
+- resumo de resultado final
+
+Importante:
+- manter a formula atual de score
+- preservar o criterio de ranking individual
+- preservar o criterio de ranking da sala
+- preservar as regras atuais de titulos
+
+Ao final:
+1. diga como o ranking e calculado
+2. diga como os titulos sao calculados
+3. diga qual estrategia de cache foi usada
+
+13. PROMPT 10 - HISTORICO DE DESAFIOS
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+
+Implemente agora apenas o historico de desafios do usuario.
+
+Objetivo desta rodada:
+- montar listagem de desafios do usuario
+- calcular status do aluno em cada desafio
+- expor pontuacao, tempo, erros, progresso e conclusao
+
+Escopo:
+- HistoryService
+- endpoint /me/history
+
+Status que devem ser tratados:
+- nao_iniciado
+- em_andamento
+- concluido
+- expirado
+- cancelado
+
+Ao final:
+1. descreva a regra de cada status
+2. mostre como o historico e montado
+3. liste os arquivos alterados
+
+14. PROMPT 11 - ADAPTACAO DO FRONTEND
+
+PROMPT:
+
+Quero continuar a migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/roadmap_migracao.txt
+
+Agora quero adaptar o frontend atual para consumir a API nova sem reescrever tudo do zero.
+
+Objetivo desta rodada:
+- criar camada de cliente HTTP
+- substituir chamadas do Firebase apenas na parte [descrever alvo da rodada]
+- preservar o visual atual o maximo possivel
+- manter o fluxo atual
+
+Exemplos de recorte por rodada:
+- login e cadastro
+- perfil
+- lobby
+- desafios
+- ranking
+- historico
+- admin
+
+Importante:
+- nao reescrever o frontend inteiro
+- fazer mudanca incremental
+- manter a interface atual o maximo possivel
+
+Ao final:
+1. diga o que ainda depende do Firebase
+2. diga o que ja esta usando a API nova
+3. liste os arquivos alterados
+
+15. PROMPT 12 - TESTES, HARDENING E PREPARACAO DE PRODUCAO
+
+PROMPT:
+
+Quero finalizar a fase inicial da migracao do sistema "Quiz Caca ao Tesouro".
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+- onepiece/checklist_producao.txt
+- onepiece/revisao_seguranca.txt
+
+Agora quero focar em acabamento tecnico.
+
+Objetivo desta rodada:
+- revisar seguranca
+- revisar autorizacao
+- revisar validacoes
+- adicionar testes prioritarios
+- preparar ambiente de producao
+- apontar pendencias criticas antes do deploy
+
+Escopo:
+- unit tests das regras principais
+- integration tests dos fluxos criticos
+- validacao de configuracao de producao
+- revisao de logs
+- revisao de segredos
+- revisao de backup e rollback
+
+Ao final:
+1. liste os testes criados
+2. diga os riscos ainda abertos
+3. diga se o sistema esta pronto para homologacao ou producao
+
+16. PROMPT CURTO PARA CONTINUAR UMA FASE JA INICIADA
+
+Use quando a sessao ja começou e voce nao quer repetir tudo.
+
+PROMPT:
+
+Continue exatamente de onde parou.
+
+Use como fonte de verdade os arquivos:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+- onepiece/checklist_producao.txt
+- onepiece/revisao_seguranca.txt
+
+Revise o que ja foi implementado no codigo atual antes de continuar.
+Nao recomece do zero.
+Corrija inconsistencias antes de expandir.
+
+Objetivo desta rodada:
+- [descrever a continuidade]
+
+Ao final:
+1. diga o que encontrou pronto
+2. diga o que ajustou
+3. diga o que ainda falta
+
+17. PROMPT PARA GERAR APENAS PLANO SEM CODAR
+
+Use quando quiser so planejamento.
+
+PROMPT:
+
+Quero planejar a proxima etapa da migracao do sistema "Quiz Caca ao Tesouro".
+
+Leia e use como fonte de verdade:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+- onepiece/revisao_seguranca.txt
+
+Nao implemente nada ainda.
+
+Quero que voce:
+1. revise o estado atual do codigo
+2. proponha a proxima etapa ideal
+3. quebre essa etapa em subtarefas
+4. destaque riscos e dependencias
+
+18. PROMPT PARA IMPORTACAO DE DADOS
+
+Use quando chegar o momento de levar dados do Firebase para PostgreSQL.
+
+PROMPT:
+
+Quero preparar a migracao de dados do sistema "Quiz Caca ao Tesouro" do Firebase para PostgreSQL.
+
+Use como fonte de verdade:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/desenvolvimento.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+
+Nao quero migrar tudo cegamente.
+
+Quero que voce:
+1. identifique os dados essenciais para migrar
+2. proponha o mapeamento Firebase -> PostgreSQL
+3. proponha scripts ou etapas de importacao
+4. destaque riscos de consistencia
+5. se fizer sentido, implemente a base do importador
+
+19. PROMPT PARA REVISAO FINAL ANTES DE PRODUCAO
+
+PROMPT:
+
+Quero revisar se o sistema migrado "Quiz Caca ao Tesouro" esta pronto para producao.
+
+Use como fonte de verdade:
+- onepiece/documentacao_sistema.txt
+- onepiece/documentacao_regras_jogo.txt
+- onepiece/migracao_dotnet_postgresql.txt
+- onepiece/roadmap_migracao.txt
+- onepiece/checklist_producao.txt
+- onepiece/revisao_seguranca.txt
+
+Revise o codigo atual e responda em modo de revisao tecnica.
+
+Quero:
+1. principais riscos
+2. bugs ou lacunas funcionais
+3. pendencias de seguranca
+4. pendencias de operacao
+5. parecer final: pronto para homologacao, pronto para producao ou ainda nao
+
+20. OBSERVACOES FINAIS
+
+O melhor uso do Codex na migracao nao e um prompt gigante pedindo o projeto inteiro.
+
+O melhor uso e:
+- primeiro dar contexto
+- depois trabalhar por fase
+- sempre referenciar os arquivos .txt
+- sempre limitar o escopo
+- sempre revisar o que ja existe antes de expandir
+
+Se a migracao for grande, repita esta rotina:
+1. leitura e entendimento
+2. implementacao pequena
+3. validacao
+4. proxima etapa
+
+Fim do arquivo.

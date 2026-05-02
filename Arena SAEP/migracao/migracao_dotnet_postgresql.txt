@@ -1,0 +1,829 @@
+MIGRACAO PARA .NET + POSTGRESQL
+Guia tecnico de implementacao
+Sistema: Quiz Caca ao Tesouro
+Objetivo: permitir que outro dev ou IA reconstrua o sistema atual em ASP.NET Core + PostgreSQL
+
+1. OBJETIVO
+
+Este documento transforma a documentacao funcional em um plano tecnico de implementacao para:
+- ASP.NET Core Web API
+- Entity Framework Core
+- PostgreSQL
+- JWT para autenticacao
+- jobs em background
+
+O objetivo nao e apenas migrar dados.
+O objetivo e reconstruir o comportamento atual do sistema com arquitetura de backend propria.
+
+2. RESULTADO ESPERADO
+
+Ao final da migracao, o novo sistema deve manter:
+- cadastro com restricao de dominio
+- confirmacao de e-mail
+- aprovacao de usuario
+- lobby com resumo do jogador
+- desafio unico por janela
+- tentativa unica por usuario
+- retomada da participacao em andamento
+- pontuacao baseada em tempo, erros e dificuldade
+- ranking individual acumulado
+- ranking por sala por media dos usuarios ativos
+- titulos e medalhas
+- historico de desafios
+- painel admin para desafios, salas e usuarios
+
+3. STACK RECOMENDADA
+
+Backend:
+- .NET 8 ou superior
+- ASP.NET Core Web API
+- Entity Framework Core
+- Npgsql Entity Framework Provider
+- FluentValidation
+- MediatR opcional
+- AutoMapper opcional
+- Serilog
+
+Banco:
+- PostgreSQL
+
+Autenticacao:
+- JWT access token
+- refresh token opcional
+
+Jobs:
+- BackgroundService nativo
+ou
+- Hangfire
+
+Cache:
+- memoria no inicio
+- Redis opcional no futuro
+
+4. ESTRUTURA DE SOLUCAO RECOMENDADA
+
+Estrutura sugerida:
+
+src/
+  QuizTesouro.Api/
+  QuizTesouro.Application/
+  QuizTesouro.Domain/
+  QuizTesouro.Infrastructure/
+  QuizTesouro.Contracts/
+tests/
+  QuizTesouro.UnitTests/
+  QuizTesouro.IntegrationTests/
+
+Responsabilidade por camada:
+
+QuizTesouro.Domain
+- entidades
+- enums
+- value objects
+- regras puras
+
+QuizTesouro.Application
+- casos de uso
+- servicos de negocio
+- DTOs internos
+- validacoes
+
+QuizTesouro.Infrastructure
+- DbContext
+- mapeamentos EF
+- repositórios
+- auth provider
+- e-mail sender
+- cache provider
+
+QuizTesouro.Contracts
+- request models
+- response models
+
+QuizTesouro.Api
+- controllers
+- middlewares
+- DI
+- configuracao de auth
+- swagger
+
+5. ESTRUTURA DE PASTAS DENTRO DE DOMAIN
+
+Domain/
+  Entities/
+    User.cs
+    Room.cs
+    Challenge.cs
+    ChallengeParticipation.cs
+    RankingCache.cs
+  Enums/
+    UserRole.cs
+    ApprovalStatus.cs
+    ChallengeStatus.cs
+    ParticipationStatus.cs
+    DifficultyMode.cs
+  ValueObjects/
+    InventoryState.cs
+    QuestionSnapshot.cs
+    RiddleSnapshot.cs
+  Services/
+    ScoreCalculator.cs
+    TitleCalculator.cs
+    RankingCalculator.cs
+
+6. ENUMS RECOMENDADOS
+
+UserRole
+- Player = 1
+- Admin = 2
+
+ApprovalStatus
+- Pending = 1
+- Approved = 2
+- Rejected = 3
+
+ChallengeStatus
+- Active = 1
+- Ended = 2
+- Cancelled = 3
+
+ParticipationStatus
+- InProgress = 1
+- Completed = 2
+- Expired = 3
+
+DifficultyMode
+- Easy = 1
+- Normal = 2
+- Hardcore = 3
+
+Observacao:
+- estados visuais como Agendado nao precisam existir como enum persistido
+- podem ser derivados em service
+
+7. ENTIDADES PRINCIPAIS
+
+7.1 User
+Campos sugeridos:
+- Guid Id
+- string Email
+- string PasswordHash
+- string NomeAcesso
+- string? NomeJogador
+- Guid? SalaId
+- UserRole Role
+- bool Ativo
+- ApprovalStatus AprovacaoStatus
+- bool EmailVerificado
+- DateTimeOffset? AprovadoEm
+- DateTimeOffset? RevisadoEm
+- DateTimeOffset CriadoEm
+- DateTimeOffset AtualizadoEm
+
+Relacoes:
+- Room? Sala
+- ICollection<ChallengeParticipation> Participacoes
+
+7.2 Room
+Campos:
+- Guid Id
+- string Nome
+- int Ordem
+- DateTimeOffset CriadoEm
+- DateTimeOffset AtualizadoEm
+
+Relacoes:
+- ICollection<User> Usuarios
+
+7.3 Challenge
+Campos:
+- Guid Id
+- string Titulo
+- int QuantidadeQuestoes
+- DateTimeOffset InicioEm
+- DateTimeOffset FimEm
+- ChallengeStatus Status
+- Guid CriadoPor
+- DateTimeOffset CriadoEm
+- DateTimeOffset AtualizadoEm
+
+Relacoes:
+- ICollection<ChallengeParticipation> Participacoes
+
+7.4 ChallengeParticipation
+Campos:
+- Guid Id
+- Guid DesafioId
+- Guid UsuarioId
+- string NomeSnapshot
+- Guid? SalaIdSnapshot
+- string? EmailSnapshot
+- ParticipationStatus Status
+- DifficultyMode Dificuldade
+- int Erros
+- int VidasRestantes
+- int VidasExtrasUsadas
+- int ProgressoAtual
+- int QuestaoAtual
+- int? CurrentQuestionIndex
+- string TelaAtual
+- int TempoSegundos
+- int TotalQuestoes
+- string ItensJson
+- bool EscudoAtivo
+- string PerguntasJson
+- string CharadasJson
+- int? Pontuacao
+- DateTimeOffset IniciadoEm
+- DateTimeOffset? ConcluidoEm
+- DateTimeOffset CriadoEm
+- DateTimeOffset AtualizadoEm
+
+Constraints:
+- unique (DesafioId, UsuarioId)
+
+7.5 RankingCache
+Opcao simples:
+- string Id fixo, por exemplo "global"
+- string UserRankingJson
+- string RoomRankingJson
+- string TitleBoardJson
+- DateTimeOffset AtualizadoEm
+
+Opcao melhor:
+- manter tabelas agregadas separadas
+- usar cache so como acelerador de leitura
+
+8. DTOs E MODELOS DE CONTRATO RECOMENDADOS
+
+8.1 Auth
+RegisterRequest
+- Nome
+- Email
+- Password
+- SalaId
+
+LoginRequest
+- Email
+- Password
+
+LoginResponse
+- AccessToken
+- ExpiresAt
+- UserSummary
+- BlockingReason
+
+8.2 Lobby
+LobbyResponse
+- PlayerName
+- Room
+- BestScore
+- BestTimeSeconds
+- MatchesPlayed
+- IndividualRank
+- RoomPosition
+- Title
+- Titles[]
+- IndividualMedal
+- RoomMedal
+- ChallengeState
+- ChallengeSummary
+
+8.3 Challenge start/resume
+StartChallengeResponse
+- State
+- Challenge
+- Participation
+- Questions[]
+- Riddles[]
+
+8.4 Progress
+UpdateProgressRequest
+- ProgressoAtual
+- QuestaoAtual
+- CurrentQuestionIndex
+- TelaAtual
+- TempoSegundos
+- Erros
+- VidasRestantes
+- VidasExtrasUsadas
+- Itens
+- EscudoAtivo
+
+8.5 Finish
+FinishChallengeRequest
+- TempoSegundos
+- Erros
+- Dificuldade
+- VidasRestantes
+- VidasExtrasUsadas
+- ProgressoAtual
+
+FinishChallengeResponse
+- Score
+- ElapsedSeconds
+- Errors
+- IndividualRank
+- RoomRank
+- BestScore
+- Titles[]
+- UnlockedTitles[]
+
+9. MODELAGEM DE BANCO EM POSTGRESQL
+
+9.1 Tipos recomendados
+- uuid para ids
+- timestamptz para datas
+- jsonb para snapshots e inventario
+- integer para score, erros, tempo
+
+9.2 Indices recomendados
+
+usuarios
+- unique index ux_usuarios_email
+- index ix_usuarios_sala_id
+- index ix_usuarios_aprovacao_status
+- index ix_usuarios_ativo
+
+salas
+- unique index ux_salas_ordem
+
+desafios
+- index ix_desafios_status
+- index ix_desafios_inicio_em
+- index ix_desafios_fim_em
+
+participacoes_desafio
+- unique index ux_participacoes_desafio_usuario on (desafio_id, usuario_id)
+- index ix_participacoes_usuario_id
+- index ix_participacoes_desafio_id
+- index ix_participacoes_status
+- index ix_participacoes_concluido_em
+
+10. CONFIGURACAO DO EF CORE
+
+Criar:
+- AppDbContext
+- entity configurations separadas por IEntityTypeConfiguration<T>
+
+Exemplos:
+- UserConfiguration
+- RoomConfiguration
+- ChallengeConfiguration
+- ChallengeParticipationConfiguration
+- RankingCacheConfiguration
+
+Regras importantes no EF:
+- mapear enums como string ou int
+- para maior legibilidade operacional, string pode ajudar
+- para performance e rigidez, int e melhor
+
+Recomendacao:
+- usar int no banco
+- expor labels no Application layer
+
+11. SERVICOS PRINCIPAIS DA CAMADA APPLICATION
+
+11.1 AuthService
+Responsavel por:
+- register
+- login
+- confirm email
+- resend confirmation
+- change password
+- generate token
+
+11.2 UserService
+Responsavel por:
+- update player nickname
+- update room
+- update active status
+- approve/reject user
+- update role
+- delete user data
+- get profile
+
+11.3 RoomService
+Responsavel por:
+- list rooms
+- create room
+- rename room
+- reorder rooms
+- delete room
+
+11.4 ChallengeService
+Responsavel por:
+- create challenge
+- list challenges
+- get current available challenge
+- end challenge
+- cancel challenge
+- extend challenge
+- activate now
+- mark expired challenges
+
+11.5 ParticipationService
+Responsavel por:
+- start or resume challenge
+- create participation
+- load current participation
+- update progress
+- finish participation
+- expire pending/in-progress participations if needed
+
+11.6 RankingService
+Responsavel por:
+- rebuild ranking cache
+- update ranking after finish
+- get ranking board
+- get lobby summary
+- get result summary
+
+11.7 ContentService
+Responsavel por:
+- carregar questoes
+- carregar charadas
+- sortear questoes
+- sortear charadas
+- montar snapshots
+
+11.8 HistoryService
+Responsavel por:
+- montar historico de desafios do usuario
+
+12. SERVICOS DE DOMINIO IMPORTANTES
+
+12.1 ScoreCalculator
+Metodo principal:
+- Calculate(elapsedSeconds, errors, difficultyMode)
+
+Formula:
+- 10000 - tempo*2 - erros*400
+- aplica multiplicador da dificuldade
+- minimo 0
+
+12.2 RankingCalculator
+Responsavel por:
+- agregar pontuacao por usuario
+- agregar ranking por sala
+- calcular melhor tempo
+- ordenar ranking
+
+12.3 TitleCalculator
+Responsavel por:
+- calcular lista de titulos do usuario
+- escolher titulo principal
+- calcular quadro de titulos publicos
+
+13. VALUE OBJECTS / JSONB RECOMENDADOS
+
+13.1 InventoryState
+Campos:
+- Bussola
+- Lupa
+- Escudo
+- Ampulheta
+- ChaveMestra
+
+13.2 QuestionSnapshot
+Campos:
+- Title
+- Question
+- Correct
+- Options[]
+
+13.3 RiddleSnapshot
+Campos:
+- Riddle
+- Hint
+- ExtraHint
+- Answer
+
+14. ENDPOINTS RECOMENDADOS
+
+14.1 AuthController
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/resend-confirmation
+- POST /api/auth/confirm-email
+- POST /api/auth/change-password
+
+14.2 MeController
+- GET /api/me/profile
+- PATCH /api/me/profile/nickname
+- GET /api/me/lobby
+- GET /api/me/history
+
+14.3 ChallengesController
+- GET /api/challenges/current
+- POST /api/challenges/current/start
+- PATCH /api/challenge-participations/{id}/progress
+- POST /api/challenge-participations/{id}/finish
+
+14.4 RankingController
+- GET /api/ranking
+- GET /api/ranking/room/{roomId}
+
+14.5 AdminChallengesController
+- GET /api/admin/challenges
+- POST /api/admin/challenges
+- POST /api/admin/challenges/{id}/end
+- POST /api/admin/challenges/{id}/cancel
+- POST /api/admin/challenges/{id}/extend
+- POST /api/admin/challenges/{id}/activate-now
+
+14.6 AdminRoomsController
+- GET /api/admin/rooms
+- POST /api/admin/rooms
+- PATCH /api/admin/rooms/{id}
+- POST /api/admin/rooms/{id}/move-up
+- POST /api/admin/rooms/{id}/move-down
+- DELETE /api/admin/rooms/{id}
+
+14.7 AdminUsersController
+- GET /api/admin/users
+- GET /api/admin/users/pending
+- PATCH /api/admin/users/{id}/approve
+- PATCH /api/admin/users/{id}/reject
+- PATCH /api/admin/users/{id}/room
+- PATCH /api/admin/users/{id}/active
+- PATCH /api/admin/users/{id}/role
+- DELETE /api/admin/users/{id}
+
+15. REGRAS DE NEGOCIO QUE DEVEM FICAR NO BACKEND
+
+Estas regras nao devem depender do frontend:
+- dominio de e-mail permitido
+- aprovacao e verificacao de conta
+- tentativa unica por desafio
+- validacao de janela de desafio
+- regra de desafio cancelado
+- formula de score
+- criterio de ranking
+- criterio de titulos
+- permissao de admin
+
+16. JOBS E BACKGROUND TASKS
+
+16.1 Job de expiracao de desafios
+Periodicidade sugerida:
+- a cada 1 minuto ou 5 minutos
+
+Responsabilidade:
+- localizar desafios ativos cujo fim_em < agora
+- marcar status = encerrado
+
+16.2 Job de rebuild completo de ranking
+Periodicidade sugerida:
+- noturno
+ou
+- on demand via admin
+
+Responsabilidade:
+- recalcular ranking completo
+- validar consistencia de cache
+
+16.3 Job de notificacao por e-mail
+Responsabilidade:
+- enviar confirmacao de cadastro
+- reenviar confirmacao
+
+17. ESTRATEGIA DE CACHE
+
+17.1 Primeira versao
+Usar tabela ranking_cache e carregamento simples.
+
+17.2 Atualizacao incremental
+Ao concluir participacao valida:
+- atualizar agregados do usuario
+- atualizar agregados da sala
+- recalcular titulos
+- salvar cache
+
+17.3 Quando forcar rebuild completo
+- cancelamento de desafio
+- exclusao de usuario
+- mudanca de sala
+- alteracao de status ativo
+- suspeita de inconsistencias
+
+18. ESTRATEGIA DE CARGA DE CONTEUDO
+
+18.1 Opcao recomendada para primeira migracao
+Manter conteudo em arquivos versionados:
+- questoes.txt
+- charadas.txt
+
+No backend:
+- ContentService le os arquivos
+- parseia
+- sorteia
+- persiste snapshot na participacao
+
+18.2 Opcao futura
+Migrar conteudo para banco:
+- questions
+- question_options
+- riddles
+
+19. VALIDADOR DE REGRAS IMPORTANTES
+
+Criar validacoes explicitas para:
+- e-mail institucional
+- nome minimo de usuario
+- quantidade de questoes > 0
+- fim_em > inicio_em
+- sala nao pode ser excluida se houver usuarios vinculados
+- usuario nao pode ter segunda participacao no mesmo desafio
+- usuario concluido nao pode reiniciar desafio
+
+20. FLUXO TECNICO DE START CHALLENGE
+
+Pseudo fluxo:
+
+1. Buscar desafio atual valido
+2. Se nao existir, retornar state = sem_desafio
+3. Buscar participacao por desafio + usuario
+4. Se nao existir:
+   - carregar banco de questoes e charadas
+   - sortear conteudo
+   - criar participacao em andamento
+   - retornar state = novo
+5. Se existir e status = concluido:
+   - retornar state = concluido
+6. Se existir e prazo vencido:
+   - marcar expirado
+   - retornar state = expirado
+7. Senao:
+   - retornar state = retomar
+
+21. FLUXO TECNICO DE FINISH CHALLENGE
+
+Pseudo fluxo:
+
+1. Carregar participacao
+2. Validar se pertence ao usuario
+3. Validar se ainda nao concluiu
+4. Calcular score
+5. Atualizar participacao:
+   - status = concluido
+   - concluido_em
+   - pontuacao
+   - tempo
+   - erros
+6. Atualizar cache/ranking
+7. Calcular titulos desbloqueados
+8. Retornar resumo final
+
+22. COMO REPRESENTAR TITULOS NO BACKEND
+
+Opcao simples:
+- nao persistir todos os titulos por usuario
+- calcular em tempo de agregacao
+
+Opcao com persistencia:
+- tabela user_titles
+
+Recomendacao para primeira versao:
+- calcular em agregacao
+- persistir apenas no cache de ranking
+
+Motivo:
+- e fiel ao comportamento atual
+- reduz escrita
+
+23. ESTRATEGIA DE TESTES
+
+23.1 Unit tests
+Cobrir:
+- formula de score
+- titulos
+- ranking individual
+- ranking por sala
+- estado do desafio
+
+23.2 Integration tests
+Cobrir:
+- cadastro e login
+- confirmacao e aprovacao
+- criacao de desafio
+- inicio e retomada de participacao
+- tentativa unica
+- finalizacao
+- historico
+- ranking
+
+23.3 Casos criticos
+- desafio cancelado nao entra no ranking
+- empate por score resolve por melhor tempo
+- usuario inativo sai da base do ranking de sala
+- usuario com participacao concluida nao joga novamente
+- desafio agendado nao pode ser iniciado
+
+24. MIGRATIONS INICIAIS RECOMENDADAS
+
+Migration 1:
+- CreateUsers
+- CreateRooms
+- CreateChallenges
+- CreateChallengeParticipations
+- CreateRankingCache
+
+Migration 2:
+- AddIndexes
+- AddUniqueConstraintOnChallengeParticipation
+
+Migration 3:
+- SeedRooms
+
+25. SEED INICIAL RECOMENDADO
+
+Criar seed para:
+- 4 salas iniciais
+- 1 admin inicial
+
+Exemplo de salas:
+- Sala 1
+- Sala 2
+- Sala 3
+- Sala 4
+
+26. SEGURANCA
+
+Recomendacoes:
+- nunca retornar PasswordHash
+- usar DTOs separados
+- proteger rotas admin com policy
+- auditar acoes criticas:
+  - aprovar usuario
+  - recusar usuario
+  - cancelar desafio
+  - encerrar desafio
+  - excluir usuario
+  - excluir sala
+
+27. AUDITORIA RECOMENDADA
+
+Tabela opcional:
+- audit_logs
+
+Campos:
+- id
+- actor_user_id
+- action
+- entity_type
+- entity_id
+- payload_json
+- created_at
+
+28. CHECKLIST TECNICO DE ENTREGA
+
+Antes de considerar a migracao pronta:
+- banco sobe com migrations
+- login e cadastro funcionam
+- e-mail institucional e validado
+- aprovacao de usuario funciona
+- admin consegue criar desafio
+- usuario consegue iniciar e retomar
+- score bate com a formula
+- ranking individual e por sala batem
+- historico funciona
+- cache de ranking funciona
+- top 3, titulos e medalhas aparecem corretamente
+
+29. ORDEM RECOMENDADA DE CODIFICACAO
+
+1. Criar solution e projetos
+2. Configurar DbContext
+3. Criar entidades e mapeamentos
+4. Criar migrations
+5. Criar AuthController e AuthService
+6. Criar UserService e RoomService
+7. Criar ChallengeService
+8. Criar ParticipationService
+9. Criar ScoreCalculator, RankingCalculator e TitleCalculator
+10. Criar RankingController
+11. Criar HistoryController/endpoint
+12. Criar controllers admin
+13. Criar jobs
+14. Adicionar logs, cache e testes
+
+30. RECOMENDACAO FINAL
+
+Se a prioridade for reproduzir o sistema atual com menor risco:
+- implementar primeiro a API
+- testar todos os fluxos com Postman ou Swagger
+- so depois reconstruir ou adaptar o frontend
+
+Se o frontend atual for mantido por um tempo:
+- criar a API em paralelo
+- adaptar tela por tela
+- trocar gradualmente o Firebase pelo backend novo
+
+Para uma migracao segura e incremental:
+- manter o comportamento
+- centralizar regras no backend
+- usar snapshots de participacao
+- tratar ranking como agregacao com cache
+
+Fim do documento.

@@ -1,0 +1,24 @@
+CHARADA=Sou três inteiros. No jogo de pedra, papel e tesoura, eu conto os dedos mostrados na ordem da fala. Quem sou eu?
+DICA=Pense em uma sequência numérica simples com três algarismos consecutivos.
+DICA_EXTRA=O primeiro é zero, o último é dois.
+RESPOSTA=052
+---
+CHARADA=Em português me chamam de gatilho. Costumo trabalhar com um colisor e reagir quando alguém entra ou sai da área. Quem sou eu?
+DICA=É um nome muito comum no desenvolvimento de jogos na Unity.
+DICA_EXTRA=Normalmente esse elemento é usado junto de eventos de entrada e saída em áreas de colisão.
+RESPOSTA=Trigger
+---
+CHARADA=Sem mim o jogo existe, mas ninguém sabe o que fazer. Eu guio o jogador sem usar a minha voz. Posso estar num botão, numa barra ou num menu, começo com I. Quem sou eu?
+DICA=É um termo muito usado em menus, HUD e telas de configuração.
+DICA_EXTRA=A sigla mais famosa para isso tem duas letras.
+RESPOSTA=Interface
+---
+CHARADA=Tenho três algarismos e começo do zero. Sou a forma mais básica de contar antes de chegar ao três. Quem sou eu?
+DICA=É uma sequência numérica usada no início da contagem.
+DICA_EXTRA=Os algarismos são 1, 2 e 3, nessa ordem.
+RESPOSTA=012
+---
+CHARADA=No fim da jornada, só há uma palavra que resume o resultado de quem superou o desafio inteiro. Que palavra é essa? (Escreva sem acento)
+DICA=É o contrário de derrota.
+DICA_EXTRA=Começa com V e termina com A.
+RESPOSTA=Vitoria

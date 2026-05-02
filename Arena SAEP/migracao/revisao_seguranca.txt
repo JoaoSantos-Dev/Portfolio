@@ -1,0 +1,525 @@
+REVISAO DE SEGURANCA DA INFORMACAO
+Sistema: Quiz Caca ao Tesouro
+Objetivo: orientar a manutencao de seguranca do sistema atual e apoiar a migracao futura para backend proprio
+
+1. OBJETIVO DESTE DOCUMENTO
+
+Este documento existe para:
+- identificar riscos de seguranca do sistema atual
+- registrar controles minimos recomendados
+- orientar revisoes periodicas
+- servir de base para a futura migracao para backend proprio
+
+Ele nao substitui auditoria formal.
+Ele funciona como guia pratico de revisao tecnica e operacional.
+
+2. CONTEXTO DO SISTEMA
+
+O sistema atualmente usa:
+- frontend web em HTML/CSS/JS
+- Firebase Authentication
+- Firestore
+- regras importantes ainda executadas no frontend
+
+O sistema manipula:
+- login e cadastro
+- perfis de usuario
+- aprovacao de contas
+- perfis admin
+- desafios
+- participacoes
+- ranking
+- dados de desempenho de alunos
+
+Isso significa que ele trata:
+- autenticacao
+- autorizacao
+- dados pessoais basicos
+- dados educacionais e competitivos
+
+3. PRINCIPIOS DE SEGURANCA A PRESERVAR
+
+Os principios minimos deste sistema devem ser:
+- confidencialidade: dados de usuario nao devem ser expostos sem necessidade
+- integridade: score, ranking, desafios e papeis admin nao podem ser manipulados indevidamente
+- disponibilidade: o sistema precisa permanecer acessivel em dias de uso com alunos
+- rastreabilidade: acoes sensiveis precisam ser auditaveis
+- minimo privilegio: cada usuario acessa apenas o que precisa
+
+4. SUPERFICIE DE ATAQUE DO SISTEMA
+
+A superficie de ataque atual inclui:
+- formularios de login e cadastro
+- tela de perfil
+- painel admin
+- painel admin de usuarios
+- endpoint implícito de autenticacao via Firebase
+- Firestore acessado pelo frontend
+- carregamento de questoes.txt e charadas.txt
+- manipulacao de participacao e ranking pelo lado cliente
+
+Na migracao futura, a superficie de ataque passara a incluir tambem:
+- API backend
+- servidor Oracle
+- banco PostgreSQL
+- JWT ou outro mecanismo de sessao
+- SMTP de confirmacao de e-mail
+
+5. RISCOS PRINCIPAIS DO SISTEMA ATUAL
+
+5.1 Regra de negocio no frontend
+Risco:
+- regras criticas ainda estao no cliente
+- um usuario tecnicamente habilidoso pode inspecionar chamadas, alterar estado local ou tentar forjar comportamento
+
+Impacto:
+- tentativa de manipular score
+- tentativa de alterar fluxo de partida
+- tentativa de pular validacoes
+
+Mitigacao atual:
+- usar regras do Firestore restritivas
+- manter perfis admin e operacoes sensiveis protegidos por role
+
+Mitigacao futura recomendada:
+- mover toda regra critica para backend
+
+5.2 Exposicao de dados no cliente
+Risco:
+- dados retornados ao frontend podem ficar maiores ou mais sensiveis do que o necessario
+
+Impacto:
+- usuario ver informacao que nao deveria
+- aumento de superficie de vazamento
+
+Mitigacao:
+- retornar apenas os campos necessarios para cada tela
+- separar dados admin de dados de usuario comum
+
+5.3 Manipulacao de ranking
+Risco:
+- se participacoes ou agregacoes forem aceitas sem validacao forte, ranking pode ser adulterado
+
+Impacto:
+- perda de confianca no sistema
+- conflito entre alunos e salas
+
+Mitigacao:
+- calcular score em backend no futuro
+- nunca confiar em score enviado puro pelo cliente
+- registrar auditoria de finalizacao de desafio
+
+5.4 Perfil admin
+Risco:
+- se um usuario comum conseguir elevar privilegio ou acessar rota admin, ele pode assumir controle do sistema
+
+Impacto:
+- aprovacao indevida de usuarios
+- cancelamento de desafios
+- exclusao de usuarios
+- manipulacao de salas
+
+Mitigacao:
+- validacao de role em toda operacao admin
+- esconder botao na UI nao e suficiente
+- a validacao precisa existir na camada de dados/backend
+
+5.5 Exposicao de segredos
+Risco:
+- chaves, segredos SMTP, JWT ou configuracoes sensiveis vazarem
+
+Impacto:
+- sequestro de sessao
+- envio indevido de e-mail
+- acesso indevido ao banco ou servicos
+
+Mitigacao:
+- nunca versionar segredos reais
+- usar variaveis de ambiente
+- revisar logs para garantir que nao imprimem segredos
+
+6. AUTENTICACAO
+
+6.1 Situacao atual
+O sistema ja usa:
+- cadastro com e-mail e senha
+- confirmacao de e-mail
+- fluxo de aprovacao
+
+6.2 Controles obrigatorios
+- senha minima razoavel
+- tratamento de erro sem vazar detalhes sensiveis
+- reautenticacao para troca de senha
+- confirmacao de e-mail antes do acesso
+- aprovacao obrigatoria para novas contas
+
+6.3 Revisao periodica
+Verificar:
+- se contas antigas continuam autorizadas corretamente
+- se usuarios rejeitados realmente nao entram
+- se usuario pendente nao acessa lobby
+- se nao existe caminho alternativo pulando confirmacao
+
+6.4 Recomendacao futura
+Na migracao para backend proprio:
+- usar Argon2 ou BCrypt
+- usar JWT curto
+- refresh token seguro se necessario
+- revisar protecao contra brute force
+- limitar tentativas de login
+
+7. AUTORIZACAO
+
+7.1 Regra central
+Autenticado nao significa autorizado.
+
+O sistema precisa diferenciar claramente:
+- jogador
+- admin
+
+7.2 Controles obrigatorios
+Toda operacao administrativa deve validar:
+- usuario autenticado
+- usuario aprovado
+- role admin
+
+Operacoes sensiveis:
+- aprovar usuario
+- recusar usuario
+- alterar role
+- alterar sala de outro usuario
+- excluir usuario
+- criar desafio
+- cancelar desafio
+- encerrar desafio
+- prolongar desafio
+- excluir sala
+
+7.3 Revisao periodica
+Testar:
+- usuario comum tentando abrir admin diretamente
+- usuario comum tentando abrir admin-users diretamente
+- usuario comum tentando executar acoes admin por chamada direta
+
+8. PROTECAO DE DADOS
+
+8.1 Dados tratados pelo sistema
+Dados pessoais basicos:
+- nome
+- nome do jogador
+- e-mail
+- sala
+
+Dados comportamentais/educacionais:
+- participacoes
+- erros
+- tempo
+- pontuacao
+- historico
+- ranking
+
+8.2 Regras recomendadas
+- armazenar apenas o necessario
+- nao expor e-mail no lobby
+- nao expor dados de outros usuarios alem do necessario no ranking
+- separar claramente dados publicos e privados
+
+8.3 Minimização
+Publico no ranking:
+- nome do jogador
+- sala
+- pontuacao
+- tempo
+- titulos
+
+Privado ou restrito:
+- e-mail
+- status de aprovacao
+- dados administrativos
+
+9. SEGURANCA DO FRONTEND
+
+9.1 Principio
+Frontend nao deve ser tratado como ambiente confiavel.
+
+9.2 Itens de revisao
+- validar e sanitizar entradas
+- nao usar innerHTML com conteudo nao confiavel sem cuidado
+- evitar depender de estado local para regras criticas
+- proteger links admin apenas como UX, nunca como controle real
+
+9.3 Risco de XSS
+Hoje o projeto usa renderizacao HTML em varios pontos de status e interface.
+
+Risco:
+- se qualquer dado de usuario ou dado externo for injetado sem sanitizacao, pode haver XSS
+
+Mitigacao:
+- preferir textContent quando o conteudo nao precisa ser HTML
+- limitar HTML dinamico a strings controladas internamente
+- sanitizar qualquer conteudo vindo de usuario antes de inserir no DOM como HTML
+
+9.4 Arquivos de conteudo
+questoes.txt e charadas.txt sao dados locais, mas:
+- se futuramente forem editaveis por admin, devem ser tratados como entrada nao confiavel
+
+10. SEGURANCA DO FIRESTORE / MODELO ATUAL
+
+10.1 Ponto critico
+Como o sistema atual fala diretamente com Firestore, as regras de seguranca do Firestore sao parte central da defesa.
+
+10.2 Controles recomendados
+Regras devem garantir pelo menos:
+- usuario so le e escreve o proprio perfil quando apropriado
+- usuario comum nao altera role
+- usuario comum nao altera aprovacaoStatus
+- usuario comum nao cria ou altera desafios
+- usuario comum nao altera dados de outros usuarios
+- participacoes so podem ser manipuladas pelo proprio usuario, dentro das regras permitidas
+
+10.3 Revisao obrigatoria
+Se as regras atuais do Firestore nao estiverem revisadas, isso e prioridade alta.
+
+11. SEGURANCA DO BACKEND FUTURO
+
+Na migracao, o backend deve assumir a responsabilidade por:
+- score
+- ranking
+- titulos
+- disponibilidade do desafio
+- tentativa unica
+- aprovacoes e roles
+
+11.1 Regra chave
+Nunca confiar em valores criticos enviados pelo cliente sem revalidar:
+- score
+- rank
+- role
+- status da participacao
+- disponibilidade do desafio
+
+11.2 Validacoes que devem ficar no backend
+- dominio do e-mail
+- status aprovado
+- email verificado
+- desafio ativo dentro da janela
+- participacao unica
+- calculo de pontuacao
+- mudanca de role
+
+12. SEGURANCA DO BANCO DE DADOS FUTURO
+
+12.1 Controles minimos
+- usuario de aplicacao com privilegios minimos
+- sem uso de superusuario pela aplicacao
+- senha forte
+- acesso remoto restrito
+- backups protegidos
+
+12.2 SQL injection
+Mitigacao:
+- usar ORM corretamente
+- usar consultas parametrizadas
+- nunca concatenar SQL com input do usuario
+
+12.3 Integridade
+- unique constraint em participacao por desafio e usuario
+- foreign keys entre usuarios, salas, desafios e participacoes
+- indices em campos de consulta frequente
+
+13. SEGURANCA DO AMBIENTE ORACLE
+
+13.1 Controles minimos
+- SSH por chave
+- porta SSH restrita
+- atualizacoes de sistema aplicadas
+- firewall habilitado
+- servicos nao usados desabilitados
+- usuario da aplicacao sem privilegios excessivos
+
+13.2 Segredos
+- credenciais fora do git
+- env vars ou secret manager
+- permissao de leitura restrita aos processos necessarios
+
+13.3 Servicos
+- API executando como servico dedicado
+- reinicio automatico controlado
+- logs centralizados ou organizados
+
+14. LOGS E AUDITORIA
+
+14.1 Acoes que devem ser auditadas
+- login
+- falha repetida de login
+- cadastro
+- confirmacao de e-mail
+- aprovacao de usuario
+- recusa de usuario
+- mudanca de role
+- exclusao de usuario
+- criacao de desafio
+- cancelamento de desafio
+- encerramento de desafio
+- prolongamento de desafio
+
+14.2 Regras para logs
+- nao logar senha
+- nao logar token completo
+- nao logar segredo SMTP
+- mascarar dados sensiveis quando necessario
+
+14.3 Objetivo da auditoria
+- rastrear abuso
+- rastrear erro administrativo
+- apoiar resposta a incidente
+
+15. BACKUP E RECUPERACAO
+
+15.1 Requisitos minimos
+- backup periodico do banco
+- retencao definida
+- restauracao testada
+
+15.2 O que verificar
+- onde o backup fica armazenado
+- quem tem acesso
+- quanto tempo ele fica guardado
+- como restaurar rapidamente
+
+15.3 Regra importante
+Backup sem teste de restore nao e controle confiavel.
+
+16. DISPONIBILIDADE
+
+16.1 Riscos
+- indisponibilidade em horario de desafio
+- falha do banco
+- falha de DNS
+- falha de e-mail
+- carga maior que a prevista
+
+16.2 Mitigacoes
+- monitoramento de uptime
+- logs de erro
+- metricas basicas
+- estrategia de rollback
+- pagina de manutencao, se necessario
+
+17. RISCOS ESPECIFICOS DESTE SISTEMA
+
+17.1 Manipulacao de score
+Risco alto enquanto regra critica estiver no frontend.
+
+17.2 Escalada de privilegio admin
+Risco alto se validacoes estiverem so na interface.
+
+17.3 Vazamento de dados de usuarios
+Risco medio se perfil, ranking ou admin retornarem campos demais.
+
+17.4 Inconsistencia de ranking
+Risco medio se cache nao for atualizado corretamente.
+
+17.5 Exposicao de configuracoes
+Risco medio se segredos futuros forem tratados como configuracao comum.
+
+18. CLASSIFICACAO PRATICA DE PRIORIDADES
+
+Prioridade alta:
+- regras de acesso admin
+- regras de Firestore
+- score e ranking confiando no cliente
+- segredos expostos
+- falta de backup
+
+Prioridade media:
+- logs insuficientes
+- falta de rate limit
+- falta de auditoria
+- HTML dinamico com risco de XSS
+
+Prioridade baixa, mas relevante:
+- endurecimento de servidor
+- CSP e headers adicionais
+- melhorias finas de observabilidade
+
+19. CHECKLIST DE REVISAO PERIODICA
+
+Checklist mensal recomendado:
+- revisar usuarios admin
+- revisar usuarios aprovados e pendentes
+- revisar regras de acesso
+- revisar se ranking esta coerente
+- revisar logs de erro
+- revisar backups
+- revisar expiracao de desafios
+- revisar segredos e credenciais compartilhadas
+
+Checklist antes de eventos importantes:
+- testar login
+- testar aprovacao
+- testar desafio atual
+- testar ranking
+- verificar monitoramento
+- confirmar backup recente
+
+20. CHECKLIST DE PUBLICACAO SEGURA
+
+Antes de publicar nova versao:
+- validar ambiente de homologacao
+- revisar segredos
+- revisar configuracao de producao
+- validar rotas admin
+- validar cadastro e aprovacao
+- validar desafio ativo
+- validar historico
+- validar ranking
+- ter plano de rollback
+
+21. RESPOSTA A INCIDENTE
+
+Definir previamente:
+- quem e avisado
+- onde os logs sao consultados
+- como revogar acesso admin
+- como bloquear temporariamente o sistema
+- como restaurar backup
+- como comunicar indisponibilidade
+
+Fluxo simples recomendado:
+1. identificar incidente
+2. conter incidente
+3. preservar evidencias basicas
+4. corrigir causa imediata
+5. restaurar operacao
+6. registrar licoes aprendidas
+
+22. RECOMENDACOES PRATICAS IMEDIATAS
+
+Para o sistema atual, as recomendacoes mais importantes sao:
+
+1. Revisar regras do Firestore com prioridade alta
+2. Garantir que role admin nunca seja controlado so por interface
+3. Minimizar uso de innerHTML para dados variaveis
+4. Manter aprovacao e confirmacao de e-mail obrigatorias
+5. Revisar periodicamente quem e admin
+6. Manter backup e documentacao de restauracao
+7. Na migracao futura, mover score, ranking e titulos para backend
+
+23. CONCLUSAO
+
+O sistema atual pode operar de forma razoavel se as regras de acesso e de Firestore estiverem bem fechadas, mas ele ainda tem um limite natural de seguranca por depender bastante do frontend para parte da logica.
+
+A evolucao correta de seguranca e:
+- curto prazo: endurecer regras e revisar acessos
+- medio prazo: melhorar logs, backup e operacao
+- longo prazo: migrar a logica critica para backend proprio
+
+Este documento deve ser revisado sempre que houver:
+- mudanca de arquitetura
+- mudanca de autenticacao
+- mudanca de ranking
+- mudanca de privilegios admin
+- ida para nova infraestrutura
+
+Fim da revisao.

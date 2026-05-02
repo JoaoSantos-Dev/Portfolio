@@ -1,0 +1,409 @@
+DOCUMENTACAO DAS REGRAS DO JOGO
+Quiz Caca ao Tesouro
+Baseado no codigo atual do projeto em onepiece/
+
+1. VISAO GERAL
+
+O Quiz Caca ao Tesouro combina:
+- charadas fisicas para encontrar codigos
+- perguntas objetivas no sistema
+- cronometro
+- penalidade por erro
+- vidas por dificuldade
+- itens de uso unico
+- ranking individual
+- ranking por sala
+- titulos e medalhas
+
+O jogador nao fica farmando pontuacao livremente. O fluxo atual gira em torno de desafios com janela de inicio e fim e tentativa unica por usuario.
+
+2. REGRAS DO JOGO
+
+2.1 Inicio da jornada
+- O jogador entra no sistema, faz login e vai ao lobby
+- O lobby nao inicia cronometro
+- O jogo so comeca quando o jogador entra no desafio disponivel e avanca para a etapa jogavel
+
+2.2 Estrutura de cada etapa
+Cada etapa tem dois momentos:
+- charada
+- questao objetiva
+
+Fluxo:
+- o sistema mostra a charada da etapa
+- o jogador encontra o codigo fisico correspondente
+- digita o codigo no sistema
+- se o codigo estiver correto, a questao da etapa e liberada
+- ao acertar a questao, a etapa seguinte e desbloqueada
+
+2.3 Sorteio do conteudo
+- O jogo sorteia questoes a partir de questoes.txt
+- O jogo monta a sequencia de charadas a partir de charadas.txt
+- As charadas podem repetir, porque a sequencia e montada por sorteio independente
+
+3. FUNCIONAMENTO DOS DESAFIOS
+
+3.1 O que e um desafio
+Um desafio e uma janela jogavel criada pelo admin com:
+- titulo
+- quantidade de questoes
+- inicioEm
+- fimEm
+- status
+
+3.2 Estados de um desafio
+Estados persistidos:
+- ativo
+- encerrado
+- cancelado
+
+Estados visuais derivados:
+- agendado
+- ativo
+- encerrado
+- cancelado
+
+3.3 Janela de inicio e fim
+- O desafio so pode ser jogado quando a hora atual estiver entre inicioEm e fimEm
+- Se o horario ainda nao chegou, ele aparece como agendado
+- Se o prazo passou, ele e tratado como encerrado
+
+4. JANELAS DE INICIO E FIM
+
+4.1 Regra de disponibilidade
+Um desafio esta disponivel para jogar apenas quando:
+- status persistido for "ativo"
+- a data atual estiver dentro da janela
+
+4.2 Expiracao automatica
+- O sistema verifica desafios ativos e fecha os vencidos com markExpiredChallenges()
+- Isso acontece em fluxos como listagem e leitura de desafio ativo
+
+4.3 Acoes do admin sobre prazo
+O admin pode:
+- criar desafio com periodo definido
+- prolongar prazo
+- encerrar antes da data prevista
+- ativar imediatamente um desafio agendado
+- cancelar desafio
+
+5. TENTATIVA UNICA
+
+5.1 Regra principal
+- Cada usuario tem apenas uma tentativa por desafio
+- Se ja concluiu, nao pode jogar de novo aquele desafio
+- Se ja iniciou e saiu no meio, retoma do ponto salvo
+
+5.2 Identificacao da participacao
+A participacao e vinculada por:
+- uid do usuario
+- desafioId
+
+6. RETOMADA DE PROGRESSO
+
+6.1 O que e salvo
+Durante a tentativa, o sistema grava:
+- status
+- progressoAtual
+- questaoAtual
+- currentQuestionIndex
+- telaAtual
+- tempoSegundos
+- erros
+- vidasRestantes
+- vidasExtrasUsadas
+- itens
+- escudoAtivo
+- perguntas sorteadas
+- charadas sorteadas
+
+6.2 Como a retomada funciona
+- Ao entrar no desafio atual, o sistema procura participacao existente
+- Se estiver em andamento, o jogador continua daquela tentativa
+- Como perguntas e charadas sao gravadas na participacao, a retomada mantem o mesmo conjunto sorteado
+
+7. CALCULO DE PONTUACAO
+
+Implementado em game-score.js
+
+Formula base:
+- base = 10000
+- menos 2 pontos por segundo
+- menos 400 pontos por erro
+- depois aplica multiplicador da dificuldade
+
+Formula logica:
+- rawScore = 10000 - (tempoSegundos * 2) - (erros * 400)
+- scoreFinal = rawScore * multiplicadorDaDificuldade
+- pontuacao minima = 0
+
+Configuracoes atuais:
+- facil: multiplicador 1/3
+- normal: multiplicador 2/3
+- hardcore: multiplicador 1
+
+Observacoes:
+- O tempo pesa o tempo inteiro
+- O erro tem penalidade forte
+- A dificuldade altera diretamente o ganho final
+
+8. VIDAS E DIFICULDADE
+
+8.1 Modos atuais
+- Facil: 5 vidas
+- Normal: 3 vidas
+- Hardcore: 1 vida
+
+8.2 Regra de erro
+- Se errar uma questao, perde 1 vida
+- Se o escudo estiver ativo, o proximo erro e anulado
+
+8.3 Fim das vidas
+- Quando as vidas acabam, o jogador volta ao inicio da jornada daquele desafio
+- As vidas sao restauradas para o valor inicial da dificuldade
+
+8.4 Vida extra
+- O sistema registra vidasExtrasUsadas
+- A configuracao de penalidade prevista no projeto e de 30 segundos por vida extra
+- Esse valor esta definido em CONFIG.scoring.extraLifePenaltySeconds
+
+9. ITENS DE USO UNICO
+
+Itens atuais:
+- Bussola
+- Lupa
+- Escudo
+- Ampulheta
+- Chave Mestra
+
+9.1 Bussola
+- Revela a dica extra da charada atual
+- So pode ser usada na tela de codigo/charada
+
+9.2 Lupa
+- Destaca 2 alternativas erradas
+- So pode ser usada durante a questao objetiva
+- Uma vez por questao
+
+9.3 Escudo
+- Anula o proximo erro de resposta
+
+9.4 Ampulheta
+- Reduz 20 segundos do cronometro
+- Tecnicamente ajusta gameStartTime para recuar o tempo percebido
+
+9.5 Chave Mestra
+- Abre a proxima questao sem precisar do codigo
+
+10. REGRAS DE RECOMPENSA
+
+10.1 Gatilho de item
+- Ao acertar 3 respostas seguidas dentro da janela configurada, o jogador ganha item aleatorio
+
+Configuracao atual:
+- comboRequired = 3
+- comboWindowMs = 120000
+
+10.2 Distribuicao
+- O item e escolhido aleatoriamente entre os itens cadastrados em CONFIG.items
+
+11. RANKING INDIVIDUAL
+
+11.1 Regra atual
+O ranking individual usa soma acumulada de pontuacoes validas do usuario.
+
+Entram no ranking:
+- participacoes concluidas
+- apenas de desafios nao cancelados
+
+Nao entram:
+- desafios cancelados
+- participacoes nao concluidas
+
+11.2 Criterio de ordenacao
+1. maior pontuacaoTotal
+2. menor melhorTempo em caso de empate
+
+11.3 Dados exibidos no ranking individual
+- posicao
+- nome
+- titulo(s)
+- sala
+- pontuacao total
+- melhor tempo
+- erros acumulados
+- total de desafios concluidos
+
+12. RANKING DA SALA
+
+12.1 Regra atual
+Cada sala recebe:
+- soma da pontuacao total dos usuarios ativos da sala
+- dividida pela quantidade de usuarios ativos dessa sala
+
+Formula:
+- mediaSala = totalPontosSala / totalUsuariosAtivos
+
+12.2 Objetivo pedagogico
+Essa regra faz a sala depender do engajamento coletivo, nao apenas de poucos jogadores fortes.
+
+12.3 Usuarios ativos
+- O campo ativo no perfil do usuario influencia a media da sala
+- Usuario inativo nao deve distorcer a media
+
+13. TITULOS
+
+Titulos cadastrados no codigo:
+- Lendario
+- Relampago
+- Impecavel
+- Campeao local
+- Veterano
+- Persistente
+- Muito rapido
+- Decifrador
+- Campeao em treino
+
+13.1 Lendario
+- dado ao 1o lugar do ranking individual geral
+
+13.2 Relampago
+- dado ao usuario mais rapido elegivel no criterio de tempo medio recente
+- exige minimo de desafios concluidos definido em MIN_MATCHES_FOR_RELAMPAGO
+- no codigo atual esse minimo e 3
+
+13.3 Impecavel
+- dado quando as 3 entradas recentes do usuario tem 0 erros
+
+13.4 Campeao local
+- dado ao lider da propria sala
+- existe um campeao local por sala com usuarios ranqueados
+
+13.5 Veterano
+- dado quando matchesPlayed >= 15
+
+13.6 Persistente
+- dado quando matchesPlayed >= 8
+
+13.7 Muito rapido
+- dado quando averageTimeLastThree < 900 segundos
+
+13.8 Decifrador
+- dado quando averageScoreLastThree >= 6000
+
+13.9 Campeao em treino
+- titulo padrao quando nenhum outro criterio e atendido
+
+14. BADGES
+
+No projeto atual, badges e chips sao usados para representar:
+- titulo principal do jogador
+- medalha individual
+- medalha da sala
+- quantidade de desafios concluidos
+
+No lobby:
+- o titulo principal tem destaque maior
+- ranking individual e ranking da sala aparecem como conquistas secundarias
+
+No ranking:
+- os titulos tambem aparecem na listagem e no quadro de titulos em disputa
+
+15. MEDALHAS INDIVIDUAIS
+
+Definidas por getMedalByPosition(position, "individual")
+
+Regras:
+- 1o lugar: ouro, "Top 1 individual"
+- 2o lugar: prata, "Top 2 individual"
+- 3o lugar: bronze, "Top 3 individual"
+
+Fora do top 3:
+- sem medalha individual
+
+16. MEDALHAS DE SALA
+
+Definidas por getMedalByPosition(position, "room")
+
+Regras:
+- 1o lugar: ouro, "Sala em 1o"
+- 2o lugar: prata, "Sala em 2o"
+- 3o lugar: bronze, "Sala em 3o"
+
+Fora do top 3:
+- sem medalha de sala
+
+17. HISTORICO DE DESAFIOS
+
+17.1 O que mostra
+A tela historico.html mostra:
+- desafio
+- periodo
+- status do desafio
+- status do aluno no desafio
+- pontuacao
+- tempo
+- erros
+- progresso
+- conclusao
+
+17.2 Status do aluno
+Valores tratados:
+- nao_iniciado
+- em_andamento
+- concluido
+- expirado
+- cancelado
+
+17.3 Interpretacao
+- Desafio cancelado aparece como cancelado
+- Desafio expirado sem conclusao aparece como expirado / nao respondido
+- O progresso mostrado usa progressoAtual e quantidadeQuestoes
+
+18. REGRAS DE STATUS
+
+18.1 Ativo
+- desafio aberto para jogo
+- dentro da janela de inicio e fim
+
+18.2 Encerrado
+- desafio finalizado
+- pode ter sido encerrado automaticamente por prazo
+- ou encerrado manualmente pelo admin
+
+18.3 Cancelado
+- desafio invalido para ranking
+- continua no historico
+- pontuacoes ligadas a ele nao entram no ranking
+
+18.4 Agendado
+- status visual
+- usado quando inicioEm ainda nao chegou
+
+19. RESUMO OPERACIONAL
+
+Para o jogador:
+- entra no lobby
+- joga o desafio do periodo
+- resolve charadas e responde questoes
+- tenta errar pouco e ser rapido
+- melhora a propria pontuacao
+- ajuda sua sala a subir no ranking
+
+Para o admin:
+- cria desafios
+- define periodo e quantidade de questoes
+- acompanha participacao
+- encerra, cancela, ativa ou prolonga desafios
+- administra salas e usuarios
+
+20. OBSERVACOES IMPORTANTES PARA EXPANSAO FUTURA
+
+- O modelo atual ja suporta crescimento incremental sem reescrever tudo
+- Se futuramente houver backend proprio ou Oracle, os pontos naturais de migracao sao:
+  - cache de ranking
+  - operacoes sensiveis de admin
+  - aprovacao de usuario
+  - calculos agregados
+- O formato de questoes e charadas esta desacoplado, o que facilita expandir o banco de conteudo
+- Como Storage nao esta em uso, o sistema ainda nao tem fotos reais de perfil

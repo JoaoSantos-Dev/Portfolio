@@ -1,0 +1,806 @@
+DESENVOLVIMENTO
+Guia para recriar o sistema "Quiz Caca ao Tesouro" em outra stack
+Documento orientado para IA ou desenvolvedor
+Baseado no comportamento real atual do projeto em onepiece/
+
+1. OBJETIVO DESTE DOCUMENTO
+
+Este arquivo descreve como reconstruir o sistema atual em qualquer stack, por exemplo:
+- C# .NET + PostgreSQL
+- Node.js + PostgreSQL
+- Java + Spring + PostgreSQL
+- Python + FastAPI + PostgreSQL
+
+O foco nao e copiar o codigo atual linha por linha.
+O foco e preservar:
+- comportamento
+- fluxo de telas
+- regras de negocio
+- modelo de dados
+- experiencia do usuario
+
+Este documento deve permitir que outro dev ou IA implemente o mesmo sistema mesmo sem usar Firebase.
+
+2. VISAO GERAL DO PRODUTO
+
+O sistema e um jogo educacional com estrutura de desafio competitivo.
+
+O usuario:
+- faz login ou cadastro
+- entra em um lobby
+- joga um desafio disponivel
+- resolve charadas para encontrar codigos fisicos
+- responde questoes objetivas
+- recebe pontuacao baseada em tempo e erros
+- contribui para ranking individual e da sala
+
+O admin:
+- cria desafios com janela de inicio e fim
+- administra salas
+- administra usuarios
+- aprova cadastros
+- encerra, cancela ou prolonga desafios
+
+3. COMPORTAMENTO QUE DEVE SER PRESERVADO
+
+3.1 Fluxo principal do jogador
+- Login/cadastro
+- Lobby
+- Inicio ou retomada do desafio atual
+- Partida
+- Resultado final
+- Ranking ou volta ao lobby
+
+3.2 Regras principais
+- O jogador so joga se houver desafio valido no momento
+- Cada usuario tem tentativa unica por desafio
+- Se sair no meio, retoma do ponto salvo
+- Desafio cancelado nao entra no ranking
+- Ranking individual e acumulado
+- Ranking da sala usa media da sala baseada em usuarios ativos
+
+3.3 Elementos importantes da UX
+- O lobby nao inicia o cronometro
+- O cronometro so inicia ao entrar de fato na questao
+- O resultado final precisa dar sensacao de fechamento
+- O ranking deve mostrar prestigio, titulos e competicao
+
+4. ESTRATEGIA DE MIGRACAO RECOMENDADA
+
+Ao migrar para backend proprio, a recomendacao e separar o sistema em 4 camadas:
+
+1. Frontend
+- HTML/CSS/JS, React, Blazor, Vue ou outra tecnologia
+- Responsavel por interface, animacoes, formularios e navegacao
+
+2. API de aplicacao
+- Backend HTTP/REST ou GraphQL
+- Responsavel por regras de negocio, autenticacao, autorizacao e persistencia
+
+3. Banco relacional
+- PostgreSQL recomendado
+- Responsavel por usuarios, salas, desafios, participacoes, ranking agregado, auditoria
+
+4. Jobs/servicos auxiliares
+- Atualizacao de ranking
+- Fechamento automatico de desafios expirados
+- Envio de e-mail
+- Limpeza de cache
+
+5. ORDEM RECOMENDADA DE IMPLEMENTACAO
+
+Para reconstruir sem se perder, seguir esta ordem:
+
+1. Modelagem do banco
+2. Sistema de autenticacao e autorizacao
+3. CRUD de usuarios e salas
+4. CRUD de desafios
+5. Inicio e retomada de participacao
+6. Fluxo da partida
+7. Calculo de pontuacao
+8. Ranking individual e por sala
+9. Titulos, medalhas e badges
+10. Historico de desafios
+11. Painel admin
+12. Otimizacoes de cache
+
+Essa ordem evita criar UI bonita em cima de regra instavel.
+
+6. MODELAGEM MINIMA DO BANCO
+
+6.1 Tabela usuarios
+Campos recomendados:
+- id UUID PK
+- email VARCHAR UNIQUE NOT NULL
+- senha_hash VARCHAR NOT NULL
+- nome_acesso VARCHAR NOT NULL
+- nome_jogador VARCHAR NULL
+- sala_id UUID NULL FK salas
+- role VARCHAR NOT NULL
+- ativo BOOLEAN NOT NULL DEFAULT TRUE
+- aprovacao_status VARCHAR NOT NULL DEFAULT 'pendente'
+- email_verificado BOOLEAN NOT NULL DEFAULT FALSE
+- aprovado_em TIMESTAMP NULL
+- revisado_em TIMESTAMP NULL
+- criado_em TIMESTAMP NOT NULL
+- atualizado_em TIMESTAMP NOT NULL
+
+Observacoes:
+- role: 'jogador' ou 'admin'
+- aprovacao_status: 'pendente', 'aprovado', 'recusado'
+
+6.2 Tabela salas
+Campos:
+- id UUID PK
+- nome VARCHAR NOT NULL
+- ordem INT NOT NULL
+- criado_em TIMESTAMP NOT NULL
+- atualizado_em TIMESTAMP NOT NULL
+
+6.3 Tabela desafios
+Campos:
+- id UUID PK
+- titulo VARCHAR NOT NULL
+- quantidade_questoes INT NOT NULL
+- inicio_em TIMESTAMP NOT NULL
+- fim_em TIMESTAMP NOT NULL
+- status VARCHAR NOT NULL
+- criado_por UUID FK usuarios
+- criado_em TIMESTAMP NOT NULL
+- atualizado_em TIMESTAMP NOT NULL
+
+Status:
+- ativo
+- encerrado
+- cancelado
+
+6.4 Tabela participacoes_desafio
+Campos:
+- id UUID PK
+- desafio_id UUID NOT NULL FK desafios
+- usuario_id UUID NOT NULL FK usuarios
+- nome_snapshot VARCHAR NOT NULL
+- sala_id_snapshot UUID NULL
+- email_snapshot VARCHAR NULL
+- status VARCHAR NOT NULL
+- dificuldade VARCHAR NOT NULL
+- erros INT NOT NULL DEFAULT 0
+- vidas_restantes INT NOT NULL
+- vidas_extras_usadas INT NOT NULL DEFAULT 0
+- progresso_atual INT NOT NULL DEFAULT 0
+- questao_atual INT NOT NULL DEFAULT 1
+- current_question_index INT NULL
+- tela_atual VARCHAR NOT NULL
+- tempo_segundos INT NOT NULL DEFAULT 0
+- total_questoes INT NOT NULL
+- itens_json JSONB NOT NULL
+- escudo_ativo BOOLEAN NOT NULL DEFAULT FALSE
+- perguntas_json JSONB NOT NULL
+- charadas_json JSONB NOT NULL
+- pontuacao INT NULL
+- iniciado_em TIMESTAMP NOT NULL
+- concluido_em TIMESTAMP NULL
+- criado_em TIMESTAMP NOT NULL
+- atualizado_em TIMESTAMP NOT NULL
+
+Constraint importante:
+- UNIQUE (desafio_id, usuario_id)
+
+6.5 Tabela salas ou desafios auxiliares de conteudo
+Ha duas opcoes para questoes/charadas:
+
+Opcao A:
+- manter conteudo em arquivos txt/json versionados
+
+Opcao B:
+- mover para banco
+- tabela questoes
+- tabela charadas
+
+Se a ideia for usar admin para editar conteudo no futuro, usar banco.
+Se o conteudo continuar curado manualmente por arquivo, manter em arquivos.
+
+6.6 Tabela ranking_cache ou materializacao
+Em backend proprio, o ideal e nao recalcular ranking toda hora.
+Criar uma tabela ou view materializada, por exemplo:
+
+Tabela ranking_cache_global:
+- id PK fixo
+- user_ranking_json JSONB
+- room_ranking_json JSONB
+- title_board_json JSONB
+- atualizado_em TIMESTAMP
+
+Ou melhor ainda:
+- views materializadas por usuario e por sala
+- tabela de titulos calculados
+
+7. AUTENTICACAO E AUTORIZACAO
+
+7.1 Regras de cadastro
+- Permitir apenas e-mails:
+  - @edu.sc.senai.br
+  - @estudante.sc.senai.br
+
+7.2 Regras de acesso
+Novo usuario so entra se:
+- confirmou e-mail
+- foi aprovado
+
+7.3 Perfis
+- jogador
+- admin
+
+7.4 Em backend proprio
+Recomendacao:
+- usar JWT com refresh token
+- guardar senha com Argon2 ou BCrypt
+- confirmar e-mail por token unico
+- usar middleware de autorizacao por role
+
+8. FLUXO DO JOGADOR EM BACKEND PROPRIO
+
+8.1 Login
+Endpoint sugerido:
+- POST /auth/login
+
+Retorno:
+- token de acesso
+- dados basicos do usuario
+- motivo de bloqueio se nao estiver aprovado ou verificado
+
+8.2 Lobby
+Endpoint sugerido:
+- GET /me/lobby
+
+Deve retornar:
+- nome do jogador
+- sala
+- melhor pontuacao
+- melhor tempo
+- total de desafios concluidos
+- posicao individual
+- posicao da sala
+- titulos
+- medalhas
+- estado do desafio atual
+
+8.3 Comecar ou retomar desafio
+Endpoint sugerido:
+- POST /challenges/current/start
+
+Comportamento:
+- verifica desafio disponivel
+- verifica participacao existente
+- cria ou retoma participacao
+- retorna snapshot completo da tentativa
+
+8.4 Salvar progresso
+Endpoint sugerido:
+- PATCH /challenge-participations/{id}/progress
+
+Deve atualizar:
+- progresso
+- tempo
+- erros
+- vidas
+- itens
+- questao atual
+- tela atual
+
+8.5 Finalizar desafio
+Endpoint sugerido:
+- POST /challenge-participations/{id}/finish
+
+Deve:
+- validar se ainda pode concluir
+- calcular pontuacao
+- gravar pontuacao e concluido_em
+- atualizar ranking/cache
+- devolver resumo final
+
+9. FLUXO DO ADMIN EM BACKEND PROPRIO
+
+9.1 Desafios
+Endpoints sugeridos:
+- GET /admin/challenges
+- POST /admin/challenges
+- GET /admin/challenges/{id}
+- POST /admin/challenges/{id}/cancel
+- POST /admin/challenges/{id}/end
+- POST /admin/challenges/{id}/extend
+- POST /admin/challenges/{id}/activate-now
+
+9.2 Salas
+Endpoints sugeridos:
+- GET /admin/rooms
+- POST /admin/rooms
+- PATCH /admin/rooms/{id}
+- POST /admin/rooms/{id}/move
+- DELETE /admin/rooms/{id}
+
+9.3 Usuarios
+Endpoints sugeridos:
+- GET /admin/users
+- GET /admin/users/pending
+- POST /admin/users/{id}/approve
+- POST /admin/users/{id}/reject
+- PATCH /admin/users/{id}/role
+- PATCH /admin/users/{id}/active
+- PATCH /admin/users/{id}/room
+- DELETE /admin/users/{id}
+
+10. COMO IMPLEMENTAR A LOGICA DE DESAFIO
+
+10.1 Regra de desafio ativo
+Nao confiar apenas no campo status.
+Sempre avaliar:
+- status = ativo
+- agora >= inicio_em
+- agora <= fim_em
+
+10.2 Regra de desafio agendado
+- status = ativo
+- agora < inicio_em
+
+10.3 Regra de encerrado
+- status = encerrado
+ou
+- agora > fim_em
+
+10.4 Regra de cancelado
+- status = cancelado
+- nao entra em ranking
+- continua aparecendo no historico
+
+11. COMO IMPLEMENTAR A LOGICA DE PARTICIPACAO
+
+11.1 Ao iniciar
+- buscar participacao por desafio_id + usuario_id
+- se nao existir, criar
+- se existir:
+  - concluido: bloquear nova tentativa
+  - em_andamento: retomar
+  - expirado: bloquear
+
+11.2 Ao salvar progresso
+- salvar sempre no mesmo registro
+- manter atualizado_em coerente
+- nao recriar tentativa
+
+11.3 Ao finalizar
+- travar se ja estiver concluida
+- calcular score
+- definir status = concluido
+- preencher concluido_em
+
+12. COMO IMPLEMENTAR O CONTEUDO DAS QUESTOES E CHARADAS
+
+12.1 Formato atual das questoes
+Cada bloco tem:
+- TITLE=
+- QUESTION=
+- A=
+- B=
+- C=
+- D=
+- opcionalmente E=
+- CORRECT=
+
+12.2 Formato atual das charadas
+Cada bloco tem:
+- CHARADA= ou RIDDLE=
+- DICA= ou HINT=
+- DICA_EXTRA= ou EXTRA_HINT=
+- RESPOSTA= ou ANSWER=
+
+12.3 Comportamento a preservar
+- questoes sao sorteadas
+- charadas sao sorteadas independentemente
+- uma participacao guarda o snapshot da selecao feita
+
+Recomendacao forte:
+- mover o parser para backend
+- persistir o snapshot sorteado na participacao
+
+13. COMO IMPLEMENTAR O CALCULO DE PONTUACAO
+
+Formula atual:
+- base = 10000
+- penalidade de tempo = tempo_segundos * 2
+- penalidade de erro = erros * 400
+- multiplicador por dificuldade
+
+Multiplicadores:
+- facil = 1/3
+- normal = 2/3
+- hardcore = 1
+
+Regra final:
+- score = max(0, arredondar((10000 - tempo*2 - erros*400) * multiplicador))
+
+14. COMO IMPLEMENTAR O SISTEMA DE VIDAS
+
+Dificuldades:
+- facil: 5 vidas
+- normal: 3 vidas
+- hardcore: 1 vida
+
+Regras:
+- erro normal consome 1 vida
+- escudo anula o proximo erro
+- sem vidas: volta ao inicio da jornada do desafio
+
+Importante:
+- voltar ao inicio nao cria nova participacao
+- apenas reseta estado interno da tentativa
+
+15. COMO IMPLEMENTAR O SISTEMA DE ITENS
+
+Itens atuais:
+- bussola
+- lupa
+- escudo
+- ampulheta
+- chave mestra
+
+Representacao recomendada:
+- JSONB no banco
+- objeto em memoria no backend e frontend
+
+Exemplo:
+{
+  "bussola": 1,
+  "lupa": 0,
+  "escudo": 1,
+  "ampulheta": 0,
+  "chaveMestra": 0
+}
+
+Regras:
+- bussola revela dica extra
+- lupa elimina 2 alternativas erradas
+- escudo anula erro
+- ampulheta reduz 20 segundos
+- chave mestra pula validacao do codigo
+
+16. COMO IMPLEMENTAR O SISTEMA DE RECOMPENSA
+
+Regra atual:
+- ao acertar 3 respostas seguidas dentro de 2 minutos, ganha item aleatorio
+
+Configuracoes:
+- comboRequired = 3
+- comboWindowMs = 120000
+
+Implementacao sugerida:
+- manter streak e timestamp em memoria durante a partida
+- ao atingir o requisito, sortear item
+- persistir inventario atualizado
+
+17. COMO IMPLEMENTAR O RANKING
+
+17.1 Ranking individual
+Base:
+- participacoes concluidas
+- de desafios nao cancelados
+
+Agregado por usuario:
+- pontuacao_total = soma das pontuacoes validas
+- melhor_tempo = menor tempo entre participacoes validas
+- total_desafios_concluidos
+- total_erros
+
+Ordenacao:
+1. pontuacao_total desc
+2. melhor_tempo asc
+
+17.2 Ranking por sala
+Base:
+- usuarios ativos
+- pontuacao acumulada dos usuarios da sala
+
+Formula:
+- media = soma_pontos_sala / total_usuarios_ativos_sala
+
+17.3 Recomendacao de implementacao
+Nao calcular isso em toda requisicao de ranking.
+Use uma destas abordagens:
+
+Opcao A: tabela agregada atualizada por evento
+- ao concluir desafio
+- ao cancelar desafio
+- ao alterar sala
+- ao inativar usuario
+
+Opcao B: materialized views + refresh controlado
+
+Opcao C: job assincrono + cache Redis
+
+Para .NET + PostgreSQL, uma boa combinacao e:
+- tabela agregada + cache Redis opcional
+
+18. COMO IMPLEMENTAR TITULOS, BADGES E MEDALHAS
+
+18.1 Titulos atuais
+- Lendario
+- Relampago
+- Impecavel
+- Campeao local
+- Veterano
+- Persistente
+- Muito rapido
+- Decifrador
+- Campeao em treino
+
+18.2 Regras gerais
+- um usuario pode ter varios titulos
+- no lobby pode haver um titulo principal por prioridade
+- no ranking podem aparecer varios titulos do usuario
+
+18.3 Regras atuais de negocio
+- Lendario: 1o lugar individual geral
+- Relampago: melhor media de tempo elegivel
+- Impecavel: 3 ultimas conclusoes com 0 erros
+- Campeao local: lider da propria sala
+- Veterano: 15 ou mais desafios concluidos
+- Persistente: 8 ou mais desafios concluidos
+- Muito rapido: media recente abaixo de 900 segundos
+- Decifrador: media recente de pontuacao acima de 6000
+- Campeao em treino: titulo padrao
+
+18.4 Medalhas
+Individuais:
+- 1o ouro
+- 2o prata
+- 3o bronze
+
+Da sala:
+- sala em 1o ouro
+- sala em 2o prata
+- sala em 3o bronze
+
+19. COMO IMPLEMENTAR O HISTORICO DE DESAFIOS
+
+Endpoint sugerido:
+- GET /me/challenge-history
+
+Cada item deve retornar:
+- desafio
+- periodo
+- status do desafio
+- status do usuario no desafio
+- pontuacao
+- tempo
+- erros
+- progresso
+- conclusao
+
+Regras de status do usuario:
+- nao_iniciado
+- em_andamento
+- concluido
+- expirado
+- cancelado
+
+20. COMO IMPLEMENTAR O LOBBY
+
+O lobby precisa ser tratado como "hub do jogador".
+
+Deve trazer:
+- nickname
+- sala
+- melhor pontuacao
+- melhor tempo
+- posicao da sala
+- titulo principal
+- medalha individual
+- medalha da sala
+- desafios concluidos
+- estado do desafio atual
+
+O botao principal deve ser:
+- Comecar desafio
+ou
+- Continuar desafio
+ou
+- Desafio concluido
+ou
+- Aguardar desafio
+
+21. COMO IMPLEMENTAR O RESULTADO FINAL
+
+Ao concluir a partida, a API deve devolver:
+- pontuacao final
+- tempo total
+- erros
+- contribuicao para a sala
+- melhor pontuacao atualizada
+- ranking individual atualizado
+- ranking da sala atualizado
+- titulos desbloqueados
+
+A UI deve mostrar:
+- fechamento da jornada
+- sensacao de recompensa
+- feedback textual
+- botoes para ranking, lobby e jogar novamente
+
+22. COMO IMPLEMENTAR O PERFIL DO USUARIO
+
+Regras atuais:
+- usuario pode trocar nome_jogador
+- usuario pode trocar senha confirmando senha atual
+- admin aparece com link para admin
+
+Campos importantes no perfil:
+- nome de acesso
+- nome do jogador
+- e-mail
+- sala
+- role
+
+23. COMO IMPLEMENTAR APROVACAO DE USUARIO
+
+Fluxo atual:
+- novo cadastro entra pendente
+- e-mail precisa ser verificado
+- admin pode aprovar ou recusar
+
+Em backend proprio, a recomendacao e:
+- manter aprovacao_status no banco
+- manter email_verificado no banco
+- bloquear login funcional se qualquer um nao estiver liberado
+
+24. COMO ESTRUTURAR O CODIGO EM .NET
+
+Exemplo de divisao recomendada:
+
+Camada Domain
+- entidades
+- enums
+- regras puras
+
+Camada Application
+- servicos de desafio
+- servicos de ranking
+- servicos de autenticacao
+- servicos de usuario
+
+Camada Infrastructure
+- EF Core
+- repositórios
+- e-mail
+- cache
+
+Camada API
+- controllers
+- middlewares
+- autenticacao JWT
+
+Frontend
+- Razor Pages, Blazor, React, Vue ou HTML/JS separado
+
+25. ENUMS RECOMENDADOS
+
+Criar enums formais para evitar string solta:
+
+UserRole
+- Jogador
+- Admin
+
+AprovacaoStatus
+- Pendente
+- Aprovado
+- Recusado
+
+DesafioStatus
+- Ativo
+- Encerrado
+- Cancelado
+
+ParticipacaoStatus
+- EmAndamento
+- Concluido
+- Expirado
+
+Dificuldade
+- Facil
+- Normal
+- Hardcore
+
+26. REGRAS QUE DEVEM FICAR NO BACKEND
+
+Ao migrar, estas regras nao devem ficar apenas no frontend:
+- validacao de e-mail institucional
+- aprovacao e verificacao de conta
+- verificacao de desafio disponivel
+- tentativa unica por desafio
+- calculo de pontuacao
+- calculo de ranking
+- atribuicao de titulos
+- permissao de admin
+- alteracao de status de desafio
+
+27. O QUE PODE CONTINUAR NO FRONTEND
+
+- animacoes
+- efeitos visuais
+- renderizacao de telas
+- tratamento de inventario em tempo real durante a sessao
+- exibicao de badges
+- efeitos de recompensa
+
+Mas o backend deve validar os eventos importantes no final.
+
+28. CHECKLIST DE RECONSTRUCAO
+
+Etapa 1
+- modelar banco
+- criar enums
+- criar autenticacao
+
+Etapa 2
+- implementar cadastro com aprovacao
+- implementar salas
+- implementar perfil
+
+Etapa 3
+- implementar desafios
+- implementar participacoes
+- implementar selecao de questoes e charadas
+
+Etapa 4
+- implementar pontuacao
+- implementar vidas
+- implementar itens
+- implementar recompensa por combo
+
+Etapa 5
+- implementar ranking
+- implementar titulos
+- implementar historico
+
+Etapa 6
+- implementar admin
+- implementar cache
+- implementar auditoria e logs
+
+29. CRITERIOS DE ACEITE PARA DIZER QUE A MIGRACAO CHEGOU NO MESMO RESULTADO
+
+Considere a migracao bem sucedida se:
+
+- usuario consegue cadastrar e entrar com as mesmas restricoes
+- admin consegue aprovar usuarios
+- lobby exibe informacoes equivalentes
+- desafio atual respeita inicio e fim
+- tentativa unica funciona
+- retomada funciona
+- pontuacao bate com a formula atual
+- ranking individual bate com o acumulado
+- ranking da sala bate com media dos ativos
+- titulos principais batem com as regras atuais
+- historico mostra os mesmos estados
+- resultado final mostra os mesmos dados essenciais
+
+30. RECOMENDACAO FINAL DE IMPLEMENTACAO
+
+Para .NET + PostgreSQL, o caminho mais seguro e:
+- ASP.NET Core Web API
+- EF Core
+- PostgreSQL
+- JWT
+- Hangfire ou BackgroundService para jobs
+- Redis opcional para cache
+
+Se a prioridade for fidelidade ao comportamento atual:
+- implementar primeiro a regra
+- depois o visual
+- so por ultimo otimizar
+
+Se a prioridade for estabilidade para producao:
+- mover toda regra critica para backend
+- deixar o frontend como consumidor de API
+- manter logs de auditoria para admin e desafio
+
+Fim do documento.

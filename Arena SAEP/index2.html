@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Firebase</title>
+</head>
+
+<body>
+    <h1>Teste Firebase</h1>
+    <button id="salvar">Salvar teste</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuc2r0zz22aZUbO99YG3MNnHxbpGBzgrw",
+            authDomain: "onepieceestudantil.firebaseapp.com",
+            projectId: "onepieceestudantil",
+            storageBucket: "onepieceestudantil.firebasestorage.app",
+            messagingSenderId: "655412606407",
+            appId: "1:655412606407:web:08ce540dc5e25e996555e2",
+            measurementId: "G-4PHP8XEG5M"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById("salvar").addEventListener("click", async () => {
+            try {
+                const docRef = await addDoc(collection(db, "teste"), {
+                    mensagem: "Funcionou",
+                    criadoEm: new Date().toISOString()
+                });
+
+                alert("Documento salvo com ID: " + docRef.id);
+                console.log("Salvo com sucesso:", docRef.id);
+            } catch (error) {
+                console.error("Erro ao salvar:", error);
+                alert("Erro ao salvar. Veja o console.");
+            }
+        });
+    </script>
+</body>
+
+</html>

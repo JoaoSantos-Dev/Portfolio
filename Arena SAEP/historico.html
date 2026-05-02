@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Histórico de Desafios | Quiz Caça ao Tesouro</title>
+    <link rel="stylesheet" href="./ranking.css" />
+</head>
+
+<body class="history-page">
+    <div class="container">
+        <div class="topbar">
+            <a class="button-link button-secondary" href="./cacaaotesouro.html">Lobby</a>
+            <a class="button-link button-secondary" href="./ranking.html">Ranking</a>
+            <a id="historyUserLink" class="button-link button-secondary hidden" href="./user.html">Usuário</a>
+            <a id="historyAdminLink" class="button-link hidden" href="./admin.html">Admin</a>
+            <button id="historyLogoutButton" type="button" class="hidden">Sair</button>
+        </div>
+
+        <h1>Histórico de desafios</h1>
+        <p class="subtitle">Veja os desafios criados, o seu status em cada um deles e o resultado das suas participações.</p>
+
+        <div id="historyStatus" class="status info">Carregando histórico...</div>
+        <div id="historyEmpty" class="empty-state" hidden>Nenhum desafio foi encontrado ainda.</div>
+
+        <table id="historyTable" class="history-table" hidden>
+            <thead>
+                <tr>
+                    <th>Desafio</th>
+                    <th>Período</th>
+                    <th>Status do desafio</th>
+                    <th>Seu status</th>
+                    <th>Pontuação</th>
+                    <th>Tempo</th>
+                    <th>Erros</th>
+                    <th>Progresso</th>
+                    <th>Conclusão</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+        </table>
+    </div>
+
+    <script type="module" src="./historico.js"></script>
+</body>
+
+</html>

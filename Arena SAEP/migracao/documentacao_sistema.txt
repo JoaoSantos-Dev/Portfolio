@@ -1,0 +1,510 @@
+DOCUMENTACAO DO SISTEMA
+Quiz Caca ao Tesouro
+Baseado no codigo atual do projeto em onepiece/
+
+1. ARQUITETURA GERAL DO SISTEMA
+
+O sistema e uma aplicacao web frontend, sem backend proprio, apoiada em:
+- Firebase Authentication para login, cadastro e sessao
+- Cloud Firestore para perfis, salas, desafios, participacoes e cache de ranking
+- Arquivos locais questoes.txt e charadas.txt para o conteudo pedagogico
+
+A aplicacao principal do jogo fica em:
+- cacaaotesouro.html
+- cacaaotesouro.css
+- game.js e modulos auxiliares
+
+A arquitetura do jogo foi organizada em modulos pequenos:
+- configuracao: game-config.js
+- estado global da partida: game-state.js
+- autenticacao e agregacoes de ranking: game-auth.js
+- salas: room-service.js
+- desafios e participacoes: challenge-service.js
+- fluxo principal do jogo: game-flow.js
+- persistencia da tentativa em andamento: game-run-service.js
+- UI: game-ui.js
+- temporizador: game-timer.js
+- parser dos txt: game-parser.js
+- regras de pontuacao: game-score.js
+- utilitarios: game-utils.js
+- itens e recompensas: game-items.js e game-combo.js
+- bootstrap da pagina: game-boot.js
+
+O arquivo game.js instancia todos os modulos, injeta dependencias entre eles e inicializa a aplicacao.
+
+2. FLUXO DE TELAS
+
+Fluxo principal do jogador:
+- Tela de login/cadastro
+- Lobby
+- Partida do desafio atual
+- Tela de resultado final
+- Ranking ou volta ao lobby
+
+Telas auxiliares:
+- user.html: perfil do usuario
+- ranking.html: ranking geral individual, ranking por sala e quadro de titulos
+- historico.html: historico de desafios do usuario
+- admin.html: painel administrativo de desafios e salas
+- admin-users.html: aprovacao e gestao de usuarios
+
+3. FLUXO DO USUARIO
+
+3.1 Login e cadastro
+- O usuario pode se cadastrar apenas com e-mails:
+  - @edu.sc.senai.br
+  - @estudante.sc.senai.br
+- O cadastro cria usuario no Firebase Auth e perfil em Firestore na colecao usuarios
+- Novos cadastros entram com aprovacaoStatus = "pendente"
+- Tambem e enviado e-mail de verificacao
+- O acesso ao sistema so e liberado quando:
+  - o e-mail for verificado
+  - o perfil estiver aprovado
+
+3.2 Entrada no sistema
+- Ao autenticar, o sistema carrega o perfil
+- Se houver redirect na URL, o usuario e enviado para a tela pedida
+- Se o usuario nao tiver nomeJogador resolvido, permanece na etapa inicial do fluxo
+- Caso contrario, entra no lobby
+
+3.3 Lobby
+- O lobby mostra identidade, sala, recorde, melhor tempo, titulos e estado do desafio atual
+- O botao principal nao inicia cronometro
+- O cronometro so inicia quando o usuario realmente entra na questao apos validar um codigo ou usar item que abra a pergunta
+
+3.4 Inicio do desafio
+- O sistema busca o desafio disponivel
+- Se nao houver desafio valido na janela atual, o usuario fica no lobby com mensagem
+- Se houver participacao em andamento, ele retoma
+- Se ja tiver concluido, nao pode jogar de novo
+- Se nunca iniciou, a participacao e criada
+
+3.5 Partida
+- O jogo carrega questoes de questoes.txt
+- O jogo carrega charadas de charadas.txt
+- As questoes do desafio sao sorteadas a partir do total disponivel
+- As charadas tambem sao sorteadas independentemente
+- O usuario resolve a charada, encontra o codigo fisico e digita no sistema
+- Depois responde a questao de multipla escolha
+- O progresso e sincronizado na participacao
+
+3.6 Resultado final
+- Ao concluir a ultima questao, o sistema:
+  - encerra a tentativa
+  - calcula pontuacao
+  - salva os dados da participacao
+  - atualiza o cache de ranking
+  - monta os dados de resumo final
+- Depois o usuario pode:
+  - ver ranking
+  - voltar ao lobby
+  - jogar novamente quando houver novo desafio valido
+
+4. FLUXO DO ADMIN
+
+4.1 Painel admin.html
+- Listar desafios
+- Criar desafio
+- Abrir modal de desafio
+- Encerrar desafio antes do prazo
+- Cancelar desafio logicamente
+- Prolongar prazo
+- Ativar imediatamente desafio agendado
+- Criar, renomear, reordenar e excluir salas
+
+4.2 Painel admin-users.html
+- Listar usuarios aprovados
+- Listar usuarios pendentes
+- Buscar usuarios por nome ou e-mail
+- Aprovar ou recusar cadastros pendentes
+- Alterar sala do usuario
+- Alterar status ativo/inativo
+- Tornar admin ou remover admin
+- Excluir dados do usuario no Firestore
+
+Observacao:
+- A exclusao remove perfil e dados no Firestore, mas a conta do Firebase Auth pode continuar existindo
+
+5. ESTRUTURA DO FIREBASE
+
+5.1 Authentication
+- Login por e-mail e senha
+- Verificacao de e-mail
+- Mudanca de senha com reautenticacao
+
+5.2 Firestore
+Colecoes usadas no codigo atual:
+- usuarios
+- salas
+- desafios
+- participacoesDesafio
+- meta
+- ranking
+- tentativas
+
+Observacao:
+- ranking e tentativas existem em CONFIG, mas o fluxo atual principal usa participacoesDesafio como registro central da tentativa de desafio
+- meta guarda o cache global de ranking
+
+6. COLECOES E CAMPOS PRINCIPAIS
+
+6.1 usuarios
+Campos observados no codigo:
+- uid
+- nomeAcesso
+- nomeJogador
+- email
+- sala
+- dificuldadePreferida
+- role
+- ativo
+- aprovacaoStatus
+- aprovadoEm
+- revisadoEm
+- criadoEm
+
+Observacoes:
+- role: "jogador" ou "admin"
+- ativo controla participacao no ranking de sala
+- usuarios legados sem aprovacaoStatus sao tratados como aprovados
+
+6.2 salas
+Campos:
+- nome
+- ordem
+- criadoEm
+
+6.3 desafios
+Campos:
+- titulo
+- quantidadeQuestoes
+- inicioEm
+- fimEm
+- status
+- criadoPor
+- criadoEm
+- atualizadoEm
+
+Status persistidos:
+- ativo
+- encerrado
+- cancelado
+
+Status derivados na interface:
+- agendado
+- ativo
+- encerrado
+- cancelado
+
+6.4 participacoesDesafio
+Campos efetivamente usados:
+- participacaoId
+- desafioId
+- nome
+- salaId
+- uid
+- email
+- iniciadoEm
+- concluidoEm
+- status
+- dificuldade
+- erros
+- vidasRestantes
+- vidasExtrasUsadas
+- progressoAtual
+- questaoAtual
+- currentQuestionIndex
+- telaAtual
+- tempoSegundos
+- totalQuestoes
+- itens
+- escudoAtivo
+- perguntas
+- charadas
+- criadoEm
+- atualizadoEm
+- pontuacao
+
+Observacao:
+- a participacao armazena snapshot da tentativa, inclusive perguntas e charadas sorteadas, o que permite retomada consistente
+
+6.5 meta/rankingCache
+Documento usado:
+- meta/rankingCache
+
+Campos principais:
+- userRanking
+- roomRanking
+- titleBoard
+- updatedAt
+
+Esse cache foi introduzido para reduzir leituras no lobby, resultado e ranking.
+
+7. LOGICA DE DESAFIOS
+
+Implementada principalmente em challenge-service.js.
+
+Regras:
+- O desafio so pode ser jogado dentro da janela inicioEm/fimEm
+- Desafios expirados com status ativo sao convertidos para encerrado por markExpiredChallenges()
+- O sistema pode ter mais de um desafio cadastrado, mas o jogador usa o primeiro desafio valido encontrado por getActiveChallenge()
+- Desafio cancelado continua no historico, mas nao conta no ranking
+
+Funcoes principais:
+- markExpiredChallenges()
+- listChallenges()
+- getActiveChallenge()
+- getChallengeById()
+- createChallenge()
+- cancelChallenge()
+- endChallenge()
+- extendChallenge()
+- activateChallengeNow()
+
+8. LOGICA DE PARTICIPACOES
+
+Implementada em challenge-service.js e game-run-service.js.
+
+Fluxo:
+- Ao iniciar um desafio, o sistema verifica se ja existe participacao para uid + desafioId
+- Se nao existir, cria nova participacao
+- Se existir e estiver em andamento, retoma
+- Se estiver concluida, bloqueia nova tentativa
+- Se o prazo estiver vencido, marca como expirado
+
+Persistencia da tentativa:
+- game-run-service.js faz sync incremental com updateDoc()
+- Cada sincronizacao grava o estado atual da tentativa
+- A finalizacao grava status final, concluidoEm e dados consolidados
+
+Funcoes principais:
+- ChallengeService.getUserParticipation()
+- ChallengeService.createParticipation()
+- ChallengeService.updateParticipation()
+- ChallengeService.getAvailableChallengeForUser()
+- RunService.beginTracking()
+- RunService.sync()
+- RunService.finalize()
+
+Observacao importante:
+- recoverAbandonedPreviousRun() hoje apenas limpa ou valida o localStorage e nao faz restauracao completa a partir do banco
+- A retomada real da tentativa acontece pelo fluxo de participacao atual do desafio
+
+9. LOGICA DE RANKING
+
+Implementada em game-auth.js e challenge-service.js.
+
+Modelo atual:
+- O ranking nao e recalculado por varredura completa em toda tela
+- O sistema usa cache em meta/rankingCache
+- O cache pode ser:
+  - reconstruido completamente por rebuildRankingCache()
+  - atualizado incrementalmente por updateRankingCacheWithResult()
+
+Ranking individual:
+- soma pontuacaoTotal valida por usuario
+- melhorTempo registra o menor tempo ja obtido
+- totalDesafiosConcluidos soma participacoes concluidas validas
+- totalErros soma erros acumulados
+- criterio de ordenacao:
+  - maior pontuacaoTotal
+  - em empate, menor melhorTempo
+
+Ranking por sala:
+- soma da pontuacao total dos usuarios ativos da sala
+- dividida pelo totalUsuariosAtivos da sala
+- ordenada por media decrescente
+
+Titulos e quadro de titulos:
+- calculados a partir do ranking agregado e das ultimas partidas relevantes
+- titleBoard exibe somente titulos marcados como publicBoard
+
+Funcoes principais:
+- getRecentAverageMetrics()
+- getPlayerTitles()
+- buildRankingContext()
+- buildTitleBoard()
+- rebuildRankingCache()
+- updateRankingCacheWithResult()
+- getCachedRankingContext()
+- getUserGameInsights()
+- ChallengeService.getRankingData()
+
+10. PRINCIPAIS ARQUIVOS DO PROJETO
+
+Aplicacao principal:
+- cacaaotesouro.html: tela principal do jogo
+- cacaaotesouro.css: estilo principal
+- game.js: montagem do sistema
+
+Nucleo do jogo:
+- game-config.js
+- game-state.js
+- game-flow.js
+- game-ui.js
+- game-utils.js
+- game-score.js
+- game-timer.js
+- game-parser.js
+- game-items.js
+- game-combo.js
+- game-run-service.js
+- game-dom.js
+- game-audio.js
+
+Autenticacao e dados:
+- game-auth.js
+- room-service.js
+- challenge-service.js
+- game-boot.js
+
+Telas auxiliares:
+- ranking.html / ranking.css
+- user.html / user.css / user.js
+- historico.html / historico.js
+- admin.html / admin.css / admin.js
+- admin-users.html / admin-users.css / admin-users.js
+
+Conteudo pedagogico:
+- questoes.txt
+- charadas.txt
+
+11. FUNCOES MAIS IMPORTANTES
+
+11.1 Inicializacao
+- game.js: cria todos os modulos e inicia Boot
+- game-boot.js:
+  - bindEvents()
+  - init()
+
+11.2 Autenticacao
+- game-auth.js:
+  - register()
+  - signIn()
+  - signOutUser()
+  - loadProfile()
+  - syncEmailVerificationApproval()
+  - updateOwnProfile()
+  - changePassword()
+  - watchSession()
+
+11.3 Fluxo de jogo
+- game-flow.js:
+  - enterLobby()
+  - startMatch()
+  - openQuestionByCode()
+  - handleAnswer()
+  - finishGame()
+  - restartGame()
+  - savePlayer()
+
+11.4 Dados de desafios
+- challenge-service.js:
+  - getAvailableChallengeForUser()
+  - getUserHistory()
+  - getRankingData()
+
+11.5 Ranking
+- game-auth.js:
+  - getUserGameInsights()
+  - rebuildRankingCache()
+  - updateRankingCacheWithResult()
+  - getCachedRankingContext()
+
+11.6 Parser de conteudo
+- game-parser.js:
+  - parseQuestions()
+  - parseRiddles()
+  - parseQuestionBlock()
+  - parseRiddleBlock()
+
+12. FORMATO DOS ARQUIVOS DE CONTEUDO
+
+12.1 questoes.txt
+Formato por bloco separado por:
+- ---
+
+Campos aceitos:
+- TITLE=
+- QUESTION=
+- A=
+- B=
+- C=
+- D=
+- E= (opcional se existir)
+- CORRECT=
+
+Uma questao precisa ter:
+- titulo
+- enunciado
+- resposta correta
+- pelo menos 2 alternativas
+
+12.2 charadas.txt
+Formato por bloco separado por:
+- ---
+
+Campos aceitos:
+- CHARADA= ou RIDDLE=
+- DICA= ou HINT=
+- DICA_EXTRA= ou EXTRA_HINT=
+- RESPOSTA= ou ANSWER=
+
+Uma charada precisa ter:
+- charada
+- dica principal
+- resposta
+
+A dica extra e opcional.
+
+13. OBSERVACOES DE MANUTENCAO
+
+13.1 Cache de ranking
+- O cache global reduz leituras, mas exige cuidado quando dados estruturais mudam
+- Sempre que uma alteracao puder afetar ranking ou titulos, considerar rebuildRankingCache()
+- Hoje ele ja e chamado em pontos criticos como:
+  - cancelamento de desafio
+  - alteracao relevante de perfil
+  - exclusao de usuario
+
+13.2 Participacao guarda snapshot das perguntas
+- Isso facilita retomada
+- Mas aumenta o tamanho do documento
+- Se o projeto crescer muito, pode valer revisar essa estrategia no futuro
+
+13.3 Leitura de salas
+- O sistema ainda consulta salas em varios pontos
+- Funciona bem no estado atual, mas e um ponto natural para cache futuro
+
+13.4 Regras de aprovacao
+- O fluxo atual mistura verificacao de e-mail e aprovacao administrativa
+- Usuarios antigos sem aprovacaoStatus continuam aceitos por compatibilidade
+
+13.5 Sem backend proprio
+- Toda a regra critica esta no frontend
+- Isso e pratico para prototipo e uso controlado
+- Para escalar mais, o ideal futuro e mover operacoes sensiveis para backend ou Cloud Functions
+
+13.6 Storage nao esta em uso
+- Atualmente nao ha upload de imagem de perfil
+- Isso evita custo e complexidade de Storage, mas limita evolucao visual
+
+13.7 Arquivos index2.html e ranking/runs legados
+- Existem artefatos e colecoes antigas no projeto
+- Antes de limpar, revisar se ainda ha dependencia manual ou historica
+
+14. RESUMO DE MANUTENCAO FUTURA
+
+Para expandir o sistema com menor risco, os pontos de entrada mais seguros sao:
+- novos ajustes visuais: game-ui.js, cacaaotesouro.css, ranking.css, admin.css, user.css
+- novas regras de jogo: game-flow.js, game-score.js, game-items.js, game-combo.js
+- novas regras de desafio: challenge-service.js
+- novas regras de ranking e titulos: game-auth.js
+- novos campos de usuario: game-auth.js, user.js, admin-users.js
+
+Se houver mudanca estrutural no modelo de desafios, participacoes ou ranking, revisar em conjunto:
+- challenge-service.js
+- game-auth.js
+- game-flow.js
+- ranking.html
+- historico.js

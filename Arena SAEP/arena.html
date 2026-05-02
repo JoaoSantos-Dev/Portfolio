@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Caça ao Tesouro</title>
+    <link rel="stylesheet" href="./cacaaotesouro.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="hero">
+            <div>
+                <div class="hero-badge">Aventura em equipe</div>
+                <h1>Quiz Caça ao Tesouro</h1>
+                <p class="subtitle">
+                    Encontre o código, desbloqueie a etapa e responda antes do tempo pesar.
+                </p>
+                <div class="hero-chips">
+                    <span class="hero-chip">10 questões por partida</span>
+                    <span class="hero-chip">Ranking individual</span>
+                    <span class="hero-chip">Ranking por sala</span>
+                </div>
+            </div>
+
+            <div class="topbar">
+                <a id="topUserLink" class="button-link button-secondary hidden" href="./user.html">Usuário</a>
+                <a id="topAdminLink" class="button-link hidden" href="./admin.html">Admin</a>
+                <button id="topLogoutButton" type="button" class="hidden">Sair</button>
+            </div>
+        </div>
+
+        <div id="introStrip" class="intro-strip">
+            <div class="intro-card">
+                <strong>1. Ache o código</strong>
+                <span>Resolva a charada e encontre o código físico da etapa.</span>
+            </div>
+            <div class="intro-card">
+                <strong>2. Responda rápido</strong>
+                <span>Tempo e erros pesam na sua pontuação final.</span>
+            </div>
+            <div class="intro-card">
+                <strong>3. Leve pontos para a sala</strong>
+                <span>Sua conta soma no ranking individual e no ranking coletivo.</span>
+            </div>
+        </div>
+
+        <div id="loginScreen" class="card hidden">
+            <div class="section-tag">Entrada</div>
+            <h2>Entrar na aventura</h2>
+            <p class="card-text">Use seu e-mail institucional e sua senha para continuar de onde parou.</p>
+            <label for="loginEmailInput">E-mail</label>
+            <input type="email" id="loginEmailInput" placeholder="Digite seu e-mail" autocomplete="email" />
+            <label for="loginPasswordInput">Senha</label>
+            <input type="password" id="loginPasswordInput" placeholder="Digite sua senha"
+                autocomplete="current-password" />
+            <div class="button-group">
+                <button id="loginButton" type="button">Entrar</button>
+                <button id="showRegisterButton" class="button-secondary" type="button">Criar conta</button>
+                <button id="resendVerificationButton" class="button-secondary" type="button">Reenviar
+                    confirmação</button>
+            </div>
+            <div id="loginMessage"></div>
+        </div>
+
+        <div id="registerScreen" class="card hidden">
+            <div class="section-tag">Primeira vez aqui?</div>
+            <h2>Criar conta</h2>
+            <p class="card-text">Cadastre seu acesso com e-mail institucional do SENAI e aguarde a aprovação da equipe.
+            </p>
+            <label for="registerNameInput">Nome de acesso</label>
+            <input type="text" id="registerNameInput" placeholder="Digite o nome do usuário" maxlength="40" />
+            <label for="registerEmailInput">E-mail</label>
+            <input type="email" id="registerEmailInput"
+                placeholder="nome@edu.sc.senai.br ou nome@estudante.sesisenai.org.br" autocomplete="email" />
+            <label for="registerPasswordInput">Senha</label>
+            <input type="password" id="registerPasswordInput" placeholder="Crie uma senha com pelo menos 6 caracteres"
+                autocomplete="new-password" />
+            <div class="setup-box">
+                <h3>Sala da sua equipe</h3>
+                <p class="setup-note">Essa sala entra no ranking coletivo.</p>
+                <div class="room-grid" id="registerRoomGrid"></div>
+            </div>
+            <div class="button-group">
+                <button id="registerButton" type="button">Enviar cadastro</button>
+                <button id="backToLoginButton" class="button-secondary" type="button">Voltar ao login</button>
+            </div>
+            <div id="registerMessage"></div>
+        </div>
+
+        <div id="playerScreen" class="card hidden">
+            <div class="section-tag">Preparação da partida</div>
+            <h2>Nome do jogador</h2>
+            <p class="card-text">Esse nome aparece no ranking e no resultado final.</p>
+            <label for="playerNameInput">Nome</label>
+            <input type="text" id="playerNameInput" placeholder="Digite o nome do jogador" maxlength="40" />
+            <div class="setup-box">
+                <h3>Sua sala</h3>
+                <p class="setup-note">A sala da conta já entra automaticamente no ranking coletivo.</p>
+                <div class="status info" id="playerRoomSummary">Sala atual: -</div>
+            </div>
+            <button id="savePlayerNameButton" type="button">Salvar e ir ao lobby</button>
+            <div id="playerNameMessage"></div>
+        </div>
+
+        <div id="lobbyScreen" class="card hidden">
+            <div class="section-tag">Lobby</div>
+            <div class="lobby-identity">
+                <div class="lobby-player-name" id="lobbyPlayerName">-</div>
+                <div class="lobby-player-meta" id="lobbyIdentityLine">Sala: - • Recorde: - • Melhor tempo: -</div>
+                <div class="lobby-room-rank" id="lobbyRoomPosition">Sala ainda sem posição</div>
+            </div>
+            <div id="lobbyChallengeStatus" class="status info">Verificando desafio atual...</div>
+
+            <div class="lobby-status-strip">
+                <div id="lobbyTitleChip" class="status-chip title-chip">⭐ Título: Decifrador</div>
+                <div id="lobbyIndividualMedal" class="status-chip medal-chip hidden">Individual</div>
+                <div id="lobbyRoomMedal" class="status-chip room-chip hidden">Sala</div>
+                <div id="lobbyMatchesChip" class="status-chip neutral-chip">0 desafios concluídos</div>
+            </div>
+
+            <div class="lobby-hero">
+                <h2>Pronto para a próxima rodada?</h2>
+                <p class="card-text">Sua aventura começa quando você clicar em começar.</p>
+                <button id="startMatchButton" class="lobby-primary" type="button">Começar desafio</button>
+            </div>
+
+            <div class="lobby-actions">
+                <a class="button-link button-secondary" href="./user.html">Perfil</a>
+                <a class="button-link button-secondary" href="./historico.html">Histórico de desafios</a>
+                <a class="button-link button-secondary" href="./ranking.html">Ranking</a>
+                <button id="showHowToPlayButton" class="button-secondary" type="button">Como jogar</button>
+                <button id="lobbyLogoutButton" type="button">Sair</button>
+                <a id="lobbyAdminLink" class="button-link hidden" href="./admin.html">Admin</a>
+            </div>
+            <div id="lobbyMessage"></div>
+        </div>
+
+        <div id="difficultyScreen" class="card hidden">
+            <div class="section-tag">Escolha da rodada</div>
+            <h2>Selecione a dificuldade deste desafio</h2>
+            <p class="card-text">A escolha vale apenas para a rodada atual. Mais vidas deixam a jornada mais segura, mas reduzem a pontuação.</p>
+            <div class="setup-box">
+                <h3>Modos disponíveis</h3>
+                <div class="difficulty-grid" id="difficultyGrid">
+                    <button type="button" class="difficulty-card" data-difficulty="facil">
+                        <strong>Fácil</strong>
+                        <span>5 vidas</span>
+                        <span>1/3 da pontuação</span>
+                    </button>
+                    <button type="button" class="difficulty-card selected" data-difficulty="normal">
+                        <strong>Normal</strong>
+                        <span>3 vidas</span>
+                        <span>2/3 da pontuação</span>
+                    </button>
+                    <button type="button" class="difficulty-card" data-difficulty="hardcore">
+                        <strong>Hardcore</strong>
+                        <span>1 vida</span>
+                        <span>3/3 da pontuação</span>
+                    </button>
+                </div>
+                <div class="rule-pills">
+                    <span class="rule-pill">Sem vidas: volta ao início</span>
+                    <span class="rule-pill">Vida extra: +30s no tempo</span>
+                    <span class="rule-pill">A escolha vale só para esta tentativa</span>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="confirmDifficultyButton" type="button">Iniciar com este modo</button>
+                <button id="backToLobbyFromDifficultyButton" class="button-secondary" type="button">Voltar ao lobby</button>
+            </div>
+            <div id="difficultyMessage"></div>
+        </div>
+
+        <div id="howToPlayScreen" class="card hidden">
+            <div class="section-tag">Como jogar</div>
+            <h2>Como funciona a aventura</h2>
+            <div class="howto-grid">
+                <div class="intro-card">
+                    <strong>1. Como a partida começa</strong>
+                    <span>A partida só começa quando você clicar em <strong>Começar partida</strong> no lobby.</span>
+                </div>
+                <div class="intro-card">
+                    <strong>2. Objetivo da aventura</strong>
+                    <span>Chegue ao fim com rapidez, poucos erros e ajudando sua sala a subir no ranking.</span>
+                </div>
+                <div class="intro-card">
+                    <strong>3. Cada etapa começa com uma charada</strong>
+                    <span>Resolva a pista, encontre o código físico e digite no sistema para liberar a questão.</span>
+                </div>
+                <div class="intro-card">
+                    <strong>4. Responda uma questão por vez</strong>
+                    <span>Depois de liberar a etapa, responda a questão atual para continuar a jornada.</span>
+                </div>
+                <div class="intro-card">
+                    <strong>5. O tempo influencia</strong>
+                    <span>O cronômetro pesa na pontuação final. Quanto mais rápido você terminar, melhor.</span>
+                </div>
+                <div class="intro-card">
+                    <strong>6. Os erros influenciam</strong>
+                    <span>Erros reduzem sua pontuação e, dependendo do modo, também podem consumir vidas.</span>
+                </div>
+                <div class="intro-card">
+                    <strong>7. Ranking individual</strong>
+                    <span>Seu desempenho entra no ranking pessoal com foco em pontuação e tempo.</span>
+                </div>
+                <div class="intro-card">
+                    <strong>8. Ranking por sala</strong>
+                    <span>Sua sala sobe quando os jogadores dela conseguem boas pontuações e bons resultados.</span>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="backToLobbyButton" type="button">Voltar ao lobby</button>
+            </div>
+        </div>
+
+        <div id="gameContent" class="hidden">
+            <div class="player-panel">
+                <div>
+                    <div class="player-name" id="playerNameDisplay">Jogador</div>
+                    <div class="account-email" id="accountEmailDisplay">Sem sessão</div>
+                    <div class="player-meta">
+                        <span id="roomDisplay">Sala: -</span>
+                        <span id="timerDisplay">Tempo: 00:00</span>
+                        <span id="errorsDisplay">Erros: 0</span>
+                        <span id="difficultyDisplay">Modo: Normal</span>
+                        <span id="livesDisplay" class="life-chip safe">Vidas: 3</span>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="changeNameButton" class="button-secondary" type="button">Trocar nome</button>
+                    <button id="logoutButton" type="button">Sair</button>
+                </div>
+            </div>
+
+            <div class="progress-shell">
+                <div class="progress" id="journeyProgressText">Progresso da jornada: 0%</div>
+                <div class="progress-track">
+                    <div class="progress-bar" id="journeyProgressBar"></div>
+                </div>
+            </div>
+
+            <div id="inventoryPanel" class="inventory-panel hidden">
+                <div class="inventory-title">Inventário</div>
+                <div class="inventory-grid" id="inventoryGrid"></div>
+            </div>
+
+            <div id="loadingScreen" class="card">
+                <h2>Carregando questões...</h2>
+                <div id="loadingMessage" class="status info">Lendo o arquivo <code>questoes.txt</code>.</div>
+                <div class="footer-note">
+                    Deixe o arquivo <code>cacaaotesouro.html</code> e o arquivo <code>questoes.txt</code> na mesma
+                    pasta.
+                </div>
+            </div>
+
+            <div id="startScreen" class="card hidden">
+                <div class="section-tag">Etapa atual</div>
+                <h2>Descubra o código</h2>
+                <div class="progress" id="codeStepText"></div>
+                <p id="codeInstruction" class="card-text">Digite o código para acessar a questão atual.</p>
+                <div id="codeHintWrapper" class="hidden">
+                    <div id="codeCheckpointMessage" class="status success"></div>
+                    <div id="codeHint" class="hint"></div>
+                    <div id="codeExtraHint" class="hint hidden"></div>
+                </div>
+                <label for="codeInput">Código</label>
+                <input type="text" id="codeInput" placeholder="Digite o código da etapa atual" autocomplete="off" />
+                <button id="checkCodeButton" type="button">Liberar questão</button>
+                <div id="codeMessage"></div>
+            </div>
+
+            <div id="questionScreen" class="card hidden">
+                <div class="progress" id="progressText"></div>
+                <h2 id="questionTitle">Questão</h2>
+                <p id="questionText"></p>
+                <div id="optionsContainer"></div>
+                <div id="answerMessage"></div>
+            </div>
+
+            <div id="finalScreen" class="card hidden">
+                <div class="section-tag">Fim da jornada</div>
+                <h2>Parabéns</h2>
+                <div class="status success">Você concluiu o desafio com sucesso.</div>
+                <p id="finalText">Todas as questões foram respondidas corretamente.</p>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Jogador</span>
+                        <span class="summary-value" id="finalPlayerName">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Pontuação</span>
+                        <span class="summary-value" id="finalScore">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Tempo</span>
+                        <span class="summary-value" id="finalTime">00:00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Erros</span>
+                        <span class="summary-value" id="finalErrors">0</span>
+                    </div>
+                </div>
+                <div class="performance-banner">
+                    <span class="performance-title">Desempenho do Jogador</span>
+                    <span class="performance-rank" id="finalPerformanceTitle">Explorador Ágil</span>
+                    <p class="performance-description" id="finalPerformanceDescription"></p>
+                </div>
+                <div class="life-panel">
+                    <div id="finalDifficultyBadge" class="life-chip safe">Modo: Normal</div>
+                    <div id="finalLivesBadge" class="life-chip">Vidas restantes: 0</div>
+                </div>
+                <div class="summary-grid final-details-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Contribuição para a sala</span>
+                        <span class="summary-value" id="finalContribution">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Recorde pessoal</span>
+                        <span class="summary-value lobby-small" id="finalPersonalRecord">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Ranking individual</span>
+                        <span class="summary-value lobby-small" id="finalIndividualRank">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Ranking da sala</span>
+                        <span class="summary-value lobby-small" id="finalRoomRank">-</span>
+                    </div>
+                </div>
+                <div class="feedback-list" id="finalFeedbackList"></div>
+                <div id="saveStatus"></div>
+                <div class="button-group">
+                    <button id="restartButton" type="button">Jogar novamente</button>
+                    <button id="backToLobbyAfterResultButton" class="button-secondary" type="button">Voltar ao
+                        lobby</button>
+                    <a class="button-link button-secondary" href="./ranking.html">Ver ranking</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rewardOverlay" class="reward-overlay hidden">
+        <div class="reward-box">
+            <div class="reward-badge">Baú de Recompensa</div>
+            <h2>Item desbloqueado</h2>
+            <p class="reward-description">
+                Você acertou 3 seguidas em menos de 2 minutos. O cronômetro está pausado enquanto o prêmio é revelado.
+            </p>
+            <div class="reward-wheel">
+                <div id="rewardItemName" class="reward-item-name">...</div>
+            </div>
+            <p id="rewardItemDescription" class="reward-description"></p>
+            <button id="rewardContinueButton" type="button" class="hidden">Continuar</button>
+        </div>
+    </div>
+
+    <div id="titleUnlockOverlay" class="reward-overlay hidden">
+        <div class="reward-box title-unlock-box">
+            <div class="reward-badge">Nova conquista</div>
+            <h2>Título desbloqueado</h2>
+            <p class="reward-description">
+                Seu desempenho rendeu um novo título no Caça ao Tesouro.
+            </p>
+            <div id="titleUnlockList" class="title-unlock-list"></div>
+            <button id="titleUnlockContinueButton" type="button">Continuar</button>
+        </div>
+    </div>
+
+    <script type="module" src="./game.js"></script>
+</body>
+
+</html>
