@@ -39,7 +39,6 @@
     ],
     profissionais: [
       "Profissional",
-      "Portfólio",
       "Gameplay Programming",
       "Game Design",
       "Level Design",
@@ -122,7 +121,7 @@
   const CUSTOM_RESOURCES_KEY = "radar-custom-resources";
   const NEW_CARD_DRAFT_KEY = "radar-admin-card-draft-new";
   const RESOURCES_CACHE_KEY = "radar-resources-cache-v1";
-  const RESOURCES_CACHE_TTL = 10 * 60 * 1000;
+  const RESOURCES_CACHE_TTL = 60 * 60 * 1000;
   const stateAuth = {
     user: null,
     profile: null,

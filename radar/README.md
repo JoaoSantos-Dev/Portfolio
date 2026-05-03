@@ -91,7 +91,7 @@ Se um card antigo não tiver `section`, o frontend classifica pelo `type` e usa 
 Categorias disponíveis por seção:
 
 - `curadoria`: Curso, Vídeo, Artigo, Ferramenta, Asset, Comunidade, Evento, Documentação, Repositório, Dica, Vaga.
-- `profissionais`: Profissional, Portfólio, Gameplay Programming, Game Design, Level Design, Technical Art, Environment Art, Character Art, UI/UX, Narrative Design, Producer, Audio, QA.
+- `profissionais`: Profissional, Gameplay Programming, Game Design, Level Design, Technical Art, Environment Art, Character Art, UI/UX, Narrative Design, Producer, Audio, QA.
 - `empresas`: AAA, AA, Indie, Mobile, Outsourcing, Publisher, Serious Games, Game Tech, QA/Localization, Porting, Estúdio Brasileiro, Estúdio Internacional.
 
 ## GIFs da biblioteca

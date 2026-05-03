@@ -72,7 +72,6 @@
     ],
     profissionais: [
       "Profissional",
-      "Portfólio",
       "Gameplay Programming",
       "Game Design",
       "Level Design",
