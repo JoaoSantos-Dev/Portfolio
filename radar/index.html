@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 
 <head>
   <meta charset="UTF-8" />
@@ -10,13 +10,13 @@
     try {
       const savedTheme = localStorage.getItem("radar-theme");
       document.documentElement.dataset.theme =
-        savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+        savedTheme === "light" || savedTheme === "dark" ? savedTheme : "light";
     } catch (error) {
-      document.documentElement.dataset.theme = "dark";
+      document.documentElement.dataset.theme = "light";
     }
   </script>
   <link rel="icon" href="Icon.webp" type="image/webp" />
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=4" />
 </head>
 
 <body>
@@ -228,7 +228,7 @@
   <script src="js/gif-library.js?v=1"></script>
   <script src="js/data.js?v=4"></script>
   <script type="module" src="js/firebase.js?v=5"></script>
-  <script src="js/app.js?v=16"></script>
+  <script src="js/app.js?v=17"></script>
 </body>
 
 </html>

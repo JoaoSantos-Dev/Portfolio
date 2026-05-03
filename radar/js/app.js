@@ -469,7 +469,7 @@
       savedTheme = null;
     }
 
-    return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+    return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "light";
   }
 
   function updateThemeButton(theme) {
@@ -1146,7 +1146,7 @@
 
     if (elements.themeToggle) {
       elements.themeToggle.addEventListener("click", () => {
-        const currentTheme = document.documentElement.dataset.theme || "dark";
+        const currentTheme = document.documentElement.dataset.theme || "light";
         applyTheme(currentTheme === "dark" ? "light" : "dark");
       });
     }
