@@ -3,7 +3,7 @@
     {
       key: "curadoria",
       label: "Curadoria",
-      context: "O que acessar: conteúdos, ferramentas e referências úteis para evoluir em GameDev.",
+      context: "Cursos, conteúdos, ferramentas e referências úteis para evoluir em GameDev.",
       emptyTitle: "Nenhum recurso de curadoria cadastrado ainda.",
       emptyDescription: "A curadoria ainda está vazia. Volte em breve para novos recursos."
     },
