@@ -1,6 +1,7 @@
 (function () {
   const NEW_DRAFT_KEY = "radar-admin-card-draft-new";
   const MAX_CACHED_IMAGE_SIZE = 1024 * 1024;
+  const RESOURCES_CACHE_KEY = "radar-resources-cache-v1";
 
   const params = new URLSearchParams(window.location.search);
   const editId = params.get("id");
@@ -479,6 +480,14 @@
     localStorage.removeItem(getDraftKey());
   }
 
+  function clearResourcesCache() {
+    try {
+      localStorage.removeItem(RESOURCES_CACHE_KEY);
+    } catch (error) {
+      // Cache is only an optimization.
+    }
+  }
+
   function loadCardDraft() {
     try {
       const draft = localStorage.getItem(getDraftKey());
@@ -697,6 +706,7 @@
       } else {
         await firebase.createResource(resource, selectedImageFile);
       }
+      clearResourcesCache();
       clearCardDraft();
       setFeedback(
         isEditMode
@@ -738,6 +748,7 @@
       setFeedback("Excluindo card...");
       const firebase = await waitForFirebaseApi();
       await firebase.deleteResource(editId);
+      clearResourcesCache();
       clearCardDraft();
       window.location.href = "index.html";
     } catch (error) {

@@ -121,6 +121,8 @@
   const THEME_STORAGE_KEY = "radar-theme";
   const CUSTOM_RESOURCES_KEY = "radar-custom-resources";
   const NEW_CARD_DRAFT_KEY = "radar-admin-card-draft-new";
+  const RESOURCES_CACHE_KEY = "radar-resources-cache-v1";
+  const RESOURCES_CACHE_TTL = 10 * 60 * 1000;
   const stateAuth = {
     user: null,
     profile: null,
@@ -269,6 +271,52 @@
 
   function getResources() {
     return state.resources.filter((resource) => resource.status !== "draft");
+  }
+
+  function readResourcesCache() {
+    try {
+      const cached = localStorage.getItem(RESOURCES_CACHE_KEY);
+      const parsed = cached ? JSON.parse(cached) : null;
+
+      if (
+        !parsed ||
+        !Array.isArray(parsed.resources) ||
+        !Number.isFinite(Number(parsed.cachedAt))
+      ) {
+        return null;
+      }
+
+      if (Date.now() - Number(parsed.cachedAt) > RESOURCES_CACHE_TTL) {
+        localStorage.removeItem(RESOURCES_CACHE_KEY);
+        return null;
+      }
+
+      return parsed.resources;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeResourcesCache(resources) {
+    try {
+      localStorage.setItem(
+        RESOURCES_CACHE_KEY,
+        JSON.stringify({
+          cachedAt: Date.now(),
+          resources
+        })
+      );
+    } catch (error) {
+      // Cache is an optimization; the app still works without storage.
+    }
+  }
+
+  function clearResourcesCache() {
+    try {
+      localStorage.removeItem(RESOURCES_CACHE_KEY);
+    } catch (error) {
+      // Ignore storage failures.
+    }
   }
 
   function getResourceTags(resource) {
@@ -930,14 +978,26 @@
     }
   }
 
-  async function loadFirebaseResources() {
+  async function loadFirebaseResources({ forceRefresh = false } = {}) {
     state.isLoadingResources = true;
     state.resourcesError = "";
     renderResources();
 
+    const cachedResources = forceRefresh ? null : readResourcesCache();
+
+    if (cachedResources) {
+      state.resources = cachedResources.map(normalizeResource);
+      state.isLoadingResources = false;
+      renderResources();
+      updateSessionUi();
+      return;
+    }
+
     try {
       const firebase = await waitForFirebaseApi();
-      state.resources = (await firebase.getResources()).map(normalizeResource);
+      const resources = (await firebase.getResources()).map(normalizeResource);
+      state.resources = resources;
+      writeResourcesCache(resources);
     } catch (error) {
       state.resources = [];
       state.resourcesError =
@@ -969,7 +1029,8 @@
       elements.migrateLocalButton.textContent = "Migrando...";
       const firebase = await waitForFirebaseApi();
       const migratedCount = await firebase.migrateLocalResources(localResources);
-      await loadFirebaseResources();
+      clearResourcesCache();
+      await loadFirebaseResources({ forceRefresh: true });
 
       if (
         window.confirm(
