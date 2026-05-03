@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hub</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Itens do Hub">
+      <div class="sidebar-top">
+        <button class="icon-button" id="toggleSidebar" type="button" aria-label="Recolher ou expandir menu">
+          <span class="hamburger" aria-hidden="true"></span>
+        </button>
+        <button class="icon-button theme-toggle-btn" id="toggleTheme" type="button" aria-label="Alternar modo noturno">🌙</button>
+        <h1 class="brand">Hub</h1>
+        <button class="icon-button add-button" id="newItem" type="button" aria-label="Criar item">+</button>
+      </div>
+
+      <div class="sidebar-label">Arquivos</div>
+      <nav class="tree-list" id="treeList" aria-label="Árvore de projetos, pastas e documentos"></nav>
+      <div class="sidebar-account">
+        <div class="account-name" id="accountName"></div>
+        <button class="account-logout" id="adminButton" type="button">Admin</button>
+        <button class="account-logout" id="logoutButton" type="button">Sair</button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <section class="editor-panel" id="editorPanel" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

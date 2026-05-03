@@ -74,7 +74,7 @@ const COPY = {
                 visualClass: 'visual-arena',
                 visualLabel: 'Serious game educacional',
                 image: 'assets/images/arena-saep/wallpaper.webp',
-                accessUrl: 'Arena SAEP/arena.html'
+                accessUrl: 'saep'
             },
             {
                 title: 'Radar GameDev',
@@ -237,7 +237,7 @@ const COPY = {
                 visualClass: 'visual-arena',
                 visualLabel: 'Educational serious game',
                 image: 'assets/images/arena-saep/wallpaper.webp',
-                accessUrl: 'Arena SAEP/arena.html'
+                accessUrl: 'saep'
             },
             {
                 title: 'Radar GameDev',
