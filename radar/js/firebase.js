@@ -28,7 +28,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-storage.js";
 
 const authPersistenceReady = setPersistence(auth, browserLocalPersistence);
-const MAX_IMAGE_SIZE = 1024 * 1024;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 async function ensureAuthPersistence() {
   await authPersistenceReady;
@@ -255,7 +255,7 @@ function validateImageFile(file) {
   }
 
   if (file.size > MAX_IMAGE_SIZE) {
-    throw new Error("A imagem precisa ter até 1 MB.");
+    throw new Error("A imagem precisa ter até 5 MB.");
   }
 }
 

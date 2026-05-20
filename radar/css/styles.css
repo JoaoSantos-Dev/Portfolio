@@ -169,7 +169,7 @@ a {
   min-height: 36px;
   padding: 7px 14px;
   border: 1px solid var(--color-line);
-  border-radius: 999px;
+  border-radius: 8px;
   color: var(--color-ink);
   background: color-mix(in srgb, var(--color-surface) 82%, transparent);
   font-size: 0.9rem;
@@ -193,7 +193,7 @@ a {
   flex: 0 0 auto;
   min-height: 32px;
   padding: 5px 10px;
-  border-radius: 999px;
+  border-radius: 7px;
   color: var(--color-muted);
   background: var(--color-chip);
   border-color: var(--color-line);
@@ -230,7 +230,7 @@ a {
   height: 32px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: 8px;
   background: transparent;
 }
 
@@ -261,7 +261,7 @@ a {
   place-items: center;
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: 6px;
   color: #0d1719;
   background: var(--color-teal);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
@@ -433,7 +433,7 @@ a {
   margin: 8px 2px 9px;
   padding: 8px 11px;
   border: 1px solid var(--color-line);
-  border-radius: 12px;
+  border-radius: 8px;
   color: var(--color-muted);
   background: color-mix(in srgb, var(--color-surface) 64%, transparent);
   font-size: 0.84rem;
@@ -455,7 +455,7 @@ a {
   gap: 12px;
   padding: 10px;
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
   background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   box-shadow: var(--shadow-soft);
 }
@@ -467,7 +467,7 @@ a {
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid var(--color-line);
-  border-radius: 999px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--color-bg-soft) 78%, transparent);
 }
 
@@ -523,7 +523,7 @@ a {
 .clear-button {
   min-height: 36px;
   padding: 6px 11px;
-  border-radius: 999px;
+  border-radius: 7px;
   color: var(--color-muted);
   background: var(--color-chip);
   border-color: var(--color-line);
@@ -547,19 +547,19 @@ a {
 }
 
 .resource-grid {
-  column-count: 4;
-  column-gap: 32px;
+  column-count: 3;
+  column-gap: 24px;
 }
 
 .resource-card {
   position: relative;
   display: inline-block;
   width: 100%;
-  margin: 0 0 32px;
+  margin: 0 0 24px;
   overflow: hidden;
   break-inside: avoid;
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
   transition:
@@ -578,7 +578,7 @@ a {
   min-height: 25px;
   padding: 4px 8px;
   border: 1px solid var(--color-line);
-  border-radius: 999px;
+  border-radius: 6px;
   color: var(--color-ink);
   background: color-mix(in srgb, var(--color-surface) 86%, transparent);
   box-shadow: 0 6px 14px rgba(20, 48, 44, 0.1);
@@ -706,7 +706,8 @@ a {
 }
 
 .card-media {
-  height: 100px;
+  height: 148px;
+  flex: 0 0 auto;
   overflow: hidden;
   border-bottom: 1px solid var(--color-line);
   background:
@@ -751,13 +752,14 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 13px;
 }
 
 .type-label {
   padding: 4px 7px;
-  border-radius: 999px;
+  border-radius: 5px;
   color: var(--accent-strong);
   background: color-mix(in srgb, var(--color-teal) 9%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-teal) 16%, var(--color-chip-border));
@@ -781,7 +783,7 @@ a {
   margin: 0 0 8px;
   padding: 3px 7px;
   border: 1px solid color-mix(in srgb, var(--color-teal) 30%, var(--color-chip-border));
-  border-radius: 999px;
+  border-radius: 5px;
   color: var(--color-teal-dark);
   background: color-mix(in srgb, var(--color-teal) 10%, var(--color-surface));
   font-size: 0.68rem;
@@ -793,7 +795,7 @@ a {
 .resource-card h3 {
   margin: 0 0 9px;
   color: var(--text);
-  font-size: clamp(1.08rem, 1rem + 0.24vw, 1.24rem);
+  font-size: 1.16rem;
   line-height: 1.18;
   font-weight: 800;
   letter-spacing: 0;
@@ -817,7 +819,7 @@ a {
 .tag-pill {
   min-height: 23px;
   padding: 3px 7px;
-  border-radius: 999px;
+  border-radius: 5px;
   color: var(--color-muted);
   background: var(--color-chip);
   border-color: var(--color-chip-border);
@@ -839,7 +841,7 @@ a {
   min-height: 32px;
   padding: 6px 10px;
   border: 1px solid color-mix(in srgb, var(--color-teal) 22%, var(--color-line));
-  border-radius: 999px;
+  border-radius: 6px;
   color: var(--color-teal-dark);
   background: color-mix(in srgb, var(--color-teal) 9%, transparent);
   box-shadow: none;
@@ -873,7 +875,7 @@ a {
 
 .resource-card--special h3,
 .resource-card.is-pinned h3 {
-  font-size: clamp(1.12rem, 1.04rem + 0.25vw, 1.3rem);
+  font-size: 1.2rem;
 }
 
 .empty-state {
@@ -1534,8 +1536,7 @@ a {
 
 @media (max-width: 1200px) {
   .resource-grid {
-    column-count: 3;
-    column-gap: 28px;
+    column-gap: 22px;
   }
 }
 
@@ -1574,11 +1575,11 @@ a {
 
   .resource-grid {
     column-count: 2;
-    column-gap: 24px;
+    column-gap: 20px;
   }
 
   .resource-card {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 }
 
@@ -1600,12 +1601,12 @@ a {
 
   .controls-panel {
     padding: 9px;
-    border-radius: 16px;
+    border-radius: 9px;
   }
 
   .search-box {
     min-height: 45px;
-    border-radius: 14px;
+    border-radius: 8px;
   }
 
   .filter-meta {
@@ -1623,7 +1624,7 @@ a {
   }
 
   .resource-card {
-    margin-bottom: 22px;
+    margin-bottom: 20px;
   }
 
   .card-content {
@@ -1639,7 +1640,7 @@ a {
   }
 
   .card-media {
-    height: 92px;
+    height: 124px;
   }
 
   .admin-dock {

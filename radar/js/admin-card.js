@@ -1,6 +1,7 @@
 (function () {
   const NEW_DRAFT_KEY = "radar-admin-card-draft-new";
   const MAX_CACHED_IMAGE_SIZE = 1024 * 1024;
+  const MAX_UPLOAD_IMAGE_SIZE = 5 * 1024 * 1024;
   const RESOURCES_CACHE_KEY = "radar-resources-cache-v1";
 
   const params = new URLSearchParams(window.location.search);
@@ -605,10 +606,6 @@
     if (data.useLibraryGif && !getLibraryGifByKey(data.libraryGifKey)) {
       return "Selecione um GIF válido da biblioteca ou desmarque o uso de GIF.";
     }
-    if (data.image && !data.imageCacheable) {
-      return "A imagem é grande demais para salvar localmente. Use uma imagem menor ou remova a imagem.";
-    }
-
     return "";
   }
 
@@ -665,9 +662,16 @@
       return;
     }
 
+    if (file.size > MAX_UPLOAD_IMAGE_SIZE) {
+      fields.image.value = "";
+      setFeedback("A imagem WEBP precisa ter até 5 MB para subir no Firebase.", "error");
+      handleFieldUpdate();
+      return;
+    }
+
     if (file.size > MAX_CACHED_IMAGE_SIZE) {
       imageCacheable = false;
-      imageWarning = "Imagem muito grande. Use uma imagem WEBP de até 1 MB.";
+      imageWarning = "Imagem acima de 1 MB: ela será enviada ao Firebase, mas não ficará salva no rascunho local.";
     }
 
     const reader = new FileReader();
@@ -717,10 +721,18 @@
         window.location.href = "index.html";
       }, 650);
     } catch (error) {
-      setFeedback(error.message || "Não foi possível salvar no Firebase.", "error");
+      setFeedback(getSaveErrorMessage(error), "error");
     } finally {
       elements.save.disabled = false;
     }
+  }
+
+  function getSaveErrorMessage(error) {
+    if (error?.code === "storage/unauthorized" || /permission|unauthorized/i.test(error?.message || "")) {
+      return "O Firebase Storage recusou o upload. Verifique se as regras do Storage permitem usuários admin aprovados.";
+    }
+
+    return error?.message || "Não foi possível salvar no Firebase.";
   }
 
   function handleCancel() {

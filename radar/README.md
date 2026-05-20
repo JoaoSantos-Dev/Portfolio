@@ -129,13 +129,10 @@ Se `useLibraryGif` estiver ativo e a chave existir no catálogo, o GIF tem prior
 
 Configure suas chaves em `js/firebase-config.js`. As regras sugeridas estão em `firebase-rules.txt`.
 
-Antes do deploy, cole seu UID admin na regra do Storage em:
+O Firestore usa a coleção `users` para identificar admin aprovado (`status: "approved"` e `role: "admin"`).
+As regras do Storage consultam essa mesma coleção para liberar upload, atualização e exclusão de imagens WEBP em `resources/{resourceId}`.
 
-```txt
-COLE_SEU_UID_ADMIN_AQUI
-```
-
-O Firestore usa a coleção `users` para identificar admin aprovado (`status: "approved"` e `role: "admin"`). O Storage usa UID porque regras de Storage ficam mais simples e seguras para este MVP.
+As imagens dos cards devem ser WEBP e ter até 5 MB.
 
 ## Próximos passos
 

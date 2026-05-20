@@ -53,19 +53,19 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    function isAdminUid() {
+    function isApprovedAdmin() {
       return request.auth != null
-        && request.auth.uid in [
-          "COLE_SEU_UID_ADMIN_AQUI"
-        ];
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.status == "approved"
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
     match /resources/{resourceId}/{fileName} {
       allow read: if true;
-      allow create, update: if isAdminUid()
-        && request.resource.size < 1 * 1024 * 1024
+      allow create, update: if isApprovedAdmin()
+        && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType == "image/webp";
-      allow delete: if isAdminUid();
+      allow delete: if isApprovedAdmin();
     }
 
     match /{allPaths=**} {
