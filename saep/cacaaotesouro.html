@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecionando para Arena SAEP</title>
+    <script>
+        const target = new URL("./arena.html", window.location.href);
+        target.search = window.location.search;
+        target.hash = window.location.hash;
+        window.location.replace(target);
+    </script>
+    <meta http-equiv="refresh" content="0; url=./arena.html" />
+    <link rel="canonical" href="./arena.html" />
+</head>
+<body>
+    <p>Redirecionando... <a href="./arena.html">Abrir lobby</a></p>
+</body>
+</html>

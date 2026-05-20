@@ -56,7 +56,7 @@ let pendingPage = 1;
 
 const redirectToLogin = () => {
     const returnTo = encodeURIComponent("./admin-users.html");
-    window.location.replace(`./cacaaotesouro.html?redirect=${returnTo}`);
+    window.location.replace(`./arena.html?redirect=${returnTo}`);
 };
 
 const setStatus = (type, message) => {

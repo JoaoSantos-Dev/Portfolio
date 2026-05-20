@@ -167,7 +167,7 @@ export function createBoot({ db, dom, state, CONFIG, UI, Flow, Items, RunService
                     const profilePlayerName = state.authProfile?.nomeJogador?.trim();
                     const resolvedPlayerName = profilePlayerName || savedName || "";
 
-                    if (redirectTarget && redirectTarget !== "./cacaaotesouro.html") {
+                    if (redirectTarget && redirectTarget !== "./arena.html") {
                         if (resolvedPlayerName) {
                             state.playerName = resolvedPlayerName;
                             localStorage.setItem(CONFIG.storageKeys.playerName, state.playerName);

@@ -43,7 +43,7 @@ const getRoomLabel = roomId => rooms.find(room => room.id === roomId)?.nome || "
 
 const redirectToLogin = () => {
     const returnTo = encodeURIComponent("./user.html");
-    window.location.replace(`./cacaaotesouro.html?redirect=${returnTo}`);
+    window.location.replace(`./arena.html?redirect=${returnTo}`);
 };
 
 const getErrorMessage = error => {

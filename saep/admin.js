@@ -72,7 +72,7 @@ const adminLogoutButton = document.getElementById("adminLogoutButton");
 
 const redirectToLogin = () => {
     const returnTo = encodeURIComponent("./admin.html");
-    window.location.replace(`./cacaaotesouro.html?redirect=${returnTo}`);
+    window.location.replace(`./arena.html?redirect=${returnTo}`);
 };
 
 let currentUser = null;

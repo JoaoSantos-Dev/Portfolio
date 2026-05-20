@@ -24,7 +24,7 @@ const historyLogoutButton = document.getElementById("historyLogoutButton");
 
 const redirectToLogin = () => {
     const returnTo = encodeURIComponent("./historico.html");
-    window.location.replace(`./cacaaotesouro.html?redirect=${returnTo}`);
+    window.location.replace(`./arena.html?redirect=${returnTo}`);
 };
 
 const formatDate = value => {
