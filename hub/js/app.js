@@ -458,6 +458,15 @@ import {
       }
       this.save(state);
       deleteDoc(doc(db, "items", id));
+    },
+    deleteItems: async function (ids) {
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return;
+      }
+
+      await Promise.all(ids.map(function (id) {
+        return deleteDoc(doc(db, "items", id));
+      }));
     }
   };
 
@@ -851,7 +860,7 @@ import {
     return item;
   }
 
-  function deleteItem(id) {
+  async function deleteItem(id) {
     var item = getItem(id);
 
     if (!item || !canEditItem(item)) {
@@ -866,12 +875,15 @@ import {
       return;
     }
 
-    removeItems([id].concat(descendants.map(function (child) {
+    var ids = [id].concat(descendants.map(function (child) {
       return child.id;
-    })));
+    }));
+
+    removeItems(ids);
 
     saveState();
     render();
+    await DataStore.deleteItems(ids);
   }
 
   function removeItems(ids) {
