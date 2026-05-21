@@ -23,6 +23,10 @@ export function createUI({ dom, state, CONFIG, Utils }) {
             Timer = dependencies.Timer;
         },
 
+        setGameplayLayout(enabled) {
+            document.body.classList.toggle("is-gameplay", enabled);
+        },
+
         setHtmlMessage(element, html) {
             element.innerHTML = html;
         },
@@ -291,6 +295,7 @@ export function createUI({ dom, state, CONFIG, Utils }) {
         },
 
         showPlayerScreen(prefillCurrentName = false) {
+            this.setGameplayLayout(false);
             dom.loginScreen.classList.add("hidden");
             dom.registerScreen.classList.add("hidden");
             dom.lobbyScreen.classList.add("hidden");
@@ -308,6 +313,7 @@ export function createUI({ dom, state, CONFIG, Utils }) {
         },
 
         showLoginScreen() {
+            this.setGameplayLayout(false);
             dom.registerScreen.classList.add("hidden");
             dom.playerScreen.classList.add("hidden");
             dom.lobbyScreen.classList.add("hidden");
@@ -322,6 +328,7 @@ export function createUI({ dom, state, CONFIG, Utils }) {
         },
 
         showRegisterScreen() {
+            this.setGameplayLayout(false);
             dom.loginScreen.classList.add("hidden");
             dom.playerScreen.classList.add("hidden");
             dom.lobbyScreen.classList.add("hidden");
@@ -338,6 +345,7 @@ export function createUI({ dom, state, CONFIG, Utils }) {
         },
 
         showLobbyScreen() {
+            this.setGameplayLayout(false);
             dom.loginScreen.classList.add("hidden");
             dom.registerScreen.classList.add("hidden");
             dom.playerScreen.classList.add("hidden");
@@ -353,6 +361,7 @@ export function createUI({ dom, state, CONFIG, Utils }) {
         },
 
         showDifficultyScreen() {
+            this.setGameplayLayout(false);
             dom.loginScreen.classList.add("hidden");
             dom.registerScreen.classList.add("hidden");
             dom.playerScreen.classList.add("hidden");
@@ -367,6 +376,7 @@ export function createUI({ dom, state, CONFIG, Utils }) {
         },
 
         showHowToPlayScreen() {
+            this.setGameplayLayout(false);
             dom.loginScreen.classList.add("hidden");
             dom.registerScreen.classList.add("hidden");
             dom.playerScreen.classList.add("hidden");
@@ -379,6 +389,7 @@ export function createUI({ dom, state, CONFIG, Utils }) {
         },
 
         showGameContent() {
+            this.setGameplayLayout(true);
             dom.loginScreen.classList.add("hidden");
             dom.registerScreen.classList.add("hidden");
             dom.playerScreen.classList.add("hidden");

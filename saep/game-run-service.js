@@ -21,6 +21,7 @@ export function createRunService({ db, CONFIG, state, Utils, UI, Timer }) {
                 errosQuestoes: state.errorCount,
                 errosCharada: state.riddleErrorCount,
                 penalidadePontuacao: state.scorePenaltyPoints,
+                mortesPorVidas: state.lifeResetCount,
                 vidasRestantes: state.remainingLives,
                 vidasExtrasUsadas: state.extraLifeCount,
                 progressoAtual: state.unlockedQuestionIndex,

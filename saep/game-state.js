@@ -24,6 +24,7 @@ export function createState(config) {
         errorCount: 0,
         riddleErrorCount: 0,
         scorePenaltyPoints: 0,
+        lifeResetCount: 0,
         extraLifeCount: 0,
         remainingLives: config.difficulty.normal.initialLives,
         gameStartTime: null,

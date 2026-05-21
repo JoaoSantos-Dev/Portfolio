@@ -20,6 +20,14 @@ export function createFlow({
     const AUTH_NOTICE_KEY = "onepieceAuthNotice";
     const SUSPICIOUS_FAST_FINISH_SECONDS = 5 * 60;
     const SUSPICIOUS_NO_ERROR_SECONDS = 8 * 60;
+    const getLifeResetPenalty = lifeResetIndex => Math.round(
+        CONFIG.scoring.lifeDepletionPenaltyBase
+        * Math.pow(1 + CONFIG.scoring.lifeDepletionPenaltyGrowth, lifeResetIndex)
+    );
+    const getLifeResetPenaltyTotal = lifeResetCount => Array.from(
+        { length: Math.max(0, lifeResetCount) },
+        (_, index) => getLifeResetPenalty(index)
+    ).reduce((total, penalty) => total + penalty, 0);
 
     const getAuthErrorMessage = error => {
         const code = error?.code || "";
@@ -172,6 +180,7 @@ export function createFlow({
             const savedErrors = Number(participation?.errosQuestoes ?? participation?.erros);
             const savedRiddleErrors = Number(participation?.errosCharada);
             const savedScorePenalty = Number(participation?.penalidadePontuacao);
+            const savedLifeResetCount = Number(participation?.mortesPorVidas);
             const savedExtraLives = Number(participation?.vidasExtrasUsadas);
             const savedProgress = Number(participation?.progressoAtual);
             const savedQuestionIndex = participation?.currentQuestionIndex;
@@ -185,9 +194,10 @@ export function createFlow({
             state.riddles = Array.isArray(participation?.charadas) ? participation.charadas : [];
             state.errorCount = Number.isFinite(savedErrors) ? savedErrors : 0;
             state.riddleErrorCount = Number.isFinite(savedRiddleErrors) ? savedRiddleErrors : 0;
-            state.scorePenaltyPoints = Number.isFinite(savedScorePenalty)
+            state.lifeResetCount = Number.isFinite(savedLifeResetCount) ? savedLifeResetCount : 0;
+            state.scorePenaltyPoints = Number.isFinite(savedScorePenalty) && Number.isFinite(savedLifeResetCount)
                 ? savedScorePenalty
-                : (state.errorCount * CONFIG.scoring.answerErrorPenalty);
+                : getLifeResetPenaltyTotal(state.lifeResetCount);
             state.extraLifeCount = Number.isFinite(savedExtraLives) ? savedExtraLives : 0;
             state.remainingLives = Number.isFinite(savedLives)
                 ? savedLives
@@ -400,9 +410,8 @@ export function createFlow({
             UI.updateRoom();
         },
 
-        registerError(scorePenalty = CONFIG.scoring.answerErrorPenalty) {
+        registerError() {
             state.errorCount += 1;
-            state.scorePenaltyPoints += scorePenalty;
             UI.updateErrors();
             Combo.reset();
             RunService.sync({
@@ -410,6 +419,13 @@ export function createFlow({
                 errosQuestoes: state.errorCount,
                 penalidadePontuacao: state.scorePenaltyPoints
             });
+        },
+
+        registerLifeResetPenalty() {
+            const penaltyPoints = getLifeResetPenalty(state.lifeResetCount);
+            state.lifeResetCount += 1;
+            state.scorePenaltyPoints += penaltyPoints;
+            return penaltyPoints;
         },
 
         registerRiddleError() {
@@ -651,6 +667,7 @@ export function createFlow({
                 errosQuestoes: state.errorCount,
                 errosCharada: state.riddleErrorCount,
                 penalidadePontuacao: state.scorePenaltyPoints,
+                mortesPorVidas: state.lifeResetCount,
                 vidasRestantes: state.remainingLives,
                 vidasExtrasUsadas: state.extraLifeCount,
                 progressoAtual: state.unlockedQuestionIndex,
@@ -816,16 +833,19 @@ export function createFlow({
                 state.currentQuestionIndex = null;
 
                 if (state.remainingLives <= 0) {
+                    const penaltyPoints = this.registerLifeResetPenalty();
                     state.unlockedQuestionIndex = 0;
                     state.remainingLives = Utils.getDifficultyConfig().initialLives;
                     UI.updateCodeStep();
                     UI.updateJourneyProgress();
                     UI.updateLives();
-                    UI.setStatusMessage(dom.codeMessage, "error", "Suas vidas acabaram. Você voltou para o início da jornada com as vidas restauradas.", "status-pop");
+                    UI.setStatusMessage(dom.codeMessage, "error", `Suas vidas acabaram. Você voltou para o início da jornada, perdeu ${penaltyPoints} pontos e teve as vidas restauradas.`, "status-pop");
                     UI.animateScreen(dom.startScreen);
                     RunService.sync({
                         questaoAtual: 1,
-                        vidasRestantes: state.remainingLives
+                        vidasRestantes: state.remainingLives,
+                        mortesPorVidas: state.lifeResetCount,
+                        penalidadePontuacao: state.scorePenaltyPoints
                     });
                     return;
                 }
@@ -907,7 +927,8 @@ export function createFlow({
                 erros: state.errorCount,
                 errosQuestoes: state.errorCount,
                 errosCharada: state.riddleErrorCount,
-                penalidadePontuacao: state.scorePenaltyPoints
+                penalidadePontuacao: state.scorePenaltyPoints,
+                mortesPorVidas: state.lifeResetCount
             };
             return true;
         },
@@ -949,6 +970,7 @@ export function createFlow({
                 errosQuestoes: state.errorCount,
                 errosCharada: state.riddleErrorCount,
                 penalidadePontuacao: state.scorePenaltyPoints,
+                mortesPorVidas: state.lifeResetCount,
                 dificuldade: state.selectedDifficulty,
                 sala: state.selectedRoom,
                 vidasRestantes: state.remainingLives,
@@ -1049,6 +1071,7 @@ export function createFlow({
             state.errorCount = 0;
             state.riddleErrorCount = 0;
             state.scorePenaltyPoints = 0;
+            state.lifeResetCount = 0;
             state.extraLifeCount = 0;
             state.inventory = createDefaultInventory();
             state.shieldActive = false;

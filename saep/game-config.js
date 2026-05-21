@@ -29,7 +29,8 @@ export const CONFIG = {
     scoring: {
         base: 10000,
         timePenaltyPerSecond: 1,
-        answerErrorPenalty: 200,
+        lifeDepletionPenaltyBase: 200,
+        lifeDepletionPenaltyGrowth: 0.5,
         riddleErrorPenalty: 0,
         extraLifePenaltySeconds: 30,
         hourglassBonusSeconds: 20
