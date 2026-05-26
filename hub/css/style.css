@@ -600,22 +600,46 @@ button {
 }
 
 .editor-header {
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) auto auto;
-  gap: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   align-items: center;
   min-height: 74px;
-  padding: 14px 22px;
+  padding: 12px 18px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  overflow: visible;
 }
 
-.editor-header.has-tabs {
-  grid-template-columns: minmax(180px, 1fr) auto auto auto;
+.editor-header.is-collapsed {
+  height: 38px;
+  min-height: 38px;
+  padding: 2px 10px;
+  flex-wrap: nowrap;
 }
 
-.editor-header.is-compact {
-  grid-template-columns: minmax(180px, 1fr) auto auto;
+.header-left {
+  min-width: 180px;
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.compact-header {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compact-title {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .document-heading {
@@ -649,15 +673,32 @@ button {
   white-space: nowrap;
 }
 
-.editor-actions,
+.header-actions,
+.header-toolbar,
 .format-toolbar,
+.document-actions,
 .project-tabs {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
+.header-actions {
+  min-width: 0;
+  flex: 1 1 520px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.document-actions {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .project-tabs {
+  flex: 0 0 auto;
   padding: 3px;
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -669,12 +710,16 @@ button {
   border: 1px solid var(--border);
   border-radius: 2px;
   background: var(--surface-muted);
+  flex: 0 1 auto;
   flex-wrap: wrap;
   gap: 8px;
+  overflow: visible;
+  white-space: normal;
 }
 
 .toolbar-group {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
   padding: 2px 8px 2px 0;
@@ -682,11 +727,6 @@ button {
 }
 
 .toolbar-group:last-child {
-  padding-right: 0;
-  border-right: 0;
-}
-
-.editor-actions .toolbar-group {
   padding-right: 0;
   border-right: 0;
 }
@@ -763,6 +803,7 @@ button {
 
 .text-button,
 .project-tab,
+.header-collapse-toggle,
 .tool-button {
   min-height: 34px;
   border: 1px solid var(--border);
@@ -778,6 +819,14 @@ button {
 
 .project-tab {
   padding: 7px 11px;
+}
+
+.header-collapse-toggle {
+  width: 34px;
+  min-width: 34px;
+  padding: 6px 0;
+  flex: 0 0 auto;
+  color: var(--muted);
 }
 
 .project-tab.active {
@@ -812,6 +861,8 @@ button {
 .text-button:focus-visible,
 .project-tab:hover,
 .project-tab:focus-visible,
+.header-collapse-toggle:hover,
+.header-collapse-toggle:focus-visible,
 .tool-button:hover,
 .tool-button:focus-visible {
   background: var(--button-hover);
@@ -1430,15 +1481,29 @@ button {
 
 @media (max-width: 900px) {
   .editor-header {
-    grid-template-columns: 1fr;
     gap: 10px;
-    padding: 13px 16px;
+    align-items: flex-start;
+    padding: 10px 14px;
+  }
+
+  .editor-header.is-collapsed {
+    height: 38px;
+    min-height: 38px;
+    align-items: center;
+    padding: 2px 10px;
+  }
+
+  .header-left,
+  .header-actions {
+    flex-basis: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
   }
 
   .format-toolbar,
-  .editor-actions,
+  .header-actions,
+  .document-actions,
   .project-tabs {
-    justify-self: start;
     flex-wrap: wrap;
   }
 }

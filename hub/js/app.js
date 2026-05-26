@@ -66,7 +66,8 @@ import {
     textColorMenu: null,
     inlineEdit: null,
     preferences: {
-      theme: "light"
+      theme: "light",
+      headerCollapsed: false
     },
     ui: {
       isPublicView: false,
@@ -282,7 +283,8 @@ import {
         items: [],
         selectedItemId: null,
         preferences: {
-          theme: "light"
+          theme: "light",
+          headerCollapsed: false
         }
       };
 
@@ -411,7 +413,8 @@ import {
         items: nextState.items,
         selectedItemId: nextState.selectedItemId,
         preferences: nextState.preferences || {
-          theme: "light"
+          theme: "light",
+          headerCollapsed: false
         }
       }));
 
@@ -439,7 +442,8 @@ import {
 
       try {
         await setDoc(doc(db, "preferences", auth.currentUser.uid), nextState.preferences || {
-          theme: "light"
+          theme: "light",
+          headerCollapsed: false
         }, {
           merge: true
         });
@@ -461,7 +465,8 @@ import {
       state.items = Array.isArray(nextState.items) ? nextState.items : [];
       state.selectedItemId = nextState.selectedItemId || null;
       state.preferences = nextState.preferences || {
-        theme: "light"
+        theme: "light",
+        headerCollapsed: false
       };
       if (state.selectedItemId && !this.getItem(state.selectedItemId)) {
         state.selectedItemId = null;
@@ -602,6 +607,8 @@ import {
 
     nextState.preferences = nextState.preferences || {};
     nextState.preferences.theme = nextState.preferences.theme === "dark" ? "dark" : "light";
+    nextState.preferences.headerCollapsed = nextState.preferences.headerCollapsed === true;
+    delete nextState.preferences.toolbarCollapsed;
 
     return nextState;
   }
@@ -1800,15 +1807,34 @@ import {
 
   function renderHeader(item, includeToolbar) {
     var header = document.createElement("div");
+    var isCollapsed = isHeaderCollapsed();
     header.className = "editor-header";
 
-    if (item.type === "project") {
+    if (item.type === "project" && !isCollapsed) {
       header.classList.add("has-tabs");
     }
 
-    if (!includeToolbar) {
+    if (!includeToolbar && !isCollapsed) {
       header.classList.add("is-compact");
     }
+
+    if (isCollapsed) {
+      var compactHeader = document.createElement("div");
+      var compactTitle = document.createElement("span");
+
+      header.classList.add("is-collapsed");
+      compactHeader.className = "compact-header";
+      compactTitle.className = "compact-title";
+      compactTitle.textContent = item.title || getDefaultTitle(item.type);
+
+      compactHeader.appendChild(renderHeaderCollapseToggle());
+      compactHeader.appendChild(compactTitle);
+      header.appendChild(compactHeader);
+      return header;
+    }
+
+    var headerLeft = document.createElement("div");
+    headerLeft.className = "header-left";
 
     var heading = document.createElement("div");
     heading.className = "document-heading";
@@ -1828,20 +1854,22 @@ import {
     heading.appendChild(title);
     heading.appendChild(breadcrumb);
     heading.appendChild(status);
+    headerLeft.appendChild(renderHeaderCollapseToggle());
+    headerLeft.appendChild(heading);
 
     var actions = document.createElement("div");
-    actions.className = "editor-actions";
-    var actionGroup = document.createElement("div");
-    actionGroup.className = "toolbar-group action-group";
+    actions.className = "header-actions";
+    var documentActions = document.createElement("div");
+    documentActions.className = "document-actions";
 
     if (isAdmin() && (item.type === "project" || item.type === "document")) {
       if (item.visibility === "public") {
-        actionGroup.appendChild(createTextButton("Copiar link", function () {
+        documentActions.appendChild(createTextButton("Copiar link", function () {
           copyPublicLink(item);
         }));
       }
 
-      actionGroup.appendChild(createTextButton("Compartilhar", function () {
+      documentActions.appendChild(createTextButton("Compartilhar", function () {
         shareItem(item.id);
       }));
 
@@ -1849,28 +1877,29 @@ import {
         var copied = document.createElement("span");
         copied.className = "copy-feedback";
         copied.textContent = "Link copiado";
-        actionGroup.appendChild(copied);
+        documentActions.appendChild(copied);
       }
     }
 
     if (canEditItem(item)) {
-      actionGroup.appendChild(createTextButton("Renomear", function () {
+      documentActions.appendChild(createTextButton("Renomear", function () {
         startInlineRename(item.id);
       }));
-      actionGroup.appendChild(createTextButton("Lixeira", function () {
+      documentActions.appendChild(createTextButton("Lixeira", function () {
         deleteItem(item.id);
       }, "danger"));
     }
-    actions.appendChild(actionGroup);
 
-    header.appendChild(heading);
+    if (includeToolbar && canEditItem(item)) {
+      actions.appendChild(renderToolbar());
+    }
+
+    actions.appendChild(documentActions);
+
+    header.appendChild(headerLeft);
 
     if (item.type === "project") {
       header.appendChild(renderProjectTabs());
-    }
-
-    if (includeToolbar) {
-      header.appendChild(renderToolbar());
     }
 
     header.appendChild(actions);
@@ -2184,7 +2213,7 @@ import {
 
   function renderToolbar() {
     var toolbar = document.createElement("div");
-    toolbar.className = "format-toolbar";
+    toolbar.className = "format-toolbar header-toolbar";
     toolbar.setAttribute("aria-label", "Formatação de texto");
 
     [
@@ -2219,6 +2248,28 @@ import {
     });
 
     return toolbar;
+  }
+
+  function renderHeaderCollapseToggle() {
+    var button = document.createElement("button");
+    var isCollapsed = isHeaderCollapsed();
+
+    button.type = "button";
+    button.className = "header-collapse-toggle";
+    button.textContent = isCollapsed ? "▾" : "▴";
+    button.title = isCollapsed ? "Expandir cabeçalho" : "Recolher cabeçalho";
+    button.setAttribute("aria-label", button.title);
+    button.setAttribute("aria-expanded", String(!isCollapsed));
+
+    button.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+    });
+
+    button.addEventListener("click", function () {
+      toggleHeaderCollapsed();
+    });
+
+    return button;
   }
 
   function createToolbarGroup(buttons) {
@@ -4066,6 +4117,22 @@ import {
     state.preferences.theme = state.preferences.theme === "dark" ? "light" : "dark";
     saveState([], null);
     applyTheme();
+  }
+
+  function isHeaderCollapsed() {
+    return !!(state.preferences && state.preferences.headerCollapsed);
+  }
+
+  function toggleHeaderCollapsed() {
+    var editor = document.getElementById("documentContent");
+
+    if (editor && state.selectedItemId) {
+      updateDocumentContent(state.selectedItemId, getEditorHtml(editor));
+    }
+
+    state.preferences.headerCollapsed = !isHeaderCollapsed();
+    saveState([], null);
+    render();
   }
 
   function applyTheme() {
