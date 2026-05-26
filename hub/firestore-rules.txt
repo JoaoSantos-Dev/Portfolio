@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function hasUserDoc() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isApproved() {
+      return hasUserDoc() && userDoc().data.status == "approved";
+    }
+
+    function isAdmin() {
+      return isApproved() && userDoc().data.role == "admin";
+    }
+
+    function isPublicItem(data) {
+      return data.keys().hasAny(["visibility"]) && data.visibility == "public";
+    }
+
+    match /users/{userId} {
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.status in ["approved", "pending"]
+        && (
+          (
+            request.resource.data.role == "admin"
+            && request.resource.data.status == "approved"
+            && !exists(/databases/$(database)/documents/system/bootstrap)
+          )
+          || (
+            request.resource.data.role == "moderator"
+            && request.resource.data.status == "pending"
+          )
+        );
+
+      allow get, list: if signedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /items/{itemId} {
+      allow get, list: if isApproved() || isPublicItem(resource.data);
+      allow create, update, delete: if isApproved();
+    }
+
+    match /preferences/{userId} {
+      allow read, write: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /system/bootstrap {
+      allow create: if signedIn()
+        && !exists(/databases/$(database)/documents/system/bootstrap)
+        && request.resource.data.adminId == request.auth.uid;
+
+      allow read: if signedIn();
+      allow update, delete: if false;
+    }
+  }
+}

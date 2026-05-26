@@ -19,6 +19,14 @@
       </div>
 
       <div class="sidebar-label">Arquivos</div>
+      <label class="sidebar-search">
+        <span>Buscar</span>
+        <input id="sidebarSearch" type="search" placeholder="Projetos, pastas ou arquivos">
+      </label>
+      <button class="sidebar-trash" id="trashToggle" type="button">
+        <span>Lixeira</span>
+        <span id="trashCount">0</span>
+      </button>
       <nav class="tree-list" id="treeList" aria-label="Árvore de projetos, pastas e documentos"></nav>
       <div class="sidebar-account">
         <div class="account-name" id="accountName"></div>

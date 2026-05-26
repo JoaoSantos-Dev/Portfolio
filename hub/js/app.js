@@ -29,6 +29,16 @@ import {
   var IMAGE_URL_PATTERN = /\.(png|jpe?g|webp|gif)(\?.*)?$/i;
   var URL_PATTERN = /(https?:\/\/[^\s<>"']+)/g;
   var WIKILINK_PATTERN = /\[\[([^\[\]]+)\]\]/g;
+  var TEXT_COLOR_OPTIONS = [
+    { label: "Padrão", color: null, swatch: "transparent" },
+    { label: "Cinza", color: "#6b6b6b" },
+    { label: "Vermelho", color: "#c94f4f" },
+    { label: "Laranja", color: "#d9822b" },
+    { label: "Amarelo", color: "#b58b00" },
+    { label: "Verde", color: "#4f8f5f" },
+    { label: "Azul", color: "#4f75c9" },
+    { label: "Roxo", color: "#8a5fbf" }
+  ];
   var firebaseConfig = {
     apiKey: "AIzaSyCOhhdaRrR3FEJ0Srk41f7oZMuet2u7QzU",
     authDomain: "hubpessoal-d4a88.firebaseapp.com",
@@ -53,6 +63,7 @@ import {
     sidebarCollapsed: false,
     createMenu: null,
     highlightMenu: null,
+    textColorMenu: null,
     inlineEdit: null,
     preferences: {
       theme: "light"
@@ -63,7 +74,10 @@ import {
       publicId: null,
       publicActiveId: null,
       projectTab: "cover",
-      copyFeedbackId: null
+      copyFeedbackId: null,
+      searchQuery: "",
+      showTrash: false,
+      saveStatus: "saved"
     },
     session: null
   };
@@ -73,6 +87,9 @@ import {
     toggleSidebar: document.getElementById("toggleSidebar"),
     toggleTheme: document.getElementById("toggleTheme"),
     newItem: document.getElementById("newItem"),
+    sidebarSearch: document.getElementById("sidebarSearch"),
+    trashToggle: document.getElementById("trashToggle"),
+    trashCount: document.getElementById("trashCount"),
     treeList: document.getElementById("treeList"),
     editorPanel: document.getElementById("editorPanel"),
     accountName: document.getElementById("accountName"),
@@ -326,7 +343,7 @@ import {
 
       loadedState = migrateStateIfNeeded(loadedState);
       this.setState(loadedState);
-      this.save(state);
+      this.save(state).catch(function () {});
       return state;
     },
     loadLocalFallback: function () {
@@ -380,8 +397,16 @@ import {
         return [];
       }
     },
-    save: async function (nextState) {
+    save: async function (nextState, options) {
+      nextState = migrateStateIfNeeded(nextState);
       var batchItems = nextState.items || [];
+      var requestedIds = options && Array.isArray(options.itemIds) ? options.itemIds : null;
+      var remoteItems = requestedIds ? getItemsForRemoteSave(requestedIds) : batchItems;
+      var orderedItems = getItemsOrderedForRemoteSave(remoteItems);
+      var selectedItemId = options && options.statusItemId !== undefined ? options.statusItemId : nextState.selectedItemId;
+      var selectedItemWasSynced = !selectedItemId;
+      var selectedItemFailed = false;
+      setSaveStatus("saving");
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         items: nextState.items,
         selectedItemId: nextState.selectedItemId,
@@ -391,20 +416,43 @@ import {
       }));
 
       if (!auth.currentUser || state.ui.isPublicView) {
+        setSaveStatus("local");
         return;
       }
 
-      await Promise.all(batchItems.map(function (item) {
-        return setDoc(doc(db, "items", item.id), item, {
-          merge: true
-        });
-      }).concat([
-        setDoc(doc(db, "preferences", auth.currentUser.uid), nextState.preferences || {
+      for (var index = 0; index < orderedItems.length; index += 1) {
+        try {
+          await setDoc(doc(db, "items", orderedItems[index].id), orderedItems[index], {
+            merge: true
+          });
+
+          if (orderedItems[index].id === selectedItemId) {
+            selectedItemWasSynced = true;
+          }
+        } catch (error) {
+          console.error("Falha ao salvar item no Firebase:", orderedItems[index].title || orderedItems[index].id, error);
+          if (orderedItems[index].id === selectedItemId) {
+            selectedItemFailed = true;
+          }
+        }
+      }
+
+      try {
+        await setDoc(doc(db, "preferences", auth.currentUser.uid), nextState.preferences || {
           theme: "light"
         }, {
           merge: true
-        })
-      ]));
+        });
+      } catch (error) {
+        console.warn("Falha ao salvar preferências no Firebase.", error);
+      }
+
+      if (selectedItemFailed || !selectedItemWasSynced) {
+        setSaveStatus("error");
+        return;
+      }
+
+      setSaveStatus("saved");
     },
     getState: function () {
       return state;
@@ -435,18 +483,18 @@ import {
         item[key] = changes[key];
       });
       item.updatedAt = changes.updatedAt || nowIso();
-      this.save(state);
-      setDoc(doc(db, "items", id), item, {
-        merge: true
-      });
+      this.save(state, {
+        itemIds: [id],
+        statusItemId: id
+      }).catch(function () {});
       return item;
     },
     createItem: function (item) {
       state.items.push(item);
-      this.save(state);
-      setDoc(doc(db, "items", item.id), item, {
-        merge: true
-      });
+      this.save(state, {
+        itemIds: [item.id],
+        statusItemId: item.id
+      }).catch(function () {});
       return item;
     },
     deleteItem: function (id) {
@@ -456,11 +504,15 @@ import {
       if (state.selectedItemId === id) {
         state.selectedItemId = null;
       }
-      this.save(state);
-      deleteDoc(doc(db, "items", id));
+      this.save(state).catch(function () {});
+      deleteDoc(doc(db, "items", id)).catch(function () {});
     },
     deleteItems: async function (ids) {
       if (!Array.isArray(ids) || ids.length === 0) {
+        return;
+      }
+
+      if (!auth.currentUser || state.ui.isPublicView) {
         return;
       }
 
@@ -517,6 +569,7 @@ import {
     nextState.items = (nextState.items || []).map(function (item) {
       item.createdAt = item.createdAt || now;
       item.updatedAt = item.updatedAt || now;
+      item.ownerId = item.ownerId || (state.session ? state.session.id : null);
 
       if (item.type === "project") {
         item.parentId = null;
@@ -562,8 +615,11 @@ import {
     });
   }
 
-  function saveState() {
-    DataStore.save(state);
+  function saveState(itemIds, statusItemId) {
+    DataStore.save(state, {
+      itemIds: itemIds || null,
+      statusItemId: statusItemId === undefined ? state.selectedItemId : statusItemId
+    }).catch(function () {});
   }
 
   async function saveStateAsync() {
@@ -572,6 +628,66 @@ import {
 
   function getItem(id) {
     return DataStore.getItem(id);
+  }
+
+  function getItemsForRemoteSave(itemIds) {
+    var ids = [];
+
+    itemIds.forEach(function (id) {
+      addItemAndParentsForRemoteSave(id, ids);
+    });
+
+    return ids.map(getItem).filter(Boolean);
+  }
+
+  function addItemAndParentsForRemoteSave(itemId, ids) {
+    var item = getItem(itemId);
+
+    if (!item) {
+      return;
+    }
+
+    if (item.parentId) {
+      addItemAndParentsForRemoteSave(item.parentId, ids);
+    }
+
+    if (ids.indexOf(item.id) === -1) {
+      ids.push(item.id);
+    }
+  }
+
+  function getItemsOrderedForRemoteSave(items) {
+    var byId = {};
+
+    items.forEach(function (item) {
+      byId[item.id] = item;
+    });
+
+    return items.slice().sort(function (a, b) {
+      return getItemDepthForRemoteSave(a, byId) - getItemDepthForRemoteSave(b, byId);
+    });
+  }
+
+  function getItemDepthForRemoteSave(item, byId) {
+    var depth = 0;
+    var current = item;
+
+    while (current && current.parentId && byId[current.parentId] && depth < 50) {
+      depth += 1;
+      current = byId[current.parentId];
+    }
+
+    return depth;
+  }
+
+  function isDeleted(item) {
+    return !!item && !!item.deletedAt;
+  }
+
+  function getDeletedItems() {
+    return state.items.filter(isDeleted).sort(function (a, b) {
+      return (b.deletedAt || "").localeCompare(a.deletedAt || "");
+    });
   }
 
   function firebaseDocToItem(snapshot) {
@@ -596,14 +712,23 @@ import {
       return [];
     }
 
-    items.push(firebaseDocToItem(current));
+    var currentItem = firebaseDocToItem(current);
+
+    if (isDeleted(currentItem)) {
+      return [];
+    }
+
+    items.push(currentItem);
 
     if (state.ui.publicView === "page") {
       projectId = items[0].projectId || null;
       if (projectId) {
         current = await getDoc(doc(db, "items", projectId));
         if (current.exists()) {
-          items.push(firebaseDocToItem(current));
+          currentItem = firebaseDocToItem(current);
+          if (!isDeleted(currentItem)) {
+            items.push(currentItem);
+          }
         }
       }
       return items;
@@ -611,35 +736,44 @@ import {
 
     snapshot = await getDocs(query(collection(db, "items"), where("projectId", "==", state.ui.publicId), where("visibility", "==", "public")));
     snapshot.docs.forEach(function (itemDoc) {
+      var item = firebaseDocToItem(itemDoc);
+
+      if (isDeleted(item)) {
+        return;
+      }
+
       if (!items.some(function (item) {
         return item.id === itemDoc.id;
       })) {
-        items.push(firebaseDocToItem(itemDoc));
+        items.push(item);
       }
     });
 
     return items;
   }
 
-  function getChildren(parentId) {
+  function getChildren(parentId, options) {
+    var includeDeleted = options && options.includeDeleted;
+
     return state.items.filter(function (item) {
-      return item.parentId === parentId;
+      return item.parentId === parentId && (includeDeleted || !isDeleted(item));
     });
   }
 
-  function getDescendants(itemId) {
+  function getDescendants(itemId, options) {
     var descendants = [];
 
-    getChildren(itemId).forEach(function (child) {
+    getChildren(itemId, options).forEach(function (child) {
       descendants.push(child);
-      descendants = descendants.concat(getDescendants(child.id));
+      descendants = descendants.concat(getDescendants(child.id, options));
     });
 
     return descendants;
   }
 
   function getSelectedItem() {
-    return getItem(state.selectedItemId);
+    var item = getItem(state.selectedItemId);
+    return isDeleted(item) ? null : item;
   }
 
   function isAdmin() {
@@ -656,6 +790,10 @@ import {
 
   function canAccessItem(item) {
     if (!item || !state.session) {
+      return false;
+    }
+
+    if (isDeleted(item)) {
       return false;
     }
 
@@ -687,12 +825,32 @@ import {
       return false;
     }
 
+    if (isDeleted(item)) {
+      return false;
+    }
+
     if (isAdmin()) {
       return true;
     }
 
     if (item.type === "folder") {
       return hasAccessibleDescendant(item.id);
+    }
+
+    if (isItemSharedWithUser(item, state.session.id)) {
+      return true;
+    }
+
+    return item.type === "document" && isItemSharedWithUser(getItem(getRootProjectId(item.id)), state.session.id);
+  }
+
+  function canManageDeletedItem(item) {
+    if (!item || !state.session) {
+      return false;
+    }
+
+    if (isAdmin()) {
+      return true;
     }
 
     if (isItemSharedWithUser(item, state.session.id)) {
@@ -711,8 +869,43 @@ import {
     });
   }
 
+  function getSidebarSearchQuery() {
+    return normalizeTitle(state.ui.searchQuery || "");
+  }
+
+  function getSearchableText(item) {
+    var wrapper = document.createElement("div");
+
+    wrapper.innerHTML = item.content || "";
+    return normalizeTitle((item.title || "") + " " + (wrapper.textContent || ""));
+  }
+
+  function itemMatchesSearch(item) {
+    var query = getSidebarSearchQuery();
+
+    if (!query) {
+      return true;
+    }
+
+    return getSearchableText(item).indexOf(query) !== -1;
+  }
+
+  function subtreeMatchesSearch(item) {
+    if (itemMatchesSearch(item)) {
+      return true;
+    }
+
+    return getChildren(item.id).some(subtreeMatchesSearch);
+  }
+
   function getVisibleChildren(parentId) {
-    return getChildren(parentId).filter(canAccessItem);
+    var children = getChildren(parentId).filter(canAccessItem);
+
+    if (!getSidebarSearchQuery()) {
+      return children;
+    }
+
+    return children.filter(subtreeMatchesSearch);
   }
 
   function getRootProjectId(itemId) {
@@ -830,6 +1023,7 @@ import {
       parentId: parentId || null,
       content: "",
       projectId: getProjectIdForNewItem(type, parentId, itemId),
+      ownerId: state.session ? state.session.id : null,
       createdAt: createdAt,
       updatedAt: createdAt
     };
@@ -854,13 +1048,12 @@ import {
       delete item.content;
     }
 
-    DataStore.createItem(item);
     state.selectedItemId = item.id;
-    saveState();
+    DataStore.createItem(item);
     return item;
   }
 
-  async function deleteItem(id) {
+  function deleteItem(id) {
     var item = getItem(id);
 
     if (!item || !canEditItem(item)) {
@@ -869,7 +1062,7 @@ import {
 
     var descendants = getDescendants(id);
     var extra = descendants.length ? " e " + descendants.length + " item(ns) dentro dele" : "";
-    var confirmed = confirm('Excluir "' + item.title + '"' + extra + "?");
+    var confirmed = confirm('Mover "' + item.title + '"' + extra + " para a lixeira?");
 
     if (!confirmed) {
       return;
@@ -879,11 +1072,9 @@ import {
       return child.id;
     }));
 
-    removeItems(ids);
-
-    saveState();
+    moveItemsToTrash(ids);
+    saveState(ids, null);
     render();
-    await DataStore.deleteItems(ids);
   }
 
   function removeItems(ids) {
@@ -896,6 +1087,76 @@ import {
     }
   }
 
+  function moveItemsToTrash(ids) {
+    var deletedAt = nowIso();
+
+    state.items.forEach(function (item) {
+      if (ids.indexOf(item.id) === -1) {
+        return;
+      }
+
+      item.deletedAt = deletedAt;
+      item.updatedAt = deletedAt;
+    });
+
+    if (ids.indexOf(state.selectedItemId) !== -1) {
+      state.selectedItemId = null;
+    }
+  }
+
+  function restoreItem(id) {
+    var item = getItem(id);
+    var ids;
+
+    if (!item || !canManageDeletedItem(item)) {
+      return;
+    }
+
+    ids = [id].concat(getDescendants(id, {
+      includeDeleted: true
+    }).map(function (child) {
+      return child.id;
+    }));
+
+    state.items.forEach(function (candidate) {
+      if (ids.indexOf(candidate.id) === -1) {
+        return;
+      }
+
+      delete candidate.deletedAt;
+      candidate.updatedAt = nowIso();
+    });
+
+    state.ui.showTrash = false;
+    state.selectedItemId = id;
+    saveState(ids, id);
+    render();
+  }
+
+  async function permanentlyDeleteItem(id) {
+    var item = getItem(id);
+    var ids;
+
+    if (!item || !canManageDeletedItem(item)) {
+      return;
+    }
+
+    ids = [id].concat(getDescendants(id, {
+      includeDeleted: true
+    }).map(function (child) {
+      return child.id;
+    }));
+
+    if (!confirm('Excluir definitivamente "' + (item.title || getDefaultTitle(item.type)) + '"?')) {
+      return;
+    }
+
+    removeItems(ids);
+    saveState([], null);
+    render();
+    await DataStore.deleteItems(ids);
+  }
+
   function selectItem(id) {
     var item = getItem(id);
 
@@ -903,7 +1164,7 @@ import {
     if (item && item.type === "project") {
       state.ui.projectTab = "cover";
     }
-    saveState();
+    saveState([], null);
     render();
   }
 
@@ -920,7 +1181,7 @@ import {
     if (item.type === "project") {
       state.ui.projectTab = "cover";
     }
-    saveState();
+    saveState([item.id], item.id);
     render();
   }
 
@@ -976,6 +1237,7 @@ import {
     }
 
     closeHighlightMenu();
+    closeTextColorMenu();
     state.highlightMenu = {
       anchor: anchor,
       range: saveSelection(editor)
@@ -991,6 +1253,33 @@ import {
     }
 
     state.highlightMenu = null;
+  }
+
+  function openTextColorMenu(anchor) {
+    var editor = document.getElementById("documentContent");
+
+    if (!editor || !hasTextSelectionInside(editor)) {
+      alert("Selecione um texto para alterar a cor.");
+      return;
+    }
+
+    closeHighlightMenu();
+    closeTextColorMenu();
+    state.textColorMenu = {
+      anchor: anchor,
+      range: saveSelection(editor)
+    };
+    renderTextColorMenu();
+  }
+
+  function closeTextColorMenu() {
+    var menu = document.getElementById("textColorMenu");
+
+    if (menu) {
+      menu.remove();
+    }
+
+    state.textColorMenu = null;
   }
 
   function renderHighlightMenu() {
@@ -1033,6 +1322,45 @@ import {
 
     document.body.appendChild(menu);
     positionCreateMenu(menu, state.highlightMenu.anchor);
+  }
+
+  function renderTextColorMenu() {
+    var menu;
+
+    if (!state.textColorMenu) {
+      return;
+    }
+
+    menu = document.createElement("div");
+    menu.className = "text-color-menu";
+    menu.id = "textColorMenu";
+
+    TEXT_COLOR_OPTIONS.forEach(function (option) {
+      var button = document.createElement("button");
+      var swatch = document.createElement("span");
+      var label = document.createElement("span");
+
+      button.type = "button";
+      button.className = "text-color-option";
+      swatch.className = "text-color-swatch";
+      swatch.style.backgroundColor = option.swatch || option.color;
+      label.textContent = option.label;
+
+      if (!option.color) {
+        swatch.classList.add("is-default");
+      }
+
+      button.appendChild(swatch);
+      button.appendChild(label);
+      button.addEventListener("click", function (event) {
+        event.stopPropagation();
+        applyTextColor(option.color);
+      });
+      menu.appendChild(button);
+    });
+
+    document.body.appendChild(menu);
+    positionCreateMenu(menu, state.textColorMenu.anchor);
   }
 
   function renderCreateMenu() {
@@ -1100,7 +1428,6 @@ import {
       originalTitle: ""
     };
 
-    saveState();
     render();
     focusInlineInput();
   }
@@ -1153,7 +1480,7 @@ import {
     item.title = title || getDefaultTitle(item.type);
     item.updatedAt = nowIso();
     state.inlineEdit = null;
-    saveState();
+    saveState([item.id], item.id);
     render();
   }
 
@@ -1172,7 +1499,7 @@ import {
     }
 
     state.inlineEdit = null;
-    saveState();
+    saveState(item ? [item.id] : [], item ? item.id : null);
     render();
   }
 
@@ -1180,12 +1507,29 @@ import {
     elements.sidebar.classList.toggle("is-collapsed", state.sidebarCollapsed);
     elements.treeList.innerHTML = "";
 
+    if (elements.sidebarSearch && elements.sidebarSearch.value !== (state.ui.searchQuery || "")) {
+      elements.sidebarSearch.value = state.ui.searchQuery || "";
+    }
+
+    if (elements.trashCount) {
+      elements.trashCount.textContent = String(getDeletedItems().length);
+    }
+
+    if (elements.trashToggle) {
+      elements.trashToggle.classList.toggle("is-active", !!state.ui.showTrash);
+    }
+
+    if (state.ui.showTrash && !state.sidebarCollapsed) {
+      renderTrash();
+      return;
+    }
+
     var rootItems = getVisibleChildren(null);
 
     if (!rootItems.length && !state.sidebarCollapsed) {
       var empty = document.createElement("div");
       empty.className = "sidebar-empty";
-      empty.textContent = "Nenhum item ainda";
+      empty.textContent = getSidebarSearchQuery() ? "Nada encontrado" : "Nenhum item ainda";
       elements.treeList.appendChild(empty);
       return;
     }
@@ -1194,13 +1538,69 @@ import {
   }
 
   function renderTree(parentId, depth) {
+    var isSearching = !!getSidebarSearchQuery();
+
     getVisibleChildren(parentId).forEach(function (item) {
       renderTreeItem(item, depth);
 
-      if ((item.type === "project" || item.type === "folder") && item.isOpen) {
+      if ((item.type === "project" || item.type === "folder") && (item.isOpen || isSearching)) {
         renderTree(item.id, depth + 1);
       }
     });
+  }
+
+  function renderTrash() {
+    var items = getDeletedItems().filter(function (item) {
+      return !isDeleted(getItem(item.parentId));
+    });
+
+    if (!items.length) {
+      var empty = document.createElement("div");
+      empty.className = "sidebar-empty";
+      empty.textContent = "Lixeira vazia";
+      elements.treeList.appendChild(empty);
+      return;
+    }
+
+    items.forEach(function (item) {
+      renderTrashItem(item);
+    });
+  }
+
+  function renderTrashItem(item) {
+    var row = document.createElement("div");
+    var title = document.createElement("span");
+    var restore = document.createElement("button");
+    var remove = document.createElement("button");
+
+    row.className = "tree-item tree-item-trash";
+    row.style.setProperty("--depth", 0);
+
+    title.className = "tree-title";
+    title.textContent = item.title || getDefaultTitle(item.type);
+
+    restore.type = "button";
+    restore.className = "tree-mini-action";
+    restore.textContent = "R";
+    restore.title = "Restaurar";
+    restore.setAttribute("aria-label", "Restaurar");
+    restore.addEventListener("click", function () {
+      restoreItem(item.id);
+    });
+
+    remove.type = "button";
+    remove.className = "tree-mini-action danger";
+    remove.textContent = "x";
+    remove.title = "Excluir definitivamente";
+    remove.setAttribute("aria-label", "Excluir definitivamente");
+    remove.addEventListener("click", function () {
+      permanentlyDeleteItem(item.id);
+    });
+
+    row.appendChild(title);
+    row.appendChild(restore);
+    row.appendChild(remove);
+    elements.treeList.appendChild(row);
   }
 
   function renderTreeItem(item, depth) {
@@ -1210,6 +1610,10 @@ import {
 
     if (item.id === state.selectedItemId) {
       row.classList.add("is-active");
+    }
+
+    if (getSidebarSearchQuery() && itemMatchesSearch(item)) {
+      row.classList.add("is-search-match");
     }
 
     var main = document.createElement("div");
@@ -1367,11 +1771,31 @@ import {
   }
 
   function renderEmptyState() {
-    elements.editorPanel.innerHTML =
-      '<div class="empty-state">' +
-      "<h2>Nenhum documento selecionado</h2>" +
-      "<p>Crie ou selecione um documento na barra lateral.</p>" +
-      "</div>";
+    var empty = document.createElement("div");
+    var title = document.createElement("h2");
+    var text = document.createElement("p");
+
+    elements.editorPanel.innerHTML = "";
+    empty.className = "empty-state";
+    title.textContent = "Nenhum documento selecionado";
+    text.textContent = "Crie ou selecione um documento na barra lateral.";
+
+    empty.appendChild(title);
+    empty.appendChild(text);
+
+    if (isAdmin()) {
+      var actions = document.createElement("div");
+      actions.className = "empty-actions";
+      actions.appendChild(createTextButton("Novo projeto", function () {
+        startInlineCreate("project", null);
+      }));
+      actions.appendChild(createTextButton("Novo documento", function () {
+        startInlineCreate("document", null);
+      }));
+      empty.appendChild(actions);
+    }
+
+    elements.editorPanel.appendChild(empty);
   }
 
   function renderHeader(item, includeToolbar) {
@@ -1399,7 +1823,7 @@ import {
     var status = document.createElement("div");
     status.className = "status-line";
     status.id = "saveStatus";
-    status.textContent = item.type === "document" ? "Salvo localmente" : getHeaderStatus(item);
+    status.textContent = item.type === "document" ? getSaveStatusText() : getHeaderStatus(item);
 
     heading.appendChild(title);
     heading.appendChild(breadcrumb);
@@ -1433,7 +1857,7 @@ import {
       actionGroup.appendChild(createTextButton("Renomear", function () {
         startInlineRename(item.id);
       }));
-      actionGroup.appendChild(createTextButton("Excluir", function () {
+      actionGroup.appendChild(createTextButton("Lixeira", function () {
         deleteItem(item.id);
       }, "danger"));
     }
@@ -1459,7 +1883,22 @@ import {
 
     var body = document.createElement("div");
     body.className = "container-message";
-    body.innerHTML = "<p>Selecione ou crie um documento dentro deste item para começar a escrever.</p>";
+
+    var text = document.createElement("p");
+    text.textContent = "Selecione ou crie um documento dentro deste item para começar a escrever.";
+    body.appendChild(text);
+
+    if (canEditItem(item) && (item.type === "project" || item.type === "folder")) {
+      var actions = document.createElement("div");
+      actions.className = "empty-actions";
+      actions.appendChild(createTextButton("Novo documento", function () {
+        startInlineCreate("document", item.id);
+      }));
+      actions.appendChild(createTextButton("Nova pasta", function () {
+        startInlineCreate("folder", item.id);
+      }));
+      body.appendChild(actions);
+    }
 
     elements.editorPanel.appendChild(body);
   }
@@ -1621,9 +2060,13 @@ import {
 
     normalizeEditorContent(editor);
     prepareEditorMedia(editor);
+    prepareToggleBlocks(editor, false);
     ensureLinksOpenInNewTab(editor);
-    item.content = getEditorHtml(editor);
-    saveState();
+    var normalizedContent = getEditorHtml(editor);
+    if (item.content !== normalizedContent) {
+      item.content = normalizedContent;
+      saveState([item.id], item.id);
+    }
 
     editor.addEventListener("input", function () {
       scheduleSave(item.id, editor);
@@ -1640,6 +2083,10 @@ import {
     });
 
     editor.addEventListener("click", function (event) {
+      if (handleToggleBlockClick(event, item.id, editor, false)) {
+        return;
+      }
+
       var imageBlock = event.target.closest ? event.target.closest(".image-block") : null;
       var removeButton = event.target.closest ? event.target.closest(".image-remove") : null;
       var internalLink = event.target.closest ? event.target.closest(".internal-link") : null;
@@ -1761,7 +2208,9 @@ import {
       ],
       [
         ["Destacar", "Destacar texto", "highlight"],
+        ["Cor", "Alterar cor do texto", "textColor"],
         ["Código", "Inserir bloco de código", "code"],
+        ["Toggle", "Inserir bloco recolhível", "toggle"],
         ["Link", "Inserir link", "link"],
         ["Imagem", "Inserir imagem", "image"]
       ]
@@ -1811,8 +2260,18 @@ import {
         return;
       }
 
+      if (command === "textColor") {
+        openTextColorMenu(button);
+        return;
+      }
+
       if (command === "code") {
         insertCodeBlock();
+        return;
+      }
+
+      if (command === "toggle") {
+        insertToggleBlock();
         return;
       }
 
@@ -1866,6 +2325,80 @@ import {
     updateDocumentContent(item.id, getEditorHtml(editor));
   }
 
+  function applyTextColor(color) {
+    var editor = document.getElementById("documentContent");
+    var item = getSelectedItem();
+
+    if (!editor || !item || (item.type !== "document" && item.type !== "project")) {
+      return;
+    }
+
+    editor.focus();
+    restoreSelection(state.textColorMenu ? state.textColorMenu.range : null);
+
+    if (color) {
+      document.execCommand("foreColor", false, color);
+    } else {
+      removeTextColorFromSelection(editor);
+    }
+
+    closeTextColorMenu();
+    normalizeEditorContent(editor);
+    updateDocumentContent(item.id, getEditorHtml(editor));
+  }
+
+  function removeTextColorFromSelection(editor) {
+    var selection = window.getSelection();
+    var range;
+    var fragment;
+    var markerId;
+    var marker;
+
+    if (!selection || selection.rangeCount === 0) {
+      return;
+    }
+
+    range = selection.getRangeAt(0);
+
+    if (range.collapsed || !editor.contains(range.commonAncestorContainer)) {
+      return;
+    }
+
+    fragment = range.extractContents();
+    stripTextColor(fragment);
+    markerId = createId("caret");
+    marker = createCaretMarker(markerId);
+    fragment.appendChild(marker);
+    range.insertNode(fragment);
+    restoreCaretAtMarker(editor, markerId);
+  }
+
+  function stripTextColor(root) {
+    Array.prototype.slice.call(root.querySelectorAll("[style]")).forEach(function (node) {
+      node.style.removeProperty("color");
+      if (!node.getAttribute("style")) {
+        node.removeAttribute("style");
+      }
+    });
+
+    Array.prototype.slice.call(root.querySelectorAll("font[color]")).forEach(function (node) {
+      node.removeAttribute("color");
+      if (!node.attributes.length) {
+        unwrapElement(node);
+      }
+    });
+  }
+
+  function unwrapElement(element) {
+    var fragment = document.createDocumentFragment();
+
+    while (element.firstChild) {
+      fragment.appendChild(element.firstChild);
+    }
+
+    element.replaceWith(fragment);
+  }
+
   function insertCodeBlock() {
     var editor = document.getElementById("documentContent");
     var item = getSelectedItem();
@@ -1877,6 +2410,57 @@ import {
     editor.focus();
     document.execCommand("insertHTML", false, '<pre class="code-block" style="text-align: left;" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off"><code spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off">// escreva seu código aqui</code></pre><p><br></p>');
     updateDocumentContent(item.id, getEditorHtml(editor));
+  }
+
+  function insertToggleBlock() {
+    var editor = document.getElementById("documentContent");
+    var item = getSelectedItem();
+    var toggleId = createId("toggle");
+    var block;
+    var title;
+
+    if (!editor || !item || (item.type !== "document" && item.type !== "project")) {
+      return;
+    }
+
+    editor.focus();
+    insertHtmlAtCursorAndMoveCaret(createToggleBlockHtml(toggleId), editor);
+    prepareToggleBlocks(editor, false);
+
+    block = editor.querySelector('[data-temp-toggle="' + toggleId + '"]');
+    if (block) {
+      block.removeAttribute("data-temp-toggle");
+      title = block.querySelector(".toggle-title");
+      if (title) {
+        selectEditableNodeText(title);
+      }
+    }
+
+    updateDocumentContent(item.id, getEditorHtml(editor));
+  }
+
+  function createToggleBlockHtml(toggleId) {
+    return '<div class="toggle-block" data-open="true" data-temp-toggle="' + toggleId + '">' +
+      '<div class="toggle-header" contenteditable="false">' +
+      '<button class="toggle-arrow" type="button" contenteditable="false" aria-label="Recolher">▾</button>' +
+      '<span class="toggle-title" contenteditable="true">Título do bloco</span>' +
+      "</div>" +
+      '<div class="toggle-content" contenteditable="true">Escreva o conteúdo aqui...</div>' +
+      "</div><p><br></p>";
+  }
+
+  function selectEditableNodeText(node) {
+    var range = document.createRange();
+    var selection = window.getSelection();
+
+    if (!selection) {
+      return;
+    }
+
+    range.selectNodeContents(node);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    node.focus();
   }
 
   function applyLink() {
@@ -1953,6 +2537,7 @@ import {
     linkifyTextNodes(editor);
     wikilinkTextNodes(editor);
     normalizeCodeBlocks(editor);
+    prepareToggleBlocks(editor, false);
     prepareEditorMedia(editor);
     ensureLinksOpenInNewTab(editor);
   }
@@ -1973,8 +2558,76 @@ import {
     });
   }
 
+  function prepareToggleBlocks(root, readOnly) {
+    Array.prototype.slice.call(root.querySelectorAll(".toggle-block")).forEach(function (block) {
+      var header = block.querySelector(".toggle-header");
+      var arrow = block.querySelector(".toggle-arrow");
+      var title = block.querySelector(".toggle-title");
+      var content = block.querySelector(".toggle-content");
+      var isOpen = block.getAttribute("data-open") !== "false";
+
+      block.setAttribute("data-open", isOpen ? "true" : "false");
+
+      if (header) {
+        header.setAttribute("contenteditable", "false");
+      }
+
+      if (arrow) {
+        arrow.type = "button";
+        arrow.setAttribute("contenteditable", "false");
+        arrow.setAttribute("aria-label", isOpen ? "Recolher" : "Expandir");
+        arrow.textContent = isOpen ? "▾" : "▸";
+      }
+
+      if (title) {
+        title.setAttribute("contenteditable", readOnly ? "false" : "true");
+      }
+
+      if (content) {
+        content.setAttribute("contenteditable", readOnly ? "false" : "true");
+      }
+    });
+  }
+
+  function handleToggleBlockClick(event, itemId, root, readOnly) {
+    var target = event.target;
+    var block = target.closest ? target.closest(".toggle-block") : null;
+    var arrow = target.closest ? target.closest(".toggle-arrow") : null;
+    var header = target.closest ? target.closest(".toggle-header") : null;
+    var title = target.closest ? target.closest(".toggle-title") : null;
+
+    if (!block || !root.contains(block)) {
+      return false;
+    }
+
+    if (!arrow && !header) {
+      return false;
+    }
+
+    if (!readOnly && title && !arrow) {
+      return false;
+    }
+
+    event.preventDefault();
+    toggleCollapsibleBlock(block, itemId, root);
+    return true;
+  }
+
+  function toggleCollapsibleBlock(block, itemId, root) {
+    var isOpen = block.getAttribute("data-open") !== "false";
+    var editor = root && root.id === "documentContent" ? root : null;
+
+    block.setAttribute("data-open", isOpen ? "false" : "true");
+    prepareToggleBlocks(block.parentElement || root, !editor);
+
+    if (itemId && editor) {
+      updateDocumentContent(itemId, getEditorHtml(editor));
+    }
+  }
+
   function handleEditorPaste(event, itemId, editor) {
     var clipboard = event.clipboardData;
+    var markerId;
 
     if (!clipboard) {
       return;
@@ -1996,13 +2649,144 @@ import {
       return;
     }
 
-    document.execCommand("insertHTML", false, plainTextToHtml(text));
-    normalizeEditorContent();
+    editor.focus();
+
+    if (event.target.closest && event.target.closest(".code-block")) {
+      markerId = insertPlainTextAtCursor(text, editor);
+      normalizeCodeBlocks(editor);
+    } else {
+      markerId = insertHtmlAtCursor(plainTextToPasteHtml(text), editor);
+      normalizeEditorContent(editor);
+    }
+
+    restoreCaretAtMarker(editor, markerId);
     updateDocumentContent(itemId, getEditorHtml(editor));
   }
 
   function plainTextToHtml(text) {
     return escapeHtml(text).replace(/\n/g, "<br>");
+  }
+
+  function plainTextToPasteHtml(text) {
+    var html = "";
+    var lastIndex = 0;
+    var match;
+
+    URL_PATTERN.lastIndex = 0;
+    match = URL_PATTERN.exec(text);
+
+    while (match) {
+      var rawUrl = match[0];
+      var cleaned = splitTrailingPunctuation(rawUrl);
+
+      html += plainTextToHtml(text.slice(lastIndex, match.index));
+      html += createLinkHtml(cleaned.url, cleaned.url);
+      html += plainTextToHtml(cleaned.trailing);
+
+      lastIndex = match.index + rawUrl.length;
+      match = URL_PATTERN.exec(text);
+    }
+
+    html += plainTextToHtml(text.slice(lastIndex));
+    return html;
+  }
+
+  function insertHtmlAtCursorAndMoveCaret(html, editor) {
+    var markerId = insertHtmlAtCursor(html, editor);
+    restoreCaretAtMarker(editor, markerId);
+    return markerId;
+  }
+
+  function insertHtmlAtCursor(html, editor) {
+    var markerId = createId("caret");
+    var selection = window.getSelection();
+    var range;
+    var temp;
+    var fragment;
+
+    if (!selection || selection.rangeCount === 0) {
+      editor.focus();
+      selection = window.getSelection();
+    }
+
+    if (!selection || selection.rangeCount === 0) {
+      return markerId;
+    }
+
+    range = selection.getRangeAt(0);
+
+    if (!editor.contains(range.commonAncestorContainer)) {
+      range.selectNodeContents(editor);
+      range.collapse(false);
+    }
+
+    range.deleteContents();
+    temp = document.createElement("div");
+    temp.innerHTML = html;
+    temp.appendChild(createCaretMarker(markerId));
+    fragment = document.createDocumentFragment();
+
+    while (temp.firstChild) {
+      fragment.appendChild(temp.firstChild);
+    }
+
+    range.insertNode(fragment);
+    return markerId;
+  }
+
+  function insertPlainTextAtCursor(text, editor) {
+    var markerId = createId("caret");
+    var selection = window.getSelection();
+    var range;
+    var fragment;
+
+    if (!selection || selection.rangeCount === 0) {
+      return markerId;
+    }
+
+    range = selection.getRangeAt(0);
+
+    if (!editor.contains(range.commonAncestorContainer)) {
+      return markerId;
+    }
+
+    range.deleteContents();
+    fragment = document.createDocumentFragment();
+    fragment.appendChild(document.createTextNode(text));
+    fragment.appendChild(createCaretMarker(markerId));
+    range.insertNode(fragment);
+    return markerId;
+  }
+
+  function createCaretMarker(markerId) {
+    var marker = document.createElement("span");
+    marker.setAttribute("data-caret-marker", markerId);
+    marker.style.display = "inline-block";
+    marker.style.width = "0";
+    marker.style.overflow = "hidden";
+    marker.textContent = "";
+    return marker;
+  }
+
+  function restoreCaretAtMarker(root, markerId) {
+    var marker = markerId ? root.querySelector('[data-caret-marker="' + markerId + '"]') : null;
+    var selection;
+    var range;
+
+    if (!marker) {
+      return;
+    }
+
+    selection = window.getSelection();
+    range = document.createRange();
+    range.setStartBefore(marker);
+    range.collapse(true);
+    marker.remove();
+
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
   }
 
   function prepareEditorMedia(root) {
@@ -2172,6 +2956,14 @@ import {
       block.classList.remove("selected");
     });
 
+    Array.prototype.slice.call(clone.querySelectorAll("[data-caret-marker]")).forEach(function (marker) {
+      marker.remove();
+    });
+
+    Array.prototype.slice.call(clone.querySelectorAll("[data-temp-toggle]")).forEach(function (block) {
+      block.removeAttribute("data-temp-toggle");
+    });
+
     Array.prototype.slice.call(clone.querySelectorAll("img")).forEach(function (image) {
       if (/^data:/i.test(image.getAttribute("src") || "")) {
         image.closest(".image-block") ? image.closest(".image-block").remove() : image.remove();
@@ -2221,7 +3013,7 @@ import {
       acceptNode: function (node) {
         var parent = node.parentElement;
 
-        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest("script") || parent.closest("style")) {
+        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -2268,7 +3060,7 @@ import {
       acceptNode: function (node) {
         var parent = node.parentElement;
 
-        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest("script") || parent.closest("style")) {
+        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -2347,7 +3139,7 @@ import {
 
     expandParents(target.id);
     state.selectedItemId = target.id;
-    saveState();
+    saveState([], null);
     render();
   }
 
@@ -2360,7 +3152,7 @@ import {
 
     expandParents(documentItem.id);
     state.selectedItemId = documentItem.id;
-    saveState();
+    saveState([], null);
     render();
   }
 
@@ -2389,7 +3181,6 @@ import {
     DataStore.updateItem(id, {
       content: content
     });
-    updateStatus("Salvo localmente");
   }
 
   function renderVisibilityBadge(item) {
@@ -2438,18 +3229,21 @@ import {
   function makeProjectPublic(projectId) {
     var now = nowIso();
     var project = getItem(projectId);
+    var changedIds = [];
 
     if (project) {
       project.visibility = "public";
       project.updatedAt = now;
+      changedIds.push(project.id);
     }
 
     getDocumentsInsideProject(projectId).forEach(function (documentItem) {
       documentItem.visibility = "public";
       documentItem.updatedAt = now;
+      changedIds.push(documentItem.id);
     });
 
-    saveState();
+    saveState(changedIds, projectId);
   }
 
   function getPublicUrl(item) {
@@ -2500,6 +3294,18 @@ import {
     if (status) {
       status.textContent = text;
     }
+  }
+
+  function setSaveStatus(status) {
+    var labels = {
+      saving: "Salvando...",
+      saved: "Salvo",
+      local: "Salvo localmente",
+      error: "Erro ao salvar"
+    };
+
+    state.ui.saveStatus = status;
+    updateStatus(labels[status] || "Salvo");
   }
 
   function hasTextSelectionInside(editor) {
@@ -2703,6 +3509,22 @@ import {
     }
 
     return getTypeName(item.type);
+  }
+
+  function getSaveStatusText() {
+    if (state.ui.saveStatus === "saving") {
+      return "Salvando...";
+    }
+
+    if (state.ui.saveStatus === "error") {
+      return "Erro ao salvar";
+    }
+
+    if (state.ui.saveStatus === "local") {
+      return "Salvo localmente";
+    }
+
+    return "Salvo";
   }
 
   function getTypeName(type) {
@@ -2936,6 +3758,10 @@ import {
     normalizeReadOnlyContent(content, item);
 
     content.addEventListener("click", function (event) {
+      if (handleToggleBlockClick(event, null, content, true)) {
+        return;
+      }
+
       var internalLink = event.target.closest ? event.target.closest(".internal-link") : null;
       var externalLink = event.target.closest ? event.target.closest("a") : null;
       var targetId;
@@ -2972,6 +3798,7 @@ import {
     linkifyTextNodes(root);
     wikilinkTextNodes(root, contextItem, true);
     normalizeCodeBlocks(root);
+    prepareToggleBlocks(root, true);
     prepareEditorMedia(root);
     Array.prototype.slice.call(root.querySelectorAll(".image-remove, .resize-handle")).forEach(function (control) {
       control.remove();
@@ -2980,6 +3807,15 @@ import {
       block.removeAttribute("draggable");
     });
     ensureLinksOpenInNewTab(root);
+    prepareReadOnlyContent(root);
+  }
+
+  function prepareReadOnlyContent(container) {
+    container.removeAttribute("contenteditable");
+    Array.prototype.slice.call(container.querySelectorAll("[contenteditable]")).forEach(function (node) {
+      node.setAttribute("contenteditable", "false");
+    });
+    prepareToggleBlocks(container, true);
   }
 
   function renderPrivateMessage(message) {
@@ -3228,7 +4064,7 @@ import {
 
   function toggleTheme() {
     state.preferences.theme = state.preferences.theme === "dark" ? "light" : "dark";
-    saveState();
+    saveState([], null);
     applyTheme();
   }
 
@@ -3293,6 +4129,21 @@ import {
       openCreateMenu(null, ["project", "document"], elements.newItem);
     });
 
+    if (elements.sidebarSearch) {
+      elements.sidebarSearch.addEventListener("input", function () {
+        state.ui.searchQuery = elements.sidebarSearch.value;
+        state.ui.showTrash = false;
+        renderSidebar();
+      });
+    }
+
+    if (elements.trashToggle) {
+      elements.trashToggle.addEventListener("click", function () {
+        state.ui.showTrash = !state.ui.showTrash;
+        renderSidebar();
+      });
+    }
+
     elements.logoutButton.addEventListener("click", function () {
       AuthStore.clearSession();
       reloadWithoutQuery();
@@ -3307,9 +4158,13 @@ import {
 
       if (!menu || !state.createMenu) {
         var highlightMenu = document.getElementById("highlightMenu");
+        var textColorMenu = document.getElementById("textColorMenu");
 
         if (highlightMenu && state.highlightMenu && !highlightMenu.contains(event.target) && !state.highlightMenu.anchor.contains(event.target)) {
           closeHighlightMenu();
+        }
+        if (textColorMenu && state.textColorMenu && !textColorMenu.contains(event.target) && !state.textColorMenu.anchor.contains(event.target)) {
+          closeTextColorMenu();
         }
         return;
       }
@@ -3324,14 +4179,37 @@ import {
     window.addEventListener("resize", function () {
       closeCreateMenu();
       closeHighlightMenu();
+      closeTextColorMenu();
     });
 
     document.addEventListener("keydown", function (event) {
+      var isCommand = event.ctrlKey || event.metaKey;
+
+      if (isCommand && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        if (elements.sidebarSearch) {
+          state.sidebarCollapsed = false;
+          renderSidebar();
+          elements.sidebarSearch.focus();
+          elements.sidebarSearch.select();
+        }
+        return;
+      }
+
+      if (isCommand && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        saveState(state.selectedItemId ? [state.selectedItemId] : [], state.selectedItemId);
+        return;
+      }
+
       if (event.key === "Escape" && state.createMenu) {
         closeCreateMenu();
       }
       if (event.key === "Escape" && state.highlightMenu) {
         closeHighlightMenu();
+      }
+      if (event.key === "Escape" && state.textColorMenu) {
+        closeTextColorMenu();
       }
     });
   }
