@@ -1027,6 +1027,308 @@ button {
   display: none;
 }
 
+.kanban-block,
+.public-content .kanban-block {
+  max-width: 100%;
+  margin: 18px 0;
+  padding: 12px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.kanban-header,
+.public-content .kanban-header {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kanban-title,
+.public-content .kanban-title {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.kanban-board,
+.public-content .kanban-board {
+  min-height: 160px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.kanban-column,
+.public-content .kanban-column {
+  width: 240px;
+  min-width: 220px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+}
+
+.kanban-column-header,
+.public-content .kanban-column-header {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kanban-column-title,
+.public-content .kanban-column-title {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-weight: 650;
+}
+
+.kanban-column-title[readonly],
+.public-content .kanban-column-title {
+  cursor: default;
+}
+
+.kanban-cards,
+.public-content .kanban-cards {
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kanban-card,
+.public-content .kanban-card {
+  position: relative;
+  padding: 8px 28px 8px 8px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-muted);
+  cursor: grab;
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card.dragging {
+  opacity: 0.5;
+}
+
+.kanban-card-title,
+.public-content .kanban-card-title {
+  min-height: 20px;
+  outline: none;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.kanban-card-meta,
+.public-content .kanban-card-meta {
+  min-height: 17px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.kanban-checklist-count {
+  opacity: 0.85;
+}
+
+.kanban-add-card,
+.kanban-add-column,
+.kanban-delete-card,
+.kanban-delete-column {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--button);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.kanban-add-card {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.kanban-add-column {
+  padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.kanban-delete-card,
+.kanban-delete-column {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.kanban-delete-card {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.kanban-add-card:hover,
+.kanban-add-card:focus-visible,
+.kanban-add-column:hover,
+.kanban-add-column:focus-visible,
+.kanban-delete-card:hover,
+.kanban-delete-card:focus-visible,
+.kanban-delete-column:hover,
+.kanban-delete-column:focus-visible {
+  background: var(--button-hover);
+  color: var(--text);
+  outline: none;
+}
+
+.kanban-block.readonly .kanban-card,
+.public-content .kanban-card {
+  cursor: default;
+}
+
+.kanban-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.kanban-modal-backdrop.hidden {
+  display: none;
+}
+
+.kanban-card-modal {
+  width: min(640px, 90vw);
+  max-height: 85vh;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.28);
+}
+
+.kanban-modal-header {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kanban-modal-title {
+  min-width: 0;
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.kanban-modal-title:focus,
+.kanban-check-text:focus {
+  border-color: var(--focus-soft);
+}
+
+.kanban-modal-close,
+.kanban-modal-add-check,
+.kanban-check-delete {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--button);
+  color: var(--text);
+}
+
+.kanban-modal-close {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.kanban-modal-section h3 {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.kanban-modal-checklist {
+  display: grid;
+  gap: 6px;
+}
+
+.kanban-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kanban-check-input {
+  flex: 0 0 auto;
+}
+
+.kanban-check-text {
+  min-width: 0;
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  outline: none;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.kanban-check-row.checked .kanban-check-text {
+  opacity: 0.65;
+  text-decoration: line-through;
+}
+
+.kanban-check-delete {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.kanban-modal-add-check {
+  margin-top: 10px;
+  padding: 7px 10px;
+}
+
+.kanban-modal-close:hover,
+.kanban-modal-close:focus-visible,
+.kanban-modal-add-check:hover,
+.kanban-modal-add-check:focus-visible,
+.kanban-check-delete:hover,
+.kanban-check-delete:focus-visible {
+  background: var(--button-hover);
+  color: var(--text);
+  outline: none;
+}
+
 .code-block,
 .public-content .code-block {
   display: block;

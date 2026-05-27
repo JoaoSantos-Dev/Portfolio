@@ -55,6 +55,9 @@ import {
   var normalizeTimer = null;
   var selectedImageBlock = null;
   var draggedImageBlock = null;
+  var draggedKanbanCard = null;
+  var kanbanDragJustEnded = false;
+  var activeKanbanModal = null;
   var resizeState = null;
 
   var state = {
@@ -2090,6 +2093,7 @@ import {
     normalizeEditorContent(editor);
     prepareEditorMedia(editor);
     prepareToggleBlocks(editor, false);
+    prepareKanbanBlocks(editor, false);
     ensureLinksOpenInNewTab(editor);
     var normalizedContent = getEditorHtml(editor);
     if (item.content !== normalizedContent) {
@@ -2097,7 +2101,11 @@ import {
       saveState([item.id], item.id);
     }
 
-    editor.addEventListener("input", function () {
+    editor.addEventListener("input", function (event) {
+      if (handleKanbanInput(event, item.id, editor)) {
+        return;
+      }
+
       scheduleSave(item.id, editor);
       scheduleNormalize(item.id, editor);
     });
@@ -2113,6 +2121,15 @@ import {
 
     editor.addEventListener("click", function (event) {
       if (handleToggleBlockClick(event, item.id, editor, false)) {
+        return;
+      }
+
+      if (event.target.closest && event.target.closest(".kanban-block")) {
+        if (handleKanbanClick(event, item.id, editor)) {
+          return;
+        }
+
+        clearImageSelection();
         return;
       }
 
@@ -2172,6 +2189,10 @@ import {
       event.dataTransfer.setData("text/plain", "");
     });
 
+    editor.addEventListener("dragstart", function (event) {
+      handleKanbanDragStart(event, editor);
+    });
+
     editor.addEventListener("dragover", function (event) {
       if (!draggedImageBlock) {
         return;
@@ -2179,6 +2200,10 @@ import {
 
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
+    });
+
+    editor.addEventListener("dragover", function (event) {
+      handleKanbanDragOver(event, editor);
     });
 
     editor.addEventListener("drop", function (event) {
@@ -2191,8 +2216,20 @@ import {
       updateDocumentContent(item.id, getEditorHtml(editor));
     });
 
+    editor.addEventListener("drop", function (event) {
+      handleKanbanDrop(event, item.id, editor);
+    });
+
     editor.addEventListener("dragend", function () {
       draggedImageBlock = null;
+    });
+
+    editor.addEventListener("dragend", function () {
+      if (draggedKanbanCard) {
+        updateDocumentContent(item.id, getEditorHtml(editor));
+      }
+
+      handleKanbanDragEnd();
     });
 
     editor.addEventListener("keydown", function (event) {
@@ -2240,6 +2277,7 @@ import {
         ["Cor", "Alterar cor do texto", "textColor"],
         ["Código", "Inserir bloco de código", "code"],
         ["Toggle", "Inserir bloco recolhível", "toggle"],
+        ["Kanban", "Inserir bloco Kanban", "kanban"],
         ["Link", "Inserir link", "link"],
         ["Imagem", "Inserir imagem", "image"]
       ]
@@ -2323,6 +2361,11 @@ import {
 
       if (command === "toggle") {
         insertToggleBlock();
+        return;
+      }
+
+      if (command === "kanban") {
+        insertKanbanBlock();
         return;
       }
 
@@ -2500,6 +2543,97 @@ import {
       "</div><p><br></p>";
   }
 
+  function insertKanbanBlock() {
+    var editor = document.getElementById("documentContent");
+    var item = getSelectedItem();
+    var kanbanId = createId("kanban");
+    var block;
+
+    if (!editor || !item || (item.type !== "document" && item.type !== "project")) {
+      return;
+    }
+
+    editor.focus();
+    insertHtmlAtCursorAndMoveCaret(createKanbanBlockHtml(kanbanId), editor);
+    prepareKanbanBlocks(editor, false);
+
+    block = editor.querySelector('[data-temp-kanban="' + kanbanId + '"]');
+    if (block) {
+      block.removeAttribute("data-temp-kanban");
+    }
+
+    updateDocumentContent(item.id, getEditorHtml(editor));
+  }
+
+  function createKanbanBlockHtml(kanbanId) {
+    return '<div class="kanban-block" contenteditable="false" data-kanban-id="' + escapeHtml(kanbanId) + '" data-temp-kanban="' + escapeHtml(kanbanId) + '">' +
+      '<div class="kanban-header">' +
+      '<span class="kanban-title">Kanban</span>' +
+      '<button type="button" class="kanban-add-column" contenteditable="false">+ Coluna</button>' +
+      "</div>" +
+      '<div class="kanban-board">' +
+      createKanbanColumnHtml("A Fazer") +
+      createKanbanColumnHtml("Fazendo") +
+      createKanbanColumnHtml("Concluído") +
+      "</div>" +
+      "</div><p><br></p>";
+  }
+
+  function createKanbanColumnHtml(title) {
+    var columnId = createId("column");
+
+    return '<div class="kanban-column" data-column-id="' + escapeHtml(columnId) + '">' +
+      '<div class="kanban-column-header">' +
+      '<input class="kanban-column-title" value="' + escapeHtml(title) + '" aria-label="Título da coluna">' +
+      '<button type="button" class="kanban-delete-column" contenteditable="false" aria-label="Excluir coluna">×</button>' +
+      "</div>" +
+      '<div class="kanban-cards"></div>' +
+      '<button type="button" class="kanban-add-card" contenteditable="false">+ Cartão</button>' +
+      "</div>";
+  }
+
+  function createKanbanColumnElement(title) {
+    var wrapper = document.createElement("div");
+    wrapper.innerHTML = createKanbanColumnHtml(title || "Nova coluna");
+    return wrapper.firstChild;
+  }
+
+  function createKanbanCardElement(text) {
+    var card = document.createElement("div");
+    var title = document.createElement("div");
+    var meta = document.createElement("div");
+    var count = document.createElement("span");
+    var remove = document.createElement("button");
+    var data = document.createElement("div");
+
+    card.className = "kanban-card";
+    card.draggable = true;
+    card.setAttribute("data-card-id", createId("card"));
+    card.setAttribute("contenteditable", "false");
+
+    title.className = "kanban-card-title";
+    title.textContent = text || "Novo cartão";
+
+    meta.className = "kanban-card-meta";
+    count.className = "kanban-checklist-count";
+    meta.appendChild(count);
+
+    remove.type = "button";
+    remove.className = "kanban-delete-card";
+    remove.setAttribute("contenteditable", "false");
+    remove.setAttribute("aria-label", "Excluir cartão");
+    remove.textContent = "×";
+
+    data.className = "kanban-card-data";
+    data.hidden = true;
+
+    card.appendChild(title);
+    card.appendChild(meta);
+    card.appendChild(remove);
+    card.appendChild(data);
+    return card;
+  }
+
   function selectEditableNodeText(node) {
     var range = document.createRange();
     var selection = window.getSelection();
@@ -2589,6 +2723,7 @@ import {
     wikilinkTextNodes(editor);
     normalizeCodeBlocks(editor);
     prepareToggleBlocks(editor, false);
+    prepareKanbanBlocks(editor, false);
     prepareEditorMedia(editor);
     ensureLinksOpenInNewTab(editor);
   }
@@ -2674,6 +2809,660 @@ import {
     if (itemId && editor) {
       updateDocumentContent(itemId, getEditorHtml(editor));
     }
+  }
+
+  function prepareKanbanBlocks(root, readOnly) {
+    Array.prototype.slice.call(root.querySelectorAll(".kanban-block")).forEach(function (block) {
+      block.setAttribute("contenteditable", "false");
+      block.classList.toggle("readonly", !!readOnly);
+
+      if (!block.getAttribute("data-kanban-id")) {
+        block.setAttribute("data-kanban-id", createId("kanban"));
+      }
+
+      Array.prototype.slice.call(block.querySelectorAll("button")).forEach(function (button) {
+        button.type = "button";
+        button.setAttribute("contenteditable", "false");
+        button.hidden = !!readOnly;
+      });
+
+      Array.prototype.slice.call(block.querySelectorAll(".kanban-column")).forEach(function (column) {
+        if (!column.getAttribute("data-column-id")) {
+          column.setAttribute("data-column-id", createId("column"));
+        }
+      });
+
+      Array.prototype.slice.call(block.querySelectorAll(".kanban-column-title")).forEach(function (input) {
+        input.readOnly = !!readOnly;
+        input.setAttribute("value", input.value || "");
+      });
+
+      Array.prototype.slice.call(block.querySelectorAll(".kanban-card")).forEach(function (card) {
+        normalizeKanbanCardStructure(card);
+        card.setAttribute("contenteditable", "false");
+        card.draggable = !readOnly;
+
+        if (!card.getAttribute("data-card-id")) {
+          card.setAttribute("data-card-id", createId("card"));
+        }
+      });
+
+      updateKanbanChecklistCounters(block);
+    });
+  }
+
+  function normalizeKanbanCardStructure(card) {
+    var oldText = card.querySelector(".kanban-card-text");
+    var title = card.querySelector(".kanban-card-title");
+    var meta = card.querySelector(".kanban-card-meta");
+    var count = card.querySelector(".kanban-checklist-count");
+    var data = card.querySelector(".kanban-card-data");
+    var remove = card.querySelector(".kanban-delete-card");
+
+    if (!title) {
+      title = document.createElement("div");
+      title.className = "kanban-card-title";
+      title.textContent = oldText ? oldText.textContent : (card.textContent || "Novo cartão").replace("×", "").trim();
+      card.insertBefore(title, card.firstChild);
+    }
+
+    title.removeAttribute("contenteditable");
+
+    if (oldText) {
+      oldText.remove();
+    }
+
+    if (!meta) {
+      meta = document.createElement("div");
+      meta.className = "kanban-card-meta";
+      title.insertAdjacentElement("afterend", meta);
+    }
+
+    if (!count) {
+      count = document.createElement("span");
+      count.className = "kanban-checklist-count";
+      meta.appendChild(count);
+    }
+
+    if (!remove) {
+      remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "kanban-delete-card";
+      remove.setAttribute("aria-label", "Excluir cartão");
+      remove.textContent = "×";
+      card.appendChild(remove);
+    }
+
+    remove.type = "button";
+    remove.setAttribute("contenteditable", "false");
+
+    if (!data) {
+      data = document.createElement("div");
+      data.className = "kanban-card-data";
+      data.hidden = true;
+      card.appendChild(data);
+    }
+
+    data.hidden = true;
+    data.setAttribute("contenteditable", "false");
+
+    Array.prototype.slice.call(data.querySelectorAll(".kanban-checklist-item")).forEach(function (item) {
+      if (!item.getAttribute("data-check-id")) {
+        item.setAttribute("data-check-id", createId("check"));
+      }
+      item.setAttribute("data-checked", item.getAttribute("data-checked") === "true" ? "true" : "false");
+    });
+  }
+
+  function updateKanbanChecklistCounters(root) {
+    var cards = root.classList && root.classList.contains("kanban-card") ? [root] : [];
+
+    cards = cards.concat(Array.prototype.slice.call(root.querySelectorAll(".kanban-card")));
+
+    cards.forEach(function (card) {
+      var count = card.querySelector(".kanban-checklist-count");
+      var items = Array.prototype.slice.call(card.querySelectorAll(".kanban-card-data .kanban-checklist-item"));
+      var checked = items.filter(function (item) {
+        return item.getAttribute("data-checked") === "true";
+      }).length;
+
+      if (!count) {
+        return;
+      }
+
+      count.textContent = items.length ? "✓ " + checked + "/" + items.length : "";
+      count.hidden = items.length === 0;
+    });
+  }
+
+  function handleKanbanClick(event, itemId, editor) {
+    var target = event.target;
+    var block = target.closest ? target.closest(".kanban-block") : null;
+    var addColumn = target.closest ? target.closest(".kanban-add-column") : null;
+    var deleteColumn = target.closest ? target.closest(".kanban-delete-column") : null;
+    var addCard = target.closest ? target.closest(".kanban-add-card") : null;
+    var deleteCard = target.closest ? target.closest(".kanban-delete-card") : null;
+    var column;
+    var cards;
+    var card;
+    var title;
+    var board;
+
+    if (!block || !editor.contains(block)) {
+      return false;
+    }
+
+    if (addColumn) {
+      event.preventDefault();
+      board = block.querySelector(".kanban-board");
+
+      if (!board) {
+        return true;
+      }
+
+      column = createKanbanColumnElement("Nova coluna");
+      board.appendChild(column);
+      prepareKanbanBlocks(block, false);
+      title = column.querySelector(".kanban-column-title");
+
+      if (title) {
+        title.focus();
+        title.select();
+      }
+
+      updateDocumentContent(itemId, getEditorHtml(editor));
+      return true;
+    }
+
+    if (deleteColumn) {
+      event.preventDefault();
+      column = deleteColumn.closest(".kanban-column");
+
+      if (!column) {
+        return true;
+      }
+
+      if (block.querySelectorAll(".kanban-column").length <= 1) {
+        alert("O Kanban precisa ter pelo menos uma coluna.");
+        return true;
+      }
+
+      if (!confirm("Excluir esta coluna e todos os cartões dentro dela?")) {
+        return true;
+      }
+
+      column.remove();
+      updateDocumentContent(itemId, getEditorHtml(editor));
+      return true;
+    }
+
+    if (addCard) {
+      event.preventDefault();
+      column = addCard.closest(".kanban-column");
+      cards = column ? column.querySelector(".kanban-cards") : null;
+
+      if (!cards) {
+        return true;
+      }
+
+      card = createKanbanCardElement("Novo cartão");
+      cards.appendChild(card);
+      prepareKanbanBlocks(block, false);
+      updateDocumentContent(itemId, getEditorHtml(editor));
+      openKanbanCardModal(card, {
+        editor: editor,
+        itemId: itemId,
+        readOnly: false
+      });
+      return true;
+    }
+
+    if (deleteCard) {
+      event.preventDefault();
+      card = deleteCard.closest(".kanban-card");
+
+      if (card) {
+        if (activeKanbanModal && activeKanbanModal.card === card) {
+          closeKanbanCardModal();
+        }
+
+        card.remove();
+        updateDocumentContent(itemId, getEditorHtml(editor));
+      }
+
+      return true;
+    }
+
+    card = target.closest ? target.closest(".kanban-card") : null;
+    if (card && block.contains(card)) {
+      if (kanbanDragJustEnded) {
+        return true;
+      }
+
+      event.preventDefault();
+      openKanbanCardModal(card, {
+        editor: editor,
+        itemId: itemId,
+        readOnly: false
+      });
+      return true;
+    }
+
+    return false;
+  }
+
+  function handleKanbanInput(event, itemId, editor) {
+    var target = event.target;
+
+    if (!target.closest || !target.closest(".kanban-block")) {
+      return false;
+    }
+
+    if (target.classList.contains("kanban-column-title")) {
+      target.setAttribute("value", target.value || "");
+    }
+
+    scheduleSave(itemId, editor);
+    return true;
+  }
+
+  function openKanbanCardModal(card, options) {
+    options = options || {};
+    closeKanbanCardModal(false);
+    normalizeKanbanCardStructure(card);
+    updateKanbanChecklistCounters(card);
+
+    activeKanbanModal = {
+      card: card,
+      editor: options.editor || null,
+      itemId: options.itemId || null,
+      readOnly: !!options.readOnly,
+      element: null
+    };
+
+    renderKanbanCardModal();
+  }
+
+  function closeKanbanCardModal(shouldSave) {
+    if (!activeKanbanModal) {
+      return;
+    }
+
+    if (shouldSave !== false) {
+      saveActiveKanbanCard();
+    }
+
+    if (activeKanbanModal.element) {
+      activeKanbanModal.element.remove();
+    }
+
+    activeKanbanModal = null;
+  }
+
+  function renderKanbanCardModal() {
+    var modalState = activeKanbanModal;
+    var card = modalState.card;
+    var readOnly = modalState.readOnly;
+    var backdrop = document.createElement("div");
+    var modal = document.createElement("div");
+    var header = document.createElement("div");
+    var title = document.createElement("input");
+    var close = document.createElement("button");
+    var section = document.createElement("div");
+    var sectionTitle = document.createElement("h3");
+    var checklist = document.createElement("div");
+    var add = document.createElement("button");
+
+    backdrop.className = "kanban-modal-backdrop";
+    modal.className = "kanban-card-modal";
+    header.className = "kanban-modal-header";
+    title.className = "kanban-modal-title";
+    title.value = getKanbanCardTitle(card);
+    title.readOnly = readOnly;
+    title.setAttribute("aria-label", "Título do cartão");
+    close.type = "button";
+    close.className = "kanban-modal-close";
+    close.setAttribute("aria-label", "Fechar");
+    close.textContent = "×";
+
+    section.className = "kanban-modal-section";
+    sectionTitle.textContent = "Checklist";
+    checklist.className = "kanban-modal-checklist";
+    add.type = "button";
+    add.className = "kanban-modal-add-check";
+    add.textContent = "+ Item";
+    add.hidden = readOnly;
+
+    header.appendChild(title);
+    header.appendChild(close);
+    section.appendChild(sectionTitle);
+    renderKanbanChecklistRows(checklist, card, readOnly);
+    section.appendChild(checklist);
+    section.appendChild(add);
+    modal.appendChild(header);
+    modal.appendChild(section);
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+
+    activeKanbanModal.element = backdrop;
+
+    backdrop.addEventListener("mousedown", function (event) {
+      if (event.target === backdrop) {
+        closeKanbanCardModal();
+      }
+    });
+
+    close.addEventListener("click", function () {
+      closeKanbanCardModal();
+    });
+
+    title.addEventListener("input", function () {
+      if (readOnly) {
+        return;
+      }
+
+      setKanbanCardTitle(card, title.value);
+      saveActiveKanbanCard();
+    });
+
+    add.addEventListener("click", function () {
+      var item;
+      var row;
+      var textInput;
+
+      if (readOnly) {
+        return;
+      }
+
+      item = createKanbanChecklistItemElement("Novo item", false);
+      getKanbanCardData(card).appendChild(item);
+      row = createKanbanChecklistRow(item, false);
+      checklist.appendChild(row);
+      textInput = row.querySelector(".kanban-check-text");
+      if (textInput) {
+        textInput.focus();
+        textInput.select();
+      }
+      saveActiveKanbanCard();
+    });
+
+    checklist.addEventListener("change", function (event) {
+      var checkbox = event.target.closest ? event.target.closest(".kanban-check-input") : null;
+      var row;
+      var item;
+
+      if (readOnly || !checkbox) {
+        return;
+      }
+
+      row = checkbox.closest(".kanban-check-row");
+      item = getKanbanChecklistItemById(card, row.getAttribute("data-check-id"));
+      if (!item) {
+        return;
+      }
+
+      item.setAttribute("data-checked", checkbox.checked ? "true" : "false");
+      row.classList.toggle("checked", checkbox.checked);
+      saveActiveKanbanCard();
+    });
+
+    checklist.addEventListener("input", function (event) {
+      var input = event.target.closest ? event.target.closest(".kanban-check-text") : null;
+      var row;
+      var item;
+
+      if (readOnly || !input) {
+        return;
+      }
+
+      row = input.closest(".kanban-check-row");
+      item = getKanbanChecklistItemById(card, row.getAttribute("data-check-id"));
+      if (!item) {
+        return;
+      }
+
+      item.textContent = input.value;
+      saveActiveKanbanCard();
+    });
+
+    checklist.addEventListener("click", function (event) {
+      var button = event.target.closest ? event.target.closest(".kanban-check-delete") : null;
+      var row;
+      var item;
+
+      if (readOnly || !button) {
+        return;
+      }
+
+      event.preventDefault();
+      row = button.closest(".kanban-check-row");
+      item = getKanbanChecklistItemById(card, row.getAttribute("data-check-id"));
+      if (item) {
+        item.remove();
+      }
+      row.remove();
+      saveActiveKanbanCard();
+    });
+
+    title.focus();
+    if (!readOnly) {
+      title.select();
+    }
+  }
+
+  function renderKanbanChecklistRows(container, card, readOnly) {
+    container.innerHTML = "";
+    Array.prototype.slice.call(getKanbanCardData(card).querySelectorAll(".kanban-checklist-item")).forEach(function (item) {
+      container.appendChild(createKanbanChecklistRow(item, readOnly));
+    });
+  }
+
+  function createKanbanChecklistRow(item, readOnly) {
+    var row = document.createElement("div");
+    var checkbox = document.createElement("input");
+    var text = document.createElement("input");
+    var remove = document.createElement("button");
+    var checked = item.getAttribute("data-checked") === "true";
+
+    row.className = "kanban-check-row" + (checked ? " checked" : "");
+    row.setAttribute("data-check-id", item.getAttribute("data-check-id"));
+
+    checkbox.type = "checkbox";
+    checkbox.className = "kanban-check-input";
+    checkbox.checked = checked;
+    checkbox.disabled = readOnly;
+
+    text.type = "text";
+    text.className = "kanban-check-text";
+    text.value = item.textContent || "";
+    text.readOnly = readOnly;
+
+    remove.type = "button";
+    remove.className = "kanban-check-delete";
+    remove.setAttribute("aria-label", "Remover item");
+    remove.textContent = "×";
+    remove.hidden = readOnly;
+
+    row.appendChild(checkbox);
+    row.appendChild(text);
+    row.appendChild(remove);
+    return row;
+  }
+
+  function createKanbanChecklistItemElement(text, checked) {
+    var item = document.createElement("div");
+
+    item.className = "kanban-checklist-item";
+    item.setAttribute("data-check-id", createId("check"));
+    item.setAttribute("data-checked", checked ? "true" : "false");
+    item.textContent = text || "Novo item";
+    return item;
+  }
+
+  function getKanbanCardData(card) {
+    var data = card.querySelector(".kanban-card-data");
+
+    if (!data) {
+      data = document.createElement("div");
+      data.className = "kanban-card-data";
+      data.hidden = true;
+      data.setAttribute("contenteditable", "false");
+      card.appendChild(data);
+    }
+
+    return data;
+  }
+
+  function getKanbanChecklistItemById(card, checkId) {
+    return Array.prototype.slice.call(getKanbanCardData(card).querySelectorAll(".kanban-checklist-item")).find(function (item) {
+      return item.getAttribute("data-check-id") === checkId;
+    }) || null;
+  }
+
+  function getKanbanCardTitle(card) {
+    var title = card.querySelector(".kanban-card-title");
+    return title ? title.textContent : "Novo cartão";
+  }
+
+  function setKanbanCardTitle(card, value) {
+    var title = card.querySelector(".kanban-card-title");
+
+    if (title) {
+      title.textContent = value || "Novo cartão";
+    }
+  }
+
+  function saveActiveKanbanCard() {
+    if (!activeKanbanModal || activeKanbanModal.readOnly) {
+      return;
+    }
+
+    updateKanbanChecklistCounters(activeKanbanModal.card.closest(".kanban-block") || activeKanbanModal.card);
+
+    if (activeKanbanModal.editor && activeKanbanModal.itemId) {
+      updateDocumentContent(activeKanbanModal.itemId, getEditorHtml(activeKanbanModal.editor));
+    }
+  }
+
+  function handleReadOnlyKanbanClick(event, root) {
+    var card = event.target.closest ? event.target.closest(".kanban-card") : null;
+
+    if (!card || !root.contains(card)) {
+      return false;
+    }
+
+    event.preventDefault();
+    openKanbanCardModal(card, {
+      readOnly: true
+    });
+    return true;
+  }
+
+  function handleKanbanDragStart(event, editor) {
+    var card = event.target.closest ? event.target.closest(".kanban-card") : null;
+
+    if (!card || !editor.contains(card) || card.closest(".kanban-block.readonly")) {
+      return;
+    }
+
+    draggedKanbanCard = card;
+    kanbanDragJustEnded = false;
+    card.classList.add("dragging");
+
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", card.getAttribute("data-card-id") || "");
+    }
+  }
+
+  function handleKanbanDragOver(event, editor) {
+    var cards = getKanbanDropCards(event.target, editor);
+
+    if (!draggedKanbanCard || !cards) {
+      return;
+    }
+
+    event.preventDefault();
+    moveKanbanCardToPointer(cards, event.clientY);
+
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "move";
+    }
+  }
+
+  function handleKanbanDrop(event, itemId, editor) {
+    var cards = getKanbanDropCards(event.target, editor);
+
+    if (!draggedKanbanCard || !cards) {
+      return;
+    }
+
+    event.preventDefault();
+    moveKanbanCardToPointer(cards, event.clientY);
+    draggedKanbanCard.classList.remove("dragging");
+    draggedKanbanCard = null;
+    updateDocumentContent(itemId, getEditorHtml(editor));
+  }
+
+  function getKanbanDropCards(target, editor) {
+    var cards = target.closest ? target.closest(".kanban-cards") : null;
+    var column;
+
+    if (!cards && target.closest) {
+      column = target.closest(".kanban-column");
+      cards = column ? column.querySelector(".kanban-cards") : null;
+    }
+
+    return cards && editor.contains(cards) ? cards : null;
+  }
+
+  function handleKanbanDragEnd() {
+    if (draggedKanbanCard) {
+      draggedKanbanCard.classList.remove("dragging");
+    }
+
+    draggedKanbanCard = null;
+    kanbanDragJustEnded = true;
+    window.setTimeout(function () {
+      kanbanDragJustEnded = false;
+    }, 80);
+  }
+
+  function moveKanbanCardToPointer(cards, clientY) {
+    var afterCard = getKanbanCardAfter(cards, clientY);
+
+    if (!draggedKanbanCard) {
+      return;
+    }
+
+    if (afterCard) {
+      cards.insertBefore(draggedKanbanCard, afterCard);
+      return;
+    }
+
+    cards.appendChild(draggedKanbanCard);
+  }
+
+  function getKanbanCardAfter(cards, clientY) {
+    var candidates = Array.prototype.slice.call(cards.querySelectorAll(".kanban-card:not(.dragging)"));
+    var closest = {
+      offset: Number.NEGATIVE_INFINITY,
+      element: null
+    };
+
+    candidates.forEach(function (card) {
+      var rect = card.getBoundingClientRect();
+      var offset = clientY - rect.top - rect.height / 2;
+
+      if (offset < 0 && offset > closest.offset) {
+        closest = {
+          offset: offset,
+          element: card
+        };
+      }
+    });
+
+    return closest.element;
   }
 
   function handleEditorPaste(event, itemId, editor) {
@@ -3001,7 +3790,12 @@ import {
   }
 
   function getEditorHtml(editor) {
+    updateKanbanChecklistCounters(editor);
+    syncKanbanFormValues(editor);
+
     var clone = editor.cloneNode(true);
+    updateKanbanChecklistCounters(clone);
+    syncKanbanFormValues(clone);
 
     Array.prototype.slice.call(clone.querySelectorAll(".image-block.selected")).forEach(function (block) {
       block.classList.remove("selected");
@@ -3015,6 +3809,18 @@ import {
       block.removeAttribute("data-temp-toggle");
     });
 
+    Array.prototype.slice.call(clone.querySelectorAll("[data-temp-kanban]")).forEach(function (block) {
+      block.removeAttribute("data-temp-kanban");
+    });
+
+    Array.prototype.slice.call(clone.querySelectorAll(".kanban-card.dragging")).forEach(function (card) {
+      card.classList.remove("dragging");
+    });
+
+    Array.prototype.slice.call(clone.querySelectorAll(".kanban-block.readonly")).forEach(function (block) {
+      block.classList.remove("readonly");
+    });
+
     Array.prototype.slice.call(clone.querySelectorAll("img")).forEach(function (image) {
       if (/^data:/i.test(image.getAttribute("src") || "")) {
         image.closest(".image-block") ? image.closest(".image-block").remove() : image.remove();
@@ -3022,6 +3828,12 @@ import {
     });
 
     return clone.innerHTML;
+  }
+
+  function syncKanbanFormValues(root) {
+    Array.prototype.slice.call(root.querySelectorAll(".kanban-column-title")).forEach(function (input) {
+      input.setAttribute("value", input.value || input.getAttribute("value") || "");
+    });
   }
 
   function linkifyTextNodes(root) {
@@ -3064,7 +3876,7 @@ import {
       acceptNode: function (node) {
         var parent = node.parentElement;
 
-        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
+        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest(".kanban-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -3111,7 +3923,7 @@ import {
       acceptNode: function (node) {
         var parent = node.parentElement;
 
-        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
+        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest(".kanban-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -3813,6 +4625,10 @@ import {
         return;
       }
 
+      if (handleReadOnlyKanbanClick(event, content)) {
+        return;
+      }
+
       var internalLink = event.target.closest ? event.target.closest(".internal-link") : null;
       var externalLink = event.target.closest ? event.target.closest("a") : null;
       var targetId;
@@ -3850,6 +4666,7 @@ import {
     wikilinkTextNodes(root, contextItem, true);
     normalizeCodeBlocks(root);
     prepareToggleBlocks(root, true);
+    prepareKanbanBlocks(root, true);
     prepareEditorMedia(root);
     Array.prototype.slice.call(root.querySelectorAll(".image-remove, .resize-handle")).forEach(function (control) {
       control.remove();
@@ -3867,6 +4684,7 @@ import {
       node.setAttribute("contenteditable", "false");
     });
     prepareToggleBlocks(container, true);
+    prepareKanbanBlocks(container, true);
   }
 
   function renderPrivateMessage(message) {
@@ -4277,6 +5095,9 @@ import {
       }
       if (event.key === "Escape" && state.textColorMenu) {
         closeTextColorMenu();
+      }
+      if (event.key === "Escape" && activeKanbanModal) {
+        closeKanbanCardModal();
       }
     });
   }
