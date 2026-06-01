@@ -1027,6 +1027,111 @@ button {
   display: none;
 }
 
+.spreadsheet-block,
+.public-content .spreadsheet-block {
+  max-width: 100%;
+  margin: 18px 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.spreadsheet-toolbar {
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.spreadsheet-title {
+  margin-right: 8px;
+  color: var(--text);
+  font-weight: 650;
+}
+
+.spreadsheet-scroll,
+.public-content .spreadsheet-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.spreadsheet-table,
+.public-content .spreadsheet-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+}
+
+.spreadsheet-table th,
+.spreadsheet-table td,
+.public-content .spreadsheet-table th,
+.public-content .spreadsheet-table td {
+  min-width: 120px;
+  height: 34px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  outline: none;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.35;
+  text-align: left;
+  vertical-align: top;
+}
+
+.spreadsheet-table th,
+.public-content .spreadsheet-table th {
+  background: var(--surface-muted);
+  font-weight: 650;
+}
+
+.spreadsheet-table .selected-cell {
+  outline: 2px solid var(--focus-soft);
+  outline-offset: -2px;
+}
+
+.spreadsheet-toolbar button,
+.sheet-color-option {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--button);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.spreadsheet-toolbar button {
+  padding: 6px 8px;
+}
+
+.spreadsheet-toolbar button:hover,
+.spreadsheet-toolbar button:focus-visible,
+.sheet-color-option:hover,
+.sheet-color-option:focus-visible {
+  background: var(--button-hover);
+  outline: none;
+}
+
+.sheet-color-menu {
+  position: fixed;
+  z-index: 90;
+  padding: 6px;
+  display: flex;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.18);
+}
+
+.sheet-color-option {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
 .kanban-block,
 .public-content .kanban-block {
   max-width: 100%;

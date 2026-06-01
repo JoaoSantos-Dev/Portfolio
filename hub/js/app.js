@@ -39,6 +39,15 @@ import {
     { label: "Azul", color: "#4f75c9" },
     { label: "Roxo", color: "#8a5fbf" }
   ];
+  var SPREADSHEET_COLOR_OPTIONS = [
+    "#3a3a3a",
+    "#fff3a3",
+    "#dff5d8",
+    "#d9eaff",
+    "#ffd6d6",
+    "#eadcff",
+    "#ffe0b8"
+  ];
   var firebaseConfig = {
     apiKey: "AIzaSyCOhhdaRrR3FEJ0Srk41f7oZMuet2u7QzU",
     authDomain: "hubpessoal-d4a88.firebaseapp.com",
@@ -58,6 +67,8 @@ import {
   var draggedKanbanCard = null;
   var kanbanDragJustEnded = false;
   var activeKanbanModal = null;
+  var selectedSpreadsheetCell = null;
+  var spreadsheetColorMenu = null;
   var resizeState = null;
 
   var state = {
@@ -2094,6 +2105,7 @@ import {
     prepareEditorMedia(editor);
     prepareToggleBlocks(editor, false);
     prepareKanbanBlocks(editor, false);
+    prepareSpreadsheetBlocks(editor, false);
     ensureLinksOpenInNewTab(editor);
     var normalizedContent = getEditorHtml(editor);
     if (item.content !== normalizedContent) {
@@ -2102,6 +2114,10 @@ import {
     }
 
     editor.addEventListener("input", function (event) {
+      if (handleSpreadsheetInput(event, item.id, editor)) {
+        return;
+      }
+
       if (handleKanbanInput(event, item.id, editor)) {
         return;
       }
@@ -2121,6 +2137,15 @@ import {
 
     editor.addEventListener("click", function (event) {
       if (handleToggleBlockClick(event, item.id, editor, false)) {
+        return;
+      }
+
+      if (event.target.closest && event.target.closest(".spreadsheet-block")) {
+        if (handleSpreadsheetClick(event, item.id, editor)) {
+          return;
+        }
+
+        clearImageSelection();
         return;
       }
 
@@ -2233,6 +2258,10 @@ import {
     });
 
     editor.addEventListener("keydown", function (event) {
+      if (handleSpreadsheetKeydown(event, item.id, editor)) {
+        return;
+      }
+
       if (!selectedImageBlock) {
         return;
       }
@@ -2278,6 +2307,7 @@ import {
         ["Código", "Inserir bloco de código", "code"],
         ["Toggle", "Inserir bloco recolhível", "toggle"],
         ["Kanban", "Inserir bloco Kanban", "kanban"],
+        ["Planilha", "Inserir planilha", "spreadsheet"],
         ["Link", "Inserir link", "link"],
         ["Imagem", "Inserir imagem", "image"]
       ]
@@ -2366,6 +2396,11 @@ import {
 
       if (command === "kanban") {
         insertKanbanBlock();
+        return;
+      }
+
+      if (command === "spreadsheet") {
+        insertSpreadsheetBlock();
         return;
       }
 
@@ -2634,6 +2669,64 @@ import {
     return card;
   }
 
+  function insertSpreadsheetBlock() {
+    var editor = document.getElementById("documentContent");
+    var item = getSelectedItem();
+    var sheetId = createId("sheet");
+    var block;
+
+    if (!editor || !item || (item.type !== "document" && item.type !== "project")) {
+      return;
+    }
+
+    editor.focus();
+    insertHtmlAtCursorAndMoveCaret(createSpreadsheetBlockHtml(sheetId), editor);
+    prepareSpreadsheetBlocks(editor, false);
+
+    block = editor.querySelector('[data-temp-sheet="' + sheetId + '"]');
+    if (block) {
+      block.removeAttribute("data-temp-sheet");
+    }
+
+    updateDocumentContent(item.id, getEditorHtml(editor));
+  }
+
+  function createSpreadsheetBlockHtml(sheetId) {
+    return '<div class="spreadsheet-block" contenteditable="false" data-sheet-id="' + escapeHtml(sheetId) + '" data-temp-sheet="' + escapeHtml(sheetId) + '">' +
+      '<div class="spreadsheet-toolbar" contenteditable="false">' +
+      '<span class="spreadsheet-title">Planilha</span>' +
+      '<button type="button" class="sheet-add-row" contenteditable="false">+ Linha</button>' +
+      '<button type="button" class="sheet-add-column" contenteditable="false">+ Coluna</button>' +
+      '<button type="button" class="sheet-delete-row" contenteditable="false">Remover linha</button>' +
+      '<button type="button" class="sheet-delete-column" contenteditable="false">Remover coluna</button>' +
+      '<button type="button" class="sheet-color-cell" contenteditable="false">Cor célula</button>' +
+      '<button type="button" class="sheet-clear-color" contenteditable="false">Limpar cor</button>' +
+      "</div>" +
+      '<div class="spreadsheet-scroll">' +
+      '<table class="spreadsheet-table"><tbody>' +
+      createSpreadsheetRowHtml(0, 3, true) +
+      createSpreadsheetRowHtml(1, 3, false) +
+      createSpreadsheetRowHtml(2, 3, false) +
+      createSpreadsheetRowHtml(3, 3, false) +
+      "</tbody></table>" +
+      "</div>" +
+      "</div><p><br></p>";
+  }
+
+  function createSpreadsheetRowHtml(rowIndex, columnCount, isHeader) {
+    var html = "<tr>";
+    var tag = isHeader ? "th" : "td";
+    var col;
+    var text;
+
+    for (col = 0; col < columnCount; col += 1) {
+      text = isHeader ? "Coluna " + (col + 1) : "";
+      html += '<' + tag + ' contenteditable="true" data-row="' + rowIndex + '" data-col="' + col + '">' + escapeHtml(text) + '</' + tag + '>';
+    }
+
+    return html + "</tr>";
+  }
+
   function selectEditableNodeText(node) {
     var range = document.createRange();
     var selection = window.getSelection();
@@ -2724,6 +2817,7 @@ import {
     normalizeCodeBlocks(editor);
     prepareToggleBlocks(editor, false);
     prepareKanbanBlocks(editor, false);
+    prepareSpreadsheetBlocks(editor, false);
     prepareEditorMedia(editor);
     ensureLinksOpenInNewTab(editor);
   }
@@ -2933,6 +3027,325 @@ import {
       count.textContent = items.length ? "✓ " + checked + "/" + items.length : "";
       count.hidden = items.length === 0;
     });
+  }
+
+  function prepareSpreadsheetBlocks(root, readOnly) {
+    Array.prototype.slice.call(root.querySelectorAll(".spreadsheet-block")).forEach(function (block) {
+      var toolbar = block.querySelector(".spreadsheet-toolbar");
+
+      block.setAttribute("contenteditable", "false");
+      block.classList.toggle("readonly", !!readOnly);
+
+      if (!block.getAttribute("data-sheet-id")) {
+        block.setAttribute("data-sheet-id", createId("sheet"));
+      }
+
+      if (toolbar) {
+        toolbar.setAttribute("contenteditable", "false");
+        toolbar.hidden = !!readOnly;
+      }
+
+      Array.prototype.slice.call(block.querySelectorAll("button")).forEach(function (button) {
+        button.type = "button";
+        button.setAttribute("contenteditable", "false");
+        button.hidden = !!readOnly;
+      });
+
+      Array.prototype.slice.call(block.querySelectorAll(".spreadsheet-table")).forEach(function (table) {
+        normalizeSpreadsheetTable(table, readOnly);
+      });
+    });
+  }
+
+  function normalizeSpreadsheetTable(table, readOnly) {
+    Array.prototype.slice.call(table.rows).forEach(function (row, rowIndex) {
+      Array.prototype.slice.call(row.cells).forEach(function (cell, colIndex) {
+        cell.setAttribute("data-row", String(rowIndex));
+        cell.setAttribute("data-col", String(colIndex));
+        cell.setAttribute("contenteditable", readOnly ? "false" : "true");
+        if (readOnly) {
+          cell.classList.remove("selected-cell");
+        }
+      });
+    });
+  }
+
+  function handleSpreadsheetClick(event, itemId, editor) {
+    var target = event.target;
+    var block = target.closest ? target.closest(".spreadsheet-block") : null;
+    var cell = target.closest ? target.closest(".spreadsheet-table th, .spreadsheet-table td") : null;
+    var addRow = target.closest ? target.closest(".sheet-add-row") : null;
+    var addColumn = target.closest ? target.closest(".sheet-add-column") : null;
+    var deleteRow = target.closest ? target.closest(".sheet-delete-row") : null;
+    var deleteColumn = target.closest ? target.closest(".sheet-delete-column") : null;
+    var colorCell = target.closest ? target.closest(".sheet-color-cell") : null;
+    var clearColor = target.closest ? target.closest(".sheet-clear-color") : null;
+
+    if (!block || !editor.contains(block)) {
+      return false;
+    }
+
+    if (cell && block.contains(cell)) {
+      selectSpreadsheetCell(cell);
+      return true;
+    }
+
+    if (addRow) {
+      event.preventDefault();
+      addSpreadsheetRow(block);
+      updateDocumentContent(itemId, getEditorHtml(editor));
+      return true;
+    }
+
+    if (addColumn) {
+      event.preventDefault();
+      addSpreadsheetColumn(block);
+      updateDocumentContent(itemId, getEditorHtml(editor));
+      return true;
+    }
+
+    if (deleteRow) {
+      event.preventDefault();
+      deleteSelectedSpreadsheetRow(block);
+      updateDocumentContent(itemId, getEditorHtml(editor));
+      return true;
+    }
+
+    if (deleteColumn) {
+      event.preventDefault();
+      deleteSelectedSpreadsheetColumn(block);
+      updateDocumentContent(itemId, getEditorHtml(editor));
+      return true;
+    }
+
+    if (colorCell) {
+      event.preventDefault();
+      openSpreadsheetColorMenu(colorCell, block, itemId, editor);
+      return true;
+    }
+
+    if (clearColor) {
+      event.preventDefault();
+      clearSpreadsheetCellColor(block);
+      updateDocumentContent(itemId, getEditorHtml(editor));
+      return true;
+    }
+
+    return true;
+  }
+
+  function handleSpreadsheetInput(event, itemId, editor) {
+    var target = event.target;
+
+    if (!isSpreadsheetCell(target)) {
+      return false;
+    }
+
+    scheduleSave(itemId, editor);
+    return true;
+  }
+
+  function handleSpreadsheetKeydown(event, itemId, editor) {
+    var target = event.target;
+
+    if (!isSpreadsheetCell(target) || event.key !== "Tab") {
+      return false;
+    }
+
+    event.preventDefault();
+    focusSiblingSpreadsheetCell(target, event.shiftKey ? -1 : 1);
+    updateDocumentContent(itemId, getEditorHtml(editor));
+    return true;
+  }
+
+  function isSpreadsheetCell(node) {
+    return !!(node && node.matches && node.matches(".spreadsheet-table th, .spreadsheet-table td"));
+  }
+
+  function selectSpreadsheetCell(cell) {
+    Array.prototype.slice.call(document.querySelectorAll(".spreadsheet-table .selected-cell")).forEach(function (selected) {
+      selected.classList.remove("selected-cell");
+    });
+
+    selectedSpreadsheetCell = cell;
+    cell.classList.add("selected-cell");
+  }
+
+  function getSelectedSpreadsheetCell(block) {
+    if (selectedSpreadsheetCell && block.contains(selectedSpreadsheetCell)) {
+      return selectedSpreadsheetCell;
+    }
+
+    return block.querySelector(".spreadsheet-table .selected-cell");
+  }
+
+  function addSpreadsheetRow(block) {
+    var table = block.querySelector(".spreadsheet-table");
+    var selected = getSelectedSpreadsheetCell(block);
+    var rows = table ? Array.prototype.slice.call(table.rows) : [];
+    var columnCount = rows[0] ? rows[0].cells.length : 3;
+    var insertIndex = selected ? selected.parentElement.rowIndex + 1 : rows.length;
+    var row;
+    var col;
+    var cell;
+
+    if (!table) {
+      return;
+    }
+
+    row = table.insertRow(insertIndex);
+
+    for (col = 0; col < columnCount; col += 1) {
+      cell = row.insertCell(col);
+      cell.setAttribute("contenteditable", "true");
+    }
+
+    normalizeSpreadsheetTable(table, false);
+  }
+
+  function addSpreadsheetColumn(block) {
+    var table = block.querySelector(".spreadsheet-table");
+    var selected = getSelectedSpreadsheetCell(block);
+    var rows = table ? Array.prototype.slice.call(table.rows) : [];
+    var insertIndex = selected ? selected.cellIndex + 1 : (rows[0] ? rows[0].cells.length : 0);
+
+    if (!table || rows.length === 0) {
+      return;
+    }
+
+    rows.forEach(function (row, rowIndex) {
+      var cell = document.createElement(rowIndex === 0 ? "th" : "td");
+      cell.setAttribute("contenteditable", "true");
+      cell.textContent = rowIndex === 0 ? "Nova coluna" : "";
+      row.insertBefore(cell, row.cells[insertIndex] || null);
+    });
+
+    normalizeSpreadsheetTable(table, false);
+  }
+
+  function deleteSelectedSpreadsheetRow(block) {
+    var table = block.querySelector(".spreadsheet-table");
+    var selected = getSelectedSpreadsheetCell(block);
+    var rowIndex;
+
+    if (!selected || !table) {
+      alert("Selecione uma célula da linha que deseja remover.");
+      return;
+    }
+
+    rowIndex = selected.parentElement.rowIndex;
+
+    if (rowIndex === 0) {
+      alert("A linha de cabeçalho não pode ser removida.");
+      return;
+    }
+
+    if (table.rows.length <= 1) {
+      alert("A planilha precisa ter pelo menos uma linha.");
+      return;
+    }
+
+    table.deleteRow(rowIndex);
+    selectedSpreadsheetCell = null;
+    normalizeSpreadsheetTable(table, false);
+  }
+
+  function deleteSelectedSpreadsheetColumn(block) {
+    var table = block.querySelector(".spreadsheet-table");
+    var selected = getSelectedSpreadsheetCell(block);
+    var colIndex;
+
+    if (!selected || !table) {
+      alert("Selecione uma célula da coluna que deseja remover.");
+      return;
+    }
+
+    colIndex = selected.cellIndex;
+
+    if (!table.rows[0] || table.rows[0].cells.length <= 1) {
+      alert("A planilha precisa ter pelo menos uma coluna.");
+      return;
+    }
+
+    Array.prototype.slice.call(table.rows).forEach(function (row) {
+      if (row.cells[colIndex]) {
+        row.deleteCell(colIndex);
+      }
+    });
+
+    selectedSpreadsheetCell = null;
+    normalizeSpreadsheetTable(table, false);
+  }
+
+  function openSpreadsheetColorMenu(anchor, block, itemId, editor) {
+    var cell = getSelectedSpreadsheetCell(block);
+    var menu = document.createElement("div");
+    var rect;
+
+    if (!cell) {
+      alert("Selecione uma célula para colorir.");
+      return;
+    }
+
+    closeSpreadsheetColorMenu();
+    menu.id = "sheetColorMenu";
+    menu.className = "sheet-color-menu";
+    rect = anchor.getBoundingClientRect();
+    menu.style.left = rect.left + "px";
+    menu.style.top = rect.bottom + 6 + "px";
+
+    SPREADSHEET_COLOR_OPTIONS.forEach(function (color) {
+      var option = document.createElement("button");
+      option.type = "button";
+      option.className = "sheet-color-option";
+      option.style.backgroundColor = color;
+      option.setAttribute("aria-label", "Aplicar cor " + color);
+      option.addEventListener("click", function () {
+        cell.style.backgroundColor = color;
+        closeSpreadsheetColorMenu();
+        updateDocumentContent(itemId, getEditorHtml(editor));
+      });
+      menu.appendChild(option);
+    });
+
+    document.body.appendChild(menu);
+    spreadsheetColorMenu = {
+      menu: menu,
+      anchor: anchor
+    };
+  }
+
+  function closeSpreadsheetColorMenu() {
+    if (spreadsheetColorMenu && spreadsheetColorMenu.menu) {
+      spreadsheetColorMenu.menu.remove();
+    }
+
+    spreadsheetColorMenu = null;
+  }
+
+  function clearSpreadsheetCellColor(block) {
+    var cell = getSelectedSpreadsheetCell(block);
+
+    if (!cell) {
+      alert("Selecione uma célula para limpar a cor.");
+      return;
+    }
+
+    cell.style.removeProperty("background-color");
+  }
+
+  function focusSiblingSpreadsheetCell(cell, direction) {
+    var table = cell.closest(".spreadsheet-table");
+    var cells = table ? Array.prototype.slice.call(table.querySelectorAll("th, td")) : [];
+    var index = cells.indexOf(cell);
+    var next = cells[index + direction];
+
+    if (!next) {
+      return;
+    }
+
+    selectSpreadsheetCell(next);
+    next.focus();
   }
 
   function handleKanbanClick(event, itemId, editor) {
@@ -3813,11 +4226,23 @@ import {
       block.removeAttribute("data-temp-kanban");
     });
 
+    Array.prototype.slice.call(clone.querySelectorAll("[data-temp-sheet]")).forEach(function (block) {
+      block.removeAttribute("data-temp-sheet");
+    });
+
+    Array.prototype.slice.call(clone.querySelectorAll(".spreadsheet-table .selected-cell")).forEach(function (cell) {
+      cell.classList.remove("selected-cell");
+    });
+
     Array.prototype.slice.call(clone.querySelectorAll(".kanban-card.dragging")).forEach(function (card) {
       card.classList.remove("dragging");
     });
 
     Array.prototype.slice.call(clone.querySelectorAll(".kanban-block.readonly")).forEach(function (block) {
+      block.classList.remove("readonly");
+    });
+
+    Array.prototype.slice.call(clone.querySelectorAll(".spreadsheet-block.readonly")).forEach(function (block) {
       block.classList.remove("readonly");
     });
 
@@ -3876,7 +4301,7 @@ import {
       acceptNode: function (node) {
         var parent = node.parentElement;
 
-        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest(".kanban-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
+        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest(".kanban-block") || parent.closest(".spreadsheet-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -3923,7 +4348,7 @@ import {
       acceptNode: function (node) {
         var parent = node.parentElement;
 
-        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest(".kanban-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
+        if (!parent || parent.closest("a") || parent.closest(".image-block") || parent.closest(".code-block") || parent.closest(".kanban-block") || parent.closest(".spreadsheet-block") || parent.closest("[data-caret-marker]") || parent.closest("script") || parent.closest("style")) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -4667,6 +5092,7 @@ import {
     normalizeCodeBlocks(root);
     prepareToggleBlocks(root, true);
     prepareKanbanBlocks(root, true);
+    prepareSpreadsheetBlocks(root, true);
     prepareEditorMedia(root);
     Array.prototype.slice.call(root.querySelectorAll(".image-remove, .resize-handle")).forEach(function (control) {
       control.remove();
@@ -4685,6 +5111,7 @@ import {
     });
     prepareToggleBlocks(container, true);
     prepareKanbanBlocks(container, true);
+    prepareSpreadsheetBlocks(container, true);
   }
 
   function renderPrivateMessage(message) {
@@ -5051,6 +5478,9 @@ import {
         if (textColorMenu && state.textColorMenu && !textColorMenu.contains(event.target) && !state.textColorMenu.anchor.contains(event.target)) {
           closeTextColorMenu();
         }
+        if (spreadsheetColorMenu && !spreadsheetColorMenu.menu.contains(event.target) && !spreadsheetColorMenu.anchor.contains(event.target)) {
+          closeSpreadsheetColorMenu();
+        }
         return;
       }
 
@@ -5065,6 +5495,7 @@ import {
       closeCreateMenu();
       closeHighlightMenu();
       closeTextColorMenu();
+      closeSpreadsheetColorMenu();
     });
 
     document.addEventListener("keydown", function (event) {
@@ -5095,6 +5526,9 @@ import {
       }
       if (event.key === "Escape" && state.textColorMenu) {
         closeTextColorMenu();
+      }
+      if (event.key === "Escape" && spreadsheetColorMenu) {
+        closeSpreadsheetColorMenu();
       }
       if (event.key === "Escape" && activeKanbanModal) {
         closeKanbanCardModal();
