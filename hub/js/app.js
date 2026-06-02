@@ -26,24 +26,34 @@ import {
   var OLD_STORAGE_KEY = "hub.documents.v1";
   var USERS_KEY = "hub.users.v1";
   var SESSION_KEY = "hub.session.v1";
+  var AI_MODE_KEY = "hub-ai-mode";
+  var AI_CONTEXT_OPTIONS_KEY = "hub-ai-context-options";
+  var AI_UNDO_KEY = "hub-ai-last-undo";
   var IMAGE_URL_PATTERN = /\.(png|jpe?g|webp|gif)(\?.*)?$/i;
   var URL_PATTERN = /(https?:\/\/[^\s<>"']+)/g;
   var WIKILINK_PATTERN = /\[\[([^\[\]]+)\]\]/g;
-  var SYSTEM_PROMPT = "Você é o Assistente do Hub, um sistema pessoal de organização inspirado em Notion, Obsidian e Trello.\n" +
-    "Ajude o usuário a organizar projetos, documentos, páginas, links, Kanbans, planilhas, toggles e blocos de conteúdo.\n" +
-    "Seja objetivo, prático e preserve a estrutura do Hub.\n" +
-    "Você pode responder em texto comum ou em JSON válido quando quiser sugerir alterações estruturadas.\n" +
-    "Use JSON quando o usuário pedir criação, organização, renomeação ou inserção de conteúdo.\n" +
+  var SYSTEM_PROMPT = "Você é o Assistente do Hub, um sistema pessoal de organização inspirado em Notion, Obsidian, Trello e ferramentas de produtividade.\n" +
+    "Você ajuda o usuário a organizar projetos, páginas, documentos, links, Kanbans, planilhas, toggles, blocos de código e materiais.\n" +
+    "Regras fundamentais:\n" +
+    "- Você nunca altera nada diretamente. O sistema aplicará ações somente conforme o modo escolhido pelo usuário.\n" +
+    "- Quando sugerir ações, retorne JSON válido.\n" +
+    "- Não use markdown em volta do JSON.\n" +
+    "- Não invente IDs.\n" +
+    "- Use apenas IDs fornecidos no contexto.\n" +
+    "- Não apague conteúdo, exceto se o usuário pedir explicitamente.\n" +
+    "- Preserve o conteúdo existente sempre que possível.\n" +
+    "- Prefira appendContent em vez de replaceContent.\n" +
+    "- Use replaceContent apenas quando o usuário pedir reescrita completa/substituição.\n" +
+    "- Para Kanban, use insertKanban com columns/cards/checklist.\n" +
+    "- Para planilhas, use insertSpreadsheet com rows.\n" +
+    "- Para texto normal, use HTML simples e seguro.\n" +
+    "- Não gere scripts, iframes, handlers JS ou conteúdo inseguro.\n" +
+    "- Seja objetivo e útil.\n" +
+    "Para resposta comum, responda em texto normal.\n" +
+    "Para ações, responda somente com JSON válido neste formato:\n" +
     'Formato JSON obrigatório: {"reply":"Texto explicando o que será feito.","actions":[{"type":"appendContent","itemId":"ID","html":"<h2>Nova seção</h2><p>Conteúdo...</p>"}]}.\n' +
     "Tipos suportados: appendContent, prependContent, replaceContent, createDocument, createFolder, renameItem, insertKanban, insertSpreadsheet.\n" +
-    "Quando incluir actions, responda somente com JSON válido, sem markdown e sem ```json.\n" +
-    "Não invente IDs; use apenas IDs fornecidos no contexto. Para criar item, use parentId conhecido.\n" +
-    "Prefira appendContent, prependContent, insertKanban ou insertSpreadsheet. Use replaceContent só quando o usuário pedir claramente.\n" +
-    "Não apague conteúdo sem o usuário pedir.\n" +
-    "Não invente documentos que não existem, a menos que esteja sugerindo criação.\n" +
-    "Quando sugerir alterações estruturais, explique antes.\n" +
-    "As ações serão aplicadas apenas se o usuário confirmar no Hub. Você nunca altera o Hub automaticamente.\n" +
-    "Seja claro e útil.";
+    "Se não tiver certeza, responda apenas em texto e peça confirmação.";
   var TEXT_COLOR_OPTIONS = [
     { label: "Padrão", color: null, swatch: "transparent" },
     { label: "Cinza", color: "#6b6b6b" },
@@ -118,7 +128,15 @@ import {
     apiKey: "",
     messages: [],
     isOpen: false,
-    isSending: false
+    isSending: false,
+    mode: "confirm",
+    contextOptions: {
+      current: true,
+      project: false,
+      links: false,
+      blocks: false,
+      related: false
+    }
   };
   var resizeState = null;
 
@@ -166,6 +184,9 @@ import {
     aiMessages: document.getElementById("aiMessages"),
     aiForm: document.getElementById("aiForm"),
     aiPrompt: document.getElementById("aiPrompt"),
+    aiModeSelect: document.getElementById("aiModeSelect"),
+    aiContextSummary: document.getElementById("aiContextSummary"),
+    aiUndoLastAction: document.getElementById("aiUndoLastAction"),
     accountName: document.getElementById("accountName"),
     adminButton: document.getElementById("adminButton"),
     logoutButton: document.getElementById("logoutButton")
@@ -2668,6 +2689,7 @@ import {
       '<div class="kanban-header">' +
       '<span class="kanban-title">Kanban</span>' +
       '<button type="button" class="kanban-add-column" contenteditable="false">+ Coluna</button>' +
+      '<button type="button" class="kanban-delete-block" contenteditable="false">Remover</button>' +
       "</div>" +
       '<div class="kanban-board">' +
       createKanbanColumnHtml("A Fazer") +
@@ -2758,10 +2780,14 @@ import {
     return '<div class="spreadsheet-block" contenteditable="false" data-sheet-id="' + escapeHtml(sheetId) + '" data-temp-sheet="' + escapeHtml(sheetId) + '">' +
       '<div class="spreadsheet-toolbar" contenteditable="false">' +
       '<span class="spreadsheet-title">Planilha</span>' +
+      '<button type="button" class="sheet-delete-block" contenteditable="false">Remover planilha</button>' +
       '<button type="button" class="sheet-add-row" contenteditable="false">+ Linha</button>' +
       '<button type="button" class="sheet-add-column" contenteditable="false">+ Coluna</button>' +
       '<button type="button" class="sheet-delete-row" contenteditable="false">Remover linha</button>' +
       '<button type="button" class="sheet-delete-column" contenteditable="false">Remover coluna</button>' +
+      '<button type="button" class="sheet-align-left" contenteditable="false" title="Alinhar à esquerda">Esq</button>' +
+      '<button type="button" class="sheet-align-center" contenteditable="false" title="Centralizar">Centro</button>' +
+      '<button type="button" class="sheet-align-right" contenteditable="false" title="Alinhar à direita">Dir</button>' +
       '<button type="button" class="sheet-color-cell" contenteditable="false">Cor célula</button>' +
       '<button type="button" class="sheet-clear-color" contenteditable="false">Limpar cor</button>' +
       "</div>" +
@@ -2977,6 +3003,8 @@ import {
         block.setAttribute("data-kanban-id", createId("kanban"));
       }
 
+      ensureKanbanBlockControls(block);
+
       Array.prototype.slice.call(block.querySelectorAll("button")).forEach(function (button) {
         button.type = "button";
         button.setAttribute("contenteditable", "false");
@@ -3006,6 +3034,23 @@ import {
 
       updateKanbanChecklistCounters(block);
     });
+  }
+
+  function ensureKanbanBlockControls(block) {
+    var header = block.querySelector(".kanban-header");
+    var addColumn = block.querySelector(".kanban-add-column");
+    var remove;
+
+    if (!header || block.querySelector(".kanban-delete-block")) {
+      return;
+    }
+
+    remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "kanban-delete-block";
+    remove.textContent = "Remover";
+    remove.setAttribute("contenteditable", "false");
+    header.insertBefore(remove, addColumn ? addColumn.nextSibling : null);
   }
 
   function normalizeKanbanCardStructure(card) {
@@ -3105,6 +3150,7 @@ import {
 
       if (toolbar) {
         toolbar.setAttribute("contenteditable", "false");
+        ensureSpreadsheetToolbarControls(toolbar);
         toolbar.hidden = !!readOnly;
       }
 
@@ -3133,6 +3179,43 @@ import {
     });
   }
 
+  function ensureSpreadsheetToolbarControls(toolbar) {
+    var colorButton = toolbar.querySelector(".sheet-color-cell");
+    var title = toolbar.querySelector(".spreadsheet-title");
+    var controls = [
+      { className: "sheet-align-left", text: "Esq", title: "Alinhar à esquerda", align: "left" },
+      { className: "sheet-align-center", text: "Centro", title: "Centralizar", align: "center" },
+      { className: "sheet-align-right", text: "Dir", title: "Alinhar à direita", align: "right" }
+    ];
+    var remove;
+
+    if (!toolbar.querySelector(".sheet-delete-block")) {
+      remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "sheet-delete-block";
+      remove.textContent = "Remover planilha";
+      remove.setAttribute("contenteditable", "false");
+      toolbar.insertBefore(remove, title ? title.nextSibling : toolbar.firstChild);
+    }
+
+    controls.forEach(function (control) {
+      var button;
+
+      if (toolbar.querySelector("." + control.className)) {
+        return;
+      }
+
+      button = document.createElement("button");
+      button.type = "button";
+      button.className = control.className;
+      button.textContent = control.text;
+      button.title = control.title;
+      button.setAttribute("contenteditable", "false");
+      button.setAttribute("data-align", control.align);
+      toolbar.insertBefore(button, colorButton || null);
+    });
+  }
+
   function handleSpreadsheetClick(event, itemId, editor) {
     var target = event.target;
     var block = target.closest ? target.closest(".spreadsheet-block") : null;
@@ -3143,9 +3226,19 @@ import {
     var deleteColumn = target.closest ? target.closest(".sheet-delete-column") : null;
     var colorCell = target.closest ? target.closest(".sheet-color-cell") : null;
     var clearColor = target.closest ? target.closest(".sheet-clear-color") : null;
+    var deleteBlock = target.closest ? target.closest(".sheet-delete-block") : null;
+    var alignLeft = target.closest ? target.closest(".sheet-align-left") : null;
+    var alignCenter = target.closest ? target.closest(".sheet-align-center") : null;
+    var alignRight = target.closest ? target.closest(".sheet-align-right") : null;
 
     if (!block || !editor.contains(block)) {
       return false;
+    }
+
+    if (deleteBlock) {
+      event.preventDefault();
+      removeEmbeddedContentBlock(block, "Remover esta planilha?", itemId, editor);
+      return true;
     }
 
     if (cell && block.contains(cell)) {
@@ -3184,6 +3277,13 @@ import {
     if (colorCell) {
       event.preventDefault();
       openSpreadsheetColorMenu(colorCell, block, itemId, editor);
+      return true;
+    }
+
+    if (alignLeft || alignCenter || alignRight) {
+      event.preventDefault();
+      alignSelectedSpreadsheetCell(block, alignLeft ? "left" : (alignCenter ? "center" : "right"));
+      updateDocumentContent(itemId, getEditorHtml(editor));
       return true;
     }
 
@@ -3397,6 +3497,22 @@ import {
     cell.style.removeProperty("background-color");
   }
 
+  function alignSelectedSpreadsheetCell(block, alignment) {
+    var cell = getSelectedSpreadsheetCell(block);
+
+    if (!cell) {
+      alert("Selecione uma célula para alinhar.");
+      return;
+    }
+
+    if (alignment === "left") {
+      cell.style.removeProperty("text-align");
+      return;
+    }
+
+    cell.style.textAlign = alignment;
+  }
+
   function focusSiblingSpreadsheetCell(cell, direction) {
     var table = cell.closest(".spreadsheet-table");
     var cells = table ? Array.prototype.slice.call(table.querySelectorAll("th, td")) : [];
@@ -3411,9 +3527,32 @@ import {
     next.focus();
   }
 
+  function removeEmbeddedContentBlock(block, message, itemId, editor) {
+    var next = block.nextElementSibling;
+
+    if (!confirm(message)) {
+      return;
+    }
+
+    block.remove();
+    closeSpreadsheetColorMenu();
+
+    if (next && isEmptyEditorParagraph(next)) {
+      next.remove();
+    }
+
+    selectedSpreadsheetCell = null;
+    updateDocumentContent(itemId, getEditorHtml(editor));
+  }
+
+  function isEmptyEditorParagraph(node) {
+    return !!(node && node.tagName === "P" && (!node.textContent || !node.textContent.trim()) && node.querySelectorAll("img, table, .kanban-block, .spreadsheet-block").length === 0);
+  }
+
   function handleKanbanClick(event, itemId, editor) {
     var target = event.target;
     var block = target.closest ? target.closest(".kanban-block") : null;
+    var deleteBlock = target.closest ? target.closest(".kanban-delete-block") : null;
     var addColumn = target.closest ? target.closest(".kanban-add-column") : null;
     var deleteColumn = target.closest ? target.closest(".kanban-delete-column") : null;
     var addCard = target.closest ? target.closest(".kanban-add-card") : null;
@@ -3426,6 +3565,15 @@ import {
 
     if (!block || !editor.contains(block)) {
       return false;
+    }
+
+    if (deleteBlock) {
+      event.preventDefault();
+      if (activeKanbanModal && block.contains(activeKanbanModal.card)) {
+        closeKanbanCardModal();
+      }
+      removeEmbeddedContentBlock(block, "Remover este Kanban?", itemId, editor);
+      return true;
     }
 
     if (addColumn) {
@@ -5295,6 +5443,116 @@ import {
     }
   }
 
+  function getDefaultAiContextOptions() {
+    return {
+      current: true,
+      project: false,
+      links: false,
+      blocks: false,
+      related: false
+    };
+  }
+
+  function loadAiPreferences() {
+    var savedMode = localStorage.getItem(AI_MODE_KEY);
+    var savedContext = localStorage.getItem(AI_CONTEXT_OPTIONS_KEY);
+    var parsedContext;
+
+    if (["reply", "suggest", "confirm", "auto"].indexOf(savedMode) !== -1) {
+      AiState.mode = savedMode;
+    }
+
+    try {
+      parsedContext = savedContext ? JSON.parse(savedContext) : null;
+    } catch (error) {
+      parsedContext = null;
+    }
+
+    AiState.contextOptions = Object.assign(getDefaultAiContextOptions(), parsedContext || {});
+    if (!hasAnyAiContextOption(AiState.contextOptions)) {
+      AiState.contextOptions.current = true;
+    }
+
+    syncAiControls();
+  }
+
+  function syncAiControls() {
+    if (elements.aiModeSelect) {
+      elements.aiModeSelect.value = AiState.mode;
+    }
+
+    Array.prototype.slice.call(document.querySelectorAll("[data-ai-context]")).forEach(function (input) {
+      var key = input.getAttribute("data-ai-context");
+      input.checked = !!AiState.contextOptions[key];
+    });
+
+    updateAiContextSummary();
+  }
+
+  function saveAiMode(mode) {
+    AiState.mode = ["reply", "suggest", "confirm", "auto"].indexOf(mode) !== -1 ? mode : "confirm";
+    localStorage.setItem(AI_MODE_KEY, AiState.mode);
+  }
+
+  function saveAiContextOptions() {
+    localStorage.setItem(AI_CONTEXT_OPTIONS_KEY, JSON.stringify(AiState.contextOptions));
+    updateAiContextSummary();
+  }
+
+  function hasAnyAiContextOption(options) {
+    return !!(options.current || options.project || options.links || options.blocks || options.related);
+  }
+
+  function getAiContextOptions() {
+    var options = Object.assign(getDefaultAiContextOptions(), AiState.contextOptions || {});
+
+    if (!hasAnyAiContextOption(options)) {
+      options.current = true;
+    }
+
+    return options;
+  }
+
+  function updateAiContextSummary() {
+    var labels = [];
+    var options = getAiContextOptions();
+
+    if (!elements.aiContextSummary) {
+      return;
+    }
+
+    if (options.current) {
+      labels.push("página atual");
+    }
+    if (options.project) {
+      labels.push("projeto");
+    }
+    if (options.links) {
+      labels.push("links");
+    }
+    if (options.blocks) {
+      labels.push("Kanban/planilhas");
+    }
+    if (options.related) {
+      labels.push("relacionados");
+    }
+
+    elements.aiContextSummary.textContent = "Contexto: " + labels.join(" + ");
+  }
+
+  function getAiModeInstruction(mode) {
+    if (mode === "reply") {
+      return "Modo Só responder: responda apenas em texto. Não retorne actions.";
+    }
+    if (mode === "suggest") {
+      return "Modo Sugerir alterações: você pode retornar actions, mas o Hub só mostrará a prévia.";
+    }
+    if (mode === "auto") {
+      return "Modo Aplicar automaticamente: você pode retornar actions. O Hub validará tudo e ações perigosas ainda exigirão confirmação.";
+    }
+    return "Modo Aplicar com confirmação: você pode retornar actions. O usuário precisa confirmar antes de aplicar.";
+  }
+
   async function handleAiSubmit(event) {
     var promptText = elements.aiPrompt ? elements.aiPrompt.value.trim() : "";
     var apiKey;
@@ -5315,6 +5573,8 @@ import {
 
     userContent = JSON.stringify({
       pedido: promptText,
+      modoIa: AiState.mode,
+      instrucaoModo: getAiModeInstruction(AiState.mode),
       contextoHub: buildAiContext()
     }, null, 2);
 
@@ -5340,13 +5600,7 @@ import {
       });
 
       parsedAnswer = parseAiResponse(answer || "");
-      AiState.messages.push({
-        role: "assistant",
-        content: parsedAnswer.reply || "Não recebi conteúdo na resposta.",
-        rawContent: answer || "",
-        actions: parsedAnswer.actions,
-        actionsStatus: parsedAnswer.actions.length ? "pending" : "none"
-      });
+      handleParsedAiAnswer(parsedAnswer, answer || "");
     } catch (error) {
       console.error("Falha ao consultar DeepSeek.", error);
       AiState.messages.push({
@@ -5357,6 +5611,68 @@ import {
       AiState.isSending = false;
       renderAiMessages();
     }
+  }
+
+  function handleParsedAiAnswer(parsedAnswer, rawAnswer) {
+    var mode = AiState.mode;
+    var actions = Array.isArray(parsedAnswer.actions) ? parsedAnswer.actions : [];
+    var message = {
+      role: "assistant",
+      content: parsedAnswer.reply || "Não recebi conteúdo na resposta.",
+      rawContent: rawAnswer || "",
+      actions: actions,
+      actionsStatus: actions.length ? "pending" : "none"
+    };
+    var result;
+
+    if (parsedAnswer.parseError) {
+      message.actions = [];
+      message.actionsStatus = "none";
+      AiState.messages.push(message);
+      return;
+    }
+
+    if (mode === "reply" && actions.length) {
+      message.actions = [];
+      message.actionsStatus = "ignored";
+      message.content += "\n\nAções ignoradas porque o modo atual é Só responder.";
+      AiState.messages.push(message);
+      return;
+    }
+
+    if (!actions.length) {
+      AiState.messages.push(message);
+      return;
+    }
+
+    if (mode === "auto" && !actionsNeedConfirmation(actions)) {
+      result = applyAiActions(actions, message.content);
+      if (!result.ok) {
+        message.actionsStatus = "failed";
+        AiState.messages.push(message);
+        AiState.messages.push({
+          role: "error",
+          content: result.errors.join("\n")
+        });
+        return;
+      }
+
+      message.actionsStatus = "applied";
+      message.content += "\n\nAções aplicadas automaticamente.";
+      AiState.messages.push(message);
+      AiState.messages.push({
+        role: "assistant",
+        content: "Snapshot local salvo. Use o botão de desfazer se precisar reverter.",
+        actionsStatus: "none"
+      });
+      return;
+    }
+
+    if (mode === "auto" && actionsNeedConfirmation(actions)) {
+      message.actionsNote = "Modo automático pausado: há ação perigosa ou grande demais. Confirme para aplicar.";
+    }
+
+    AiState.messages.push(message);
   }
 
   function renderAiMessages() {
@@ -5412,11 +5728,12 @@ import {
   function parseAiResponse(rawText) {
     var parsed;
     var extracted;
+    var trimmed = (rawText || "").trim();
 
     try {
-      parsed = JSON.parse(rawText);
+      parsed = JSON.parse(trimmed);
     } catch (error) {
-      extracted = extractJsonObject(rawText);
+      extracted = extractJsonObject(trimmed);
       if (extracted) {
         try {
           parsed = JSON.parse(extracted);
@@ -5427,6 +5744,14 @@ import {
     }
 
     if (!parsed || typeof parsed !== "object" || !parsed.reply || !Array.isArray(parsed.actions)) {
+      if (/```json/i.test(trimmed) || /^\{/.test(trimmed) || /"actions"\s*:/.test(trimmed)) {
+        return {
+          reply: "A IA retornou um JSON inválido. Texto bruto:\n\n" + rawText,
+          actions: [],
+          parseError: true
+        };
+      }
+
       return {
         reply: rawText,
         actions: []
@@ -5440,14 +5765,15 @@ import {
   }
 
   function extractJsonObject(text) {
-    var start = text.indexOf("{");
-    var end = text.lastIndexOf("}");
+    var cleaned = (text || "").replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "");
+    var start = cleaned.indexOf("{");
+    var end = cleaned.lastIndexOf("}");
 
     if (start === -1 || end === -1 || end <= start) {
       return "";
     }
 
-    return text.slice(start, end + 1);
+    return cleaned.slice(start, end + 1);
   }
 
   function renderAiActionsPreview(message) {
@@ -5457,10 +5783,17 @@ import {
     var buttons = document.createElement("div");
     var apply = document.createElement("button");
     var cancel = document.createElement("button");
+    var note = null;
 
     preview.className = "ai-actions-preview" + (hasReplaceContentAction(message.actions) ? " has-danger" : "");
     title.textContent = "Ações sugeridas";
     list.className = "ai-action-list";
+
+    if (message.actionsNote) {
+      note = document.createElement("div");
+      note.className = "ai-actions-note";
+      note.textContent = message.actionsNote;
+    }
 
     message.actions.forEach(function (action) {
       var item = document.createElement("div");
@@ -5495,6 +5828,9 @@ import {
     buttons.appendChild(apply);
     buttons.appendChild(cancel);
     preview.appendChild(title);
+    if (note) {
+      preview.appendChild(note);
+    }
     preview.appendChild(list);
     preview.appendChild(buttons);
     return preview;
@@ -5512,50 +5848,43 @@ import {
     var item = getSelectedItem();
     var projectId = item ? getRootProjectId(item.id) : null;
     var project = projectId ? getItem(projectId) : null;
-    var projectItems = projectId ? state.items.filter(function (candidate) {
-      return !candidate.deletedAt && (candidate.id === projectId || getRootProjectId(candidate.id) === projectId);
-    }).map(function (candidate) {
-      return {
-        id: candidate.id,
-        type: candidate.type,
-        title: candidate.title || getDefaultTitle(candidate.type),
-        parentId: candidate.parentId || null,
-        visibility: candidate.visibility || "private"
-      };
-    }) : [];
-    var documents = projectItems.filter(function (candidate) {
-      return candidate.type === "document";
-    }).map(function (candidate) {
-      return {
-        id: candidate.id,
-        title: candidate.title,
-        parentId: candidate.parentId,
-        visibility: candidate.visibility
-      };
-    });
-
-    return {
-      currentItem: item ? {
-        id: item.id,
-        type: item.type,
-        title: item.title || getDefaultTitle(item.type),
-        parentId: item.parentId || null,
-        visibility: item.visibility || "private",
-        content: (item.type === "document" || item.type === "project") ? prepareAiContent(item.content || "") : ""
-      } : null,
+    var options = getAiContextOptions();
+    var context = {
+      mode: AiState.mode,
+      modeInstruction: getAiModeInstruction(AiState.mode),
+      selectedContext: options,
+      selectedItem: item ? getAiItemMetadata(item) : null,
       breadcrumb: item ? renderBreadcrumb(item.id) : "",
-      rootProject: project ? {
-        id: project.id,
-        type: project.type,
-        title: project.title || getDefaultTitle(project.type),
-        parentId: project.parentId || null,
-        visibility: project.visibility || "private"
-      } : null,
-      projectTree: project ? buildAiTreeSummary(project.id, 0) : [],
-      projectItems: projectItems,
-      documents: documents,
+      rootProject: project ? getAiItemMetadata(project) : null,
+      hubSummary: buildHubSummary(projectId),
       allowedActions: getAiAllowedActionExamples()
     };
+
+    if (options.current) {
+      context.currentItem = item ? getAiItemContentPayload(item, 18000) : null;
+    }
+
+    if (options.project && project) {
+      context.projectTree = buildAiTreeSummary(project.id, 0);
+      context.projectItems = buildAiProjectItems(project.id);
+      context.documents = context.projectItems.filter(function (candidate) {
+        return candidate.type === "document";
+      });
+    }
+
+    if (options.links) {
+      context.links = item ? extractAiLinksSummary(item) : null;
+    }
+
+    if (options.blocks) {
+      context.structuredBlocks = item ? extractAiStructuredBlocks(item) : null;
+    }
+
+    if (options.related) {
+      context.relatedDocuments = item && projectId ? buildAiRelatedDocuments(item, projectId) : [];
+    }
+
+    return context;
   }
 
   function buildAiTreeSummary(parentId, depth) {
@@ -5590,8 +5919,189 @@ import {
     ];
   }
 
-  function prepareAiContent(content) {
-    return content.replace(/src="data:[^"]+"/gi, 'src="[imagem-base64-removida]"').slice(0, 18000);
+  function getAiItemMetadata(item) {
+    return {
+      id: item.id,
+      type: item.type,
+      title: item.title || getDefaultTitle(item.type),
+      parentId: item.parentId || null,
+      visibility: item.visibility || "private",
+      path: renderBreadcrumb(item.id)
+    };
+  }
+
+  function getAiItemContentPayload(item, limit) {
+    var payload = getAiItemMetadata(item);
+
+    payload.content = (item.type === "document" || item.type === "project") ? prepareAiContent(item.content || "", limit || 3000) : "";
+    payload.textLength = getPlainTextFromHtml(item.content || "").length;
+    return payload;
+  }
+
+  function buildAiProjectItems(projectId) {
+    if (!projectId) {
+      return [];
+    }
+
+    return state.items.filter(function (candidate) {
+      return !candidate.deletedAt && (candidate.id === projectId || getRootProjectId(candidate.id) === projectId);
+    }).map(function (candidate) {
+      return getAiItemContentPayload(candidate, 2500);
+    });
+  }
+
+  function buildHubSummary(projectId) {
+    var projects = state.items.filter(function (item) {
+      return !item.deletedAt && item.type === "project";
+    });
+    var documents = state.items.filter(function (item) {
+      return !item.deletedAt && item.type === "document";
+    });
+    var publicCount = state.items.filter(function (item) {
+      return !item.deletedAt && item.visibility === "public";
+    }).length;
+    var emptyDocuments = documents.filter(function (item) {
+      return getPlainTextFromHtml(item.content || "").trim().length < 40;
+    });
+    var documentsWithKanban = documents.filter(function (item) {
+      return /class=["'][^"']*kanban-block/i.test(item.content || "");
+    });
+    var documentsWithSpreadsheets = documents.filter(function (item) {
+      return /class=["'][^"']*spreadsheet-block/i.test(item.content || "");
+    });
+    var documentsWithManyLinks = documents.filter(function (item) {
+      return countAiLinks(item.content || "") >= 6;
+    });
+
+    return {
+      projectCount: projects.length,
+      projects: projects.map(function (project) {
+        return {
+          id: project.id,
+          title: project.title || getDefaultTitle(project.type),
+          documentCount: getDescendants(project.id).filter(function (item) {
+            return item.type === "document";
+          }).length
+        };
+      }),
+      documentCount: documents.length,
+      publicItems: publicCount,
+      privateItems: state.items.filter(function (item) {
+        return !item.deletedAt && item.visibility !== "public";
+      }).length,
+      emptyDocuments: emptyDocuments.map(getAiItemMetadata).slice(0, 20),
+      documentsWithKanban: documentsWithKanban.map(getAiItemMetadata).slice(0, 20),
+      documentsWithSpreadsheets: documentsWithSpreadsheets.map(getAiItemMetadata).slice(0, 20),
+      documentsWithManyLinks: documentsWithManyLinks.map(getAiItemMetadata).slice(0, 20),
+      lastSelectedItem: state.selectedItemId || null,
+      currentProjectTree: projectId ? buildAiTreeSummary(projectId, 0) : []
+    };
+  }
+
+  function getPlainTextFromHtml(html) {
+    var wrapper = document.createElement("div");
+
+    wrapper.innerHTML = html || "";
+    return wrapper.textContent || "";
+  }
+
+  function countAiLinks(html) {
+    var wrapper = document.createElement("div");
+
+    wrapper.innerHTML = html || "";
+    return wrapper.querySelectorAll("a[href], img[src]").length + extractWikiLinkTitles(html || "").length;
+  }
+
+  function extractAiLinksSummary(item) {
+    var wrapper = document.createElement("div");
+    var externalLinks = [];
+    var imageLinks = [];
+
+    wrapper.innerHTML = item.content || "";
+    Array.prototype.slice.call(wrapper.querySelectorAll("a[href]")).forEach(function (link) {
+      externalLinks.push({
+        text: (link.textContent || "").trim(),
+        href: link.getAttribute("href")
+      });
+    });
+    Array.prototype.slice.call(wrapper.querySelectorAll("img[src]")).forEach(function (image) {
+      imageLinks.push({
+        alt: image.getAttribute("alt") || "",
+        src: image.getAttribute("src")
+      });
+    });
+
+    return {
+      item: getAiItemMetadata(item),
+      externalLinks: externalLinks.slice(0, 80),
+      imageLinks: imageLinks.slice(0, 40),
+      wikilinks: extractWikiLinkTitles(item.content || "").slice(0, 80)
+    };
+  }
+
+  function extractAiStructuredBlocks(item) {
+    var wrapper = document.createElement("div");
+
+    wrapper.innerHTML = item.content || "";
+    return {
+      item: getAiItemMetadata(item),
+      kanbans: Array.prototype.slice.call(wrapper.querySelectorAll(".kanban-block")).map(extractAiKanbanSummary),
+      spreadsheets: Array.prototype.slice.call(wrapper.querySelectorAll(".spreadsheet-block")).map(extractAiSpreadsheetSummary)
+    };
+  }
+
+  function extractAiKanbanSummary(block) {
+    return {
+      title: block.querySelector(".kanban-title") ? block.querySelector(".kanban-title").textContent.trim() : "Kanban",
+      columns: Array.prototype.slice.call(block.querySelectorAll(".kanban-column")).map(function (column) {
+        var input = column.querySelector(".kanban-column-title");
+        return {
+          title: input ? input.getAttribute("value") || input.value || "" : "",
+          cards: Array.prototype.slice.call(column.querySelectorAll(".kanban-card")).map(function (card) {
+            return {
+              title: card.querySelector(".kanban-card-title") ? card.querySelector(".kanban-card-title").textContent.trim() : "",
+              checklist: Array.prototype.slice.call(card.querySelectorAll(".kanban-card-data .kanban-checklist-item")).map(function (check) {
+                return {
+                  text: check.textContent.trim(),
+                  checked: check.getAttribute("data-checked") === "true"
+                };
+              })
+            };
+          })
+        };
+      })
+    };
+  }
+
+  function extractAiSpreadsheetSummary(block) {
+    return {
+      title: block.querySelector(".spreadsheet-title") ? block.querySelector(".spreadsheet-title").textContent.trim() : "Planilha",
+      rows: Array.prototype.slice.call(block.querySelectorAll(".spreadsheet-table tr")).slice(0, 20).map(function (row) {
+        return Array.prototype.slice.call(row.cells).slice(0, 8).map(function (cell) {
+          return cell.textContent.trim();
+        });
+      })
+    };
+  }
+
+  function buildAiRelatedDocuments(item, projectId) {
+    var seen = {};
+
+    return extractWikiLinkTitles(item.content || "").map(function (title) {
+      return findDocumentByTitleInProject(projectId, title);
+    }).filter(function (documentItem) {
+      if (!documentItem || seen[documentItem.id]) {
+        return false;
+      }
+      seen[documentItem.id] = true;
+      return true;
+    }).map(function (documentItem) {
+      return getAiItemContentPayload(documentItem, 3000);
+    });
+  }
+
+  function prepareAiContent(content, limit) {
+    return content.replace(/src="data:[^"]+"/gi, 'src="[imagem-base64-removida]"').slice(0, limit || 18000);
   }
 
   function describeAiAction(action) {
@@ -5634,8 +6144,48 @@ import {
     });
   }
 
+  function hasDangerousAiAction(actions) {
+    return actions.some(isDangerousAiAction);
+  }
+
+  function actionsNeedConfirmation(actions) {
+    return hasDangerousAiAction(actions) || actions.length > 8;
+  }
+
+  function isDangerousAiAction(action) {
+    var html = "";
+    var cardCount = 0;
+    var cellCount = 0;
+
+    if (!action || !action.type) {
+      return true;
+    }
+
+    html = String(action.html || action.content || "");
+    if (action.type === "insertKanban" && Array.isArray(action.columns)) {
+      action.columns.forEach(function (column) {
+        cardCount += Array.isArray(column.cards) ? column.cards.length : 0;
+      });
+      return action.columns.length > 8 || cardCount > 60;
+    }
+    if (action.type === "insertSpreadsheet" && Array.isArray(action.rows)) {
+      action.rows.forEach(function (row) {
+        cellCount += Array.isArray(row) ? row.length : 0;
+      });
+      return action.rows.length > 80 || cellCount > 800;
+    }
+
+    return action.type === "replaceContent" || /^delete/i.test(action.type) || html.length > 50000;
+  }
+
   function applyAiActionsFromMessage(message) {
-    var result = applyAiActions(message.actions || []);
+    var result;
+
+    if (actionsNeedConfirmation(message.actions || []) && !confirm("Essa sugestão inclui ação perigosa ou grande. Aplicar mesmo assim?")) {
+      return;
+    }
+
+    result = applyAiActions(message.actions || [], message.content);
 
     if (!result.ok) {
       AiState.messages.push({
@@ -5649,16 +6199,17 @@ import {
     message.actionsStatus = "applied";
     AiState.messages.push({
       role: "assistant",
-      content: "Ações aplicadas com sucesso.",
+      content: "Ações aplicadas com sucesso. Snapshot local salvo para desfazer.",
       actionsStatus: "none"
     });
     renderAiMessages();
   }
 
-  function applyAiActions(actions) {
+  function applyAiActions(actions, description) {
     var errors = validateAiActions(actions);
     var changedIds = [];
     var createdItem = null;
+    var undoSnapshot;
 
     if (errors.length) {
       return {
@@ -5666,6 +6217,8 @@ import {
         errors: errors
       };
     }
+
+    undoSnapshot = createAiUndoSnapshot(actions, description || "Alterações feitas pela IA");
 
     actions.forEach(function (action) {
       var item = action.itemId ? getItem(action.itemId) : null;
@@ -5693,6 +6246,7 @@ import {
         created = createAiItem("document", action.parentId, action.title, sanitizeAiHtml(action.content || ""));
         createdItem = created;
         changedIds.push(created.id);
+        undoSnapshot.createdItems.push(created.id);
         return;
       }
 
@@ -5700,6 +6254,7 @@ import {
         created = createAiItem("folder", action.parentId, action.title, "");
         createdItem = created;
         changedIds.push(created.id);
+        undoSnapshot.createdItems.push(created.id);
         return;
       }
 
@@ -5725,6 +6280,7 @@ import {
       state.selectedItemId = createdItem.id;
     }
 
+    finalizeAiUndoSnapshot(undoSnapshot);
     saveState(changedIds, state.selectedItemId);
     render();
     return {
@@ -5772,6 +6328,177 @@ import {
     return item;
   }
 
+  function cloneAiItemForUndo(item) {
+    var snapshot;
+
+    if (!item) {
+      return null;
+    }
+
+    snapshot = {
+      id: item.id,
+      type: item.type,
+      title: item.title || "",
+      parentId: item.parentId || null,
+      projectId: item.projectId || null,
+      visibility: item.visibility || "private",
+      sharedWith: Array.isArray(item.sharedWith) ? item.sharedWith : [],
+      isOpen: item.isOpen === true,
+      ownerId: item.ownerId || null,
+      createdAt: item.createdAt || null,
+      updatedAt: item.updatedAt || null,
+      deletedAt: item.deletedAt || null
+    };
+
+    if (item.type === "document" || item.type === "project") {
+      snapshot.content = item.content || "";
+    }
+
+    return JSON.parse(JSON.stringify(snapshot));
+  }
+
+  function createAiUndoSnapshot(actions, description) {
+    var affectedIds = [];
+    var snapshot;
+
+    actions.forEach(function (action) {
+      if (action.itemId && affectedIds.indexOf(action.itemId) === -1) {
+        affectedIds.push(action.itemId);
+      }
+      if ((action.type === "createDocument" || action.type === "createFolder") && action.parentId && affectedIds.indexOf(action.parentId) === -1) {
+        affectedIds.push(action.parentId);
+      }
+    });
+
+    snapshot = {
+      createdAt: nowIso(),
+      description: description || "Alterações feitas pela IA",
+      affectedItems: affectedIds.map(function (id) {
+        return {
+          id: id,
+          before: cloneAiItemForUndo(getItem(id)),
+          after: null
+        };
+      }).filter(function (entry) {
+        return !!entry.before;
+      }),
+      createdItems: []
+    };
+
+    return snapshot;
+  }
+
+  function finalizeAiUndoSnapshot(snapshot) {
+    snapshot.affectedItems.forEach(function (entry) {
+      entry.after = cloneAiItemForUndo(getItem(entry.id));
+    });
+    localStorage.setItem(AI_UNDO_KEY, JSON.stringify(snapshot));
+  }
+
+  function restoreAiItemFromSnapshot(snapshotItem) {
+    var existing = getItem(snapshotItem.id);
+    var replacement = JSON.parse(JSON.stringify(snapshotItem));
+
+    if (replacement.deletedAt === null) {
+      delete replacement.deletedAt;
+    }
+
+    if (existing) {
+      Object.keys(existing).forEach(function (key) {
+        delete existing[key];
+      });
+      Object.assign(existing, replacement);
+      return existing;
+    }
+
+    state.items.push(replacement);
+    return replacement;
+  }
+
+  async function undoLastAiAction() {
+    var saved = localStorage.getItem(AI_UNDO_KEY);
+    var snapshot;
+    var removeIds = [];
+    var changedIds = [];
+    var selectedWasRemoved = false;
+
+    if (!saved) {
+      AiState.messages.push({
+        role: "assistant",
+        content: "Nenhuma ação da IA para desfazer.",
+        actionsStatus: "none"
+      });
+      renderAiMessages();
+      return;
+    }
+
+    try {
+      snapshot = JSON.parse(saved);
+    } catch (error) {
+      localStorage.removeItem(AI_UNDO_KEY);
+      AiState.messages.push({
+        role: "error",
+        content: "Snapshot local de desfazer estava inválido e foi descartado."
+      });
+      renderAiMessages();
+      return;
+    }
+
+    (snapshot.createdItems || []).forEach(function (id) {
+      if (removeIds.indexOf(id) === -1) {
+        removeIds.push(id);
+      }
+      getDescendants(id, {
+        includeDeleted: true
+      }).forEach(function (child) {
+        if (removeIds.indexOf(child.id) === -1) {
+          removeIds.push(child.id);
+        }
+      });
+    });
+
+    selectedWasRemoved = removeIds.indexOf(state.selectedItemId) !== -1;
+    removeItems(removeIds);
+
+    (snapshot.affectedItems || []).forEach(function (entry) {
+      if (entry.before) {
+        restoreAiItemFromSnapshot(entry.before);
+        if (changedIds.indexOf(entry.id) === -1) {
+          changedIds.push(entry.id);
+        }
+      }
+    });
+
+    if (selectedWasRemoved || !state.selectedItemId) {
+      state.selectedItemId = changedIds[0] || null;
+    }
+
+    localStorage.removeItem(AI_UNDO_KEY);
+
+    try {
+      await DataStore.deleteItems(removeIds);
+    } catch (error) {
+      console.error("Falha ao remover itens criados pela IA no Firebase.", error);
+    }
+
+    try {
+      await DataStore.save(state, {
+        itemIds: changedIds,
+        statusItemId: state.selectedItemId
+      });
+    } catch (error) {
+      console.error("Falha ao salvar desfazer da IA.", error);
+    }
+
+    AiState.messages.push({
+      role: "assistant",
+      content: "Última ação da IA desfeita.",
+      actionsStatus: "none"
+    });
+    render();
+    renderAiMessages();
+  }
+
   function validateAiActions(actions) {
     var errors = [];
 
@@ -5799,6 +6526,9 @@ import {
         if (typeof action.html !== "string") {
           errors.push(prefix + "html precisa ser string.");
         }
+        if (typeof action.html === "string" && action.html.length > 120000) {
+          errors.push(prefix + "html grande demais.");
+        }
         return;
       }
 
@@ -5814,6 +6544,9 @@ import {
         }
         if (action.type === "createDocument" && action.content !== undefined && typeof action.content !== "string") {
           errors.push(prefix + "content precisa ser string.");
+        }
+        if (action.type === "createDocument" && typeof action.content === "string" && action.content.length > 120000) {
+          errors.push(prefix + "content grande demais.");
         }
         return;
       }
@@ -5865,23 +6598,109 @@ import {
 
   function sanitizeAiHtml(html) {
     var wrapper = document.createElement("div");
+    var allowedTags = "p h1 h2 h3 h4 h5 h6 ul ol li strong b em i u a br pre code blockquote table thead tbody tfoot tr td th div span img hr".split(" ");
 
     wrapper.innerHTML = html || "";
-    Array.prototype.slice.call(wrapper.querySelectorAll("script, iframe, object, embed")).forEach(function (node) {
+    Array.prototype.slice.call(wrapper.querySelectorAll("script, iframe, object, embed, form, input, button, select, textarea, svg, math")).forEach(function (node) {
       node.remove();
     });
     Array.prototype.slice.call(wrapper.querySelectorAll("*")).forEach(function (node) {
+      var tag = node.tagName.toLowerCase();
+
+      if (allowedTags.indexOf(tag) === -1) {
+        node.replaceWith(document.createTextNode(node.textContent || ""));
+        return;
+      }
+
       Array.prototype.slice.call(node.attributes).forEach(function (attribute) {
         var name = attribute.name.toLowerCase();
         var value = attribute.value || "";
+        var safeUrl;
 
-        if (name.indexOf("on") === 0 || (/^(href|src)$/i.test(name) && /^\s*javascript:/i.test(value))) {
+        if (name.indexOf("on") === 0) {
+          node.removeAttribute(attribute.name);
+          return;
+        }
+
+        if (name === "href" || name === "src") {
+          safeUrl = sanitizeAiUrl(value, name);
+          if (!safeUrl) {
+            node.removeAttribute(attribute.name);
+          } else {
+            node.setAttribute(attribute.name, safeUrl);
+          }
+          return;
+        }
+
+        if (name === "style") {
+          value = sanitizeAiStyle(value);
+          if (value) {
+            node.setAttribute("style", value);
+          } else {
+            node.removeAttribute(attribute.name);
+          }
+          return;
+        }
+
+        if (name === "class") {
+          node.setAttribute("class", sanitizeAiClassValue(value));
+          return;
+        }
+
+        if (["title", "alt", "target", "rel", "colspan", "rowspan", "width", "height"].indexOf(name) === -1) {
           node.removeAttribute(attribute.name);
         }
       });
     });
 
     return wrapper.innerHTML;
+  }
+
+  function sanitizeAiUrl(url, attributeName) {
+    var value = String(url || "").trim();
+
+    if (!value || /^(javascript|data|vbscript):/i.test(value)) {
+      return "";
+    }
+
+    if (attributeName === "src") {
+      return /^https?:\/\//i.test(value) ? value : "";
+    }
+
+    if (/^(https?:\/\/|mailto:|#)/i.test(value)) {
+      return value;
+    }
+
+    return "";
+  }
+
+  function sanitizeAiStyle(style) {
+    var safeRules = [];
+
+    String(style || "").split(";").forEach(function (rule) {
+      var parts = rule.split(":");
+      var property = parts.shift();
+      var value = parts.join(":").trim();
+
+      property = property ? property.trim().toLowerCase() : "";
+
+      if (["color", "background-color", "font-weight", "text-decoration"].indexOf(property) === -1) {
+        return;
+      }
+      if (/url\s*\(|expression\s*\(|javascript:/i.test(value)) {
+        return;
+      }
+
+      safeRules.push(property + ": " + value);
+    });
+
+    return safeRules.join("; ");
+  }
+
+  function sanitizeAiClassValue(value) {
+    return String(value || "").split(/\s+/).filter(function (className) {
+      return /^[a-z0-9_-]{1,48}$/i.test(className);
+    }).slice(0, 8).join(" ");
   }
 
   function createKanbanHtmlFromAiAction(action) {
@@ -6241,6 +7060,8 @@ import {
       renderAdminPanel();
     });
 
+    loadAiPreferences();
+
     if (elements.aiClose) {
       elements.aiClose.addEventListener("click", closeAiPanel);
     }
@@ -6264,6 +7085,40 @@ import {
 
     if (elements.aiForm) {
       elements.aiForm.addEventListener("submit", handleAiSubmit);
+    }
+
+    if (elements.aiModeSelect) {
+      elements.aiModeSelect.addEventListener("change", function () {
+        saveAiMode(elements.aiModeSelect.value);
+      });
+    }
+
+    Array.prototype.slice.call(document.querySelectorAll("[data-ai-context]")).forEach(function (input) {
+      input.addEventListener("change", function () {
+        var key = input.getAttribute("data-ai-context");
+        AiState.contextOptions[key] = input.checked;
+        if (!hasAnyAiContextOption(AiState.contextOptions)) {
+          AiState.contextOptions.current = true;
+          syncAiControls();
+        }
+        saveAiContextOptions();
+      });
+    });
+
+    Array.prototype.slice.call(document.querySelectorAll(".ai-quick-prompt-btn")).forEach(function (button) {
+      button.addEventListener("click", function () {
+        if (!elements.aiPrompt) {
+          return;
+        }
+        elements.aiPrompt.value = button.getAttribute("data-prompt") || "";
+        elements.aiPrompt.focus();
+      });
+    });
+
+    if (elements.aiUndoLastAction) {
+      elements.aiUndoLastAction.addEventListener("click", function () {
+        undoLastAiAction();
+      });
     }
 
     renderAiPanel();

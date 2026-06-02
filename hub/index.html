@@ -49,11 +49,46 @@
     </div>
     <div class="ai-key-status" id="aiKeyStatus">Chave não configurada</div>
     <p class="ai-local-note">Uso local: a chave fica apenas em memória até recarregar a página.</p>
+    <div class="ai-control-panel">
+      <label class="ai-field">
+        <span>Modo</span>
+        <select class="ai-mode-select" id="aiModeSelect">
+          <option value="reply">Só responder</option>
+          <option value="suggest">Sugerir alterações</option>
+          <option value="confirm">Aplicar com confirmação</option>
+          <option value="auto">Aplicar automaticamente</option>
+        </select>
+      </label>
+      <fieldset class="ai-context-options">
+        <legend>Contexto</legend>
+        <label><input type="checkbox" id="aiContextCurrent" data-ai-context="current"> Página atual</label>
+        <label><input type="checkbox" id="aiContextProject" data-ai-context="project"> Projeto inteiro</label>
+        <label><input type="checkbox" id="aiContextLinks" data-ai-context="links"> Apenas links da página</label>
+        <label><input type="checkbox" id="aiContextBlocks" data-ai-context="blocks"> Apenas Kanban/planilhas</label>
+        <label><input type="checkbox" id="aiContextRelated" data-ai-context="related"> Documentos relacionados</label>
+        <div class="ai-context-summary" id="aiContextSummary"></div>
+      </fieldset>
+      <div class="ai-quick-prompts" aria-label="Prompts rápidos">
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Organize esta página em seções claras, mantendo o conteúdo original e sugerindo melhorias.">Organizar página</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Resuma esta página em tópicos objetivos.">Resumir</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Crie um Kanban nesta página com tarefas baseadas no conteúdo atual.">Criar Kanban</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Crie uma checklist prática baseada no conteúdo desta página.">Criar checklist</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Crie uma planilha simples para organizar as informações desta página.">Criar planilha</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Melhore a formatação desta página sem alterar o sentido do conteúdo.">Melhorar formatação</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Transforme este conteúdo em um planejamento de aula estruturado.">Plano de aula</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Gere tópicos objetivos a partir desta página.">Gerar tópicos</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Analise esta página e aponte problemas de organização, clareza ou lacunas.">Encontrar problemas</button>
+        <button class="ai-quick-prompt-btn" type="button" data-prompt="Sugira uma estrutura melhor para este projeto/página.">Sugerir estrutura</button>
+      </div>
+    </div>
     <div class="ai-messages" id="aiMessages"></div>
     <form class="ai-input-area" id="aiForm">
       <textarea id="aiPrompt" placeholder="Peça para organizar esta página, criar estrutura, resumir ou sugerir melhorias..."></textarea>
       <button type="submit">Enviar</button>
     </form>
+    <div class="ai-undo-area">
+      <button class="ai-undo-button" id="aiUndoLastAction" type="button">Desfazer última ação da IA</button>
+    </div>
   </aside>
 
   <script type="module" src="js/app.js"></script>

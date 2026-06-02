@@ -638,8 +638,76 @@ button {
 
 .ai-local-note {
   padding-top: 4px;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
+}
+
+.ai-control-panel {
+  padding: 8px 10px;
+  display: grid;
+  gap: 8px;
   border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.ai-field {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ai-mode-select {
+  width: 100%;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.ai-context-options {
+  margin: 0;
+  padding: 8px;
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.ai-context-options legend {
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ai-context-options label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.ai-context-options input {
+  margin: 0;
+}
+
+.ai-context-summary {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.ai-quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ai-panel .ai-quick-prompt-btn {
+  padding: 5px 6px;
+  font-size: 12px;
 }
 
 .ai-messages {
@@ -700,6 +768,11 @@ button {
   display: block;
   margin-bottom: 6px;
   color: var(--text);
+}
+
+.ai-actions-note {
+  margin-bottom: 6px;
+  color: var(--danger);
 }
 
 .ai-action-list {
@@ -771,6 +844,18 @@ button {
   min-height: 34px;
   padding: 7px 10px;
   justify-self: end;
+}
+
+.ai-undo-area {
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.ai-panel .ai-undo-button {
+  width: 100%;
+  padding: 7px 8px;
+  color: var(--muted);
 }
 
 .empty-state,
@@ -1311,6 +1396,11 @@ button {
   font-size: 13px;
 }
 
+.spreadsheet-toolbar .sheet-delete-block {
+  margin-right: 6px;
+  color: var(--danger);
+}
+
 .spreadsheet-toolbar button {
   padding: 6px 8px;
 }
@@ -1363,6 +1453,8 @@ button {
 
 .kanban-title,
 .public-content .kanban-title {
+  min-width: 0;
+  flex: 1;
   color: var(--text);
   font-weight: 650;
 }
@@ -1458,6 +1550,7 @@ button {
 
 .kanban-add-card,
 .kanban-add-column,
+.kanban-delete-block,
 .kanban-delete-card,
 .kanban-delete-column {
   border: 1px solid var(--border);
@@ -1476,6 +1569,12 @@ button {
 
 .kanban-add-column {
   padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.kanban-delete-block {
+  padding: 6px 9px;
+  color: var(--danger);
   white-space: nowrap;
 }
 
@@ -1498,6 +1597,8 @@ button {
 .kanban-add-card:focus-visible,
 .kanban-add-column:hover,
 .kanban-add-column:focus-visible,
+.kanban-delete-block:hover,
+.kanban-delete-block:focus-visible,
 .kanban-delete-card:hover,
 .kanban-delete-card:focus-visible,
 .kanban-delete-column:hover,
