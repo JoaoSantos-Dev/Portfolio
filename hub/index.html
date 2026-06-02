@@ -40,6 +40,22 @@
     </main>
   </div>
 
+  <aside class="ai-panel" id="aiPanel" aria-label="Assistente de IA">
+    <div class="ai-panel-header">
+      <strong>Assistente</strong>
+      <button class="ai-set-key" id="aiSetKey" type="button">Chave</button>
+      <button class="ai-clear-key" id="aiClearKey" type="button">Esquecer</button>
+      <button class="ai-close" id="aiClose" type="button" aria-label="Fechar assistente">×</button>
+    </div>
+    <div class="ai-key-status" id="aiKeyStatus">Chave não configurada</div>
+    <p class="ai-local-note">Uso local: a chave fica apenas em memória até recarregar a página.</p>
+    <div class="ai-messages" id="aiMessages"></div>
+    <form class="ai-input-area" id="aiForm">
+      <textarea id="aiPrompt" placeholder="Peça para organizar esta página, criar estrutura, resumir ou sugerir melhorias..."></textarea>
+      <button type="submit">Enviar</button>
+    </form>
+  </aside>
+
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

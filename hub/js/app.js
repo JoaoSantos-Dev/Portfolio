@@ -29,6 +29,21 @@ import {
   var IMAGE_URL_PATTERN = /\.(png|jpe?g|webp|gif)(\?.*)?$/i;
   var URL_PATTERN = /(https?:\/\/[^\s<>"']+)/g;
   var WIKILINK_PATTERN = /\[\[([^\[\]]+)\]\]/g;
+  var SYSTEM_PROMPT = "Você é o Assistente do Hub, um sistema pessoal de organização inspirado em Notion, Obsidian e Trello.\n" +
+    "Ajude o usuário a organizar projetos, documentos, páginas, links, Kanbans, planilhas, toggles e blocos de conteúdo.\n" +
+    "Seja objetivo, prático e preserve a estrutura do Hub.\n" +
+    "Você pode responder em texto comum ou em JSON válido quando quiser sugerir alterações estruturadas.\n" +
+    "Use JSON quando o usuário pedir criação, organização, renomeação ou inserção de conteúdo.\n" +
+    'Formato JSON obrigatório: {"reply":"Texto explicando o que será feito.","actions":[{"type":"appendContent","itemId":"ID","html":"<h2>Nova seção</h2><p>Conteúdo...</p>"}]}.\n' +
+    "Tipos suportados: appendContent, prependContent, replaceContent, createDocument, createFolder, renameItem, insertKanban, insertSpreadsheet.\n" +
+    "Quando incluir actions, responda somente com JSON válido, sem markdown e sem ```json.\n" +
+    "Não invente IDs; use apenas IDs fornecidos no contexto. Para criar item, use parentId conhecido.\n" +
+    "Prefira appendContent, prependContent, insertKanban ou insertSpreadsheet. Use replaceContent só quando o usuário pedir claramente.\n" +
+    "Não apague conteúdo sem o usuário pedir.\n" +
+    "Não invente documentos que não existem, a menos que esteja sugerindo criação.\n" +
+    "Quando sugerir alterações estruturais, explique antes.\n" +
+    "As ações serão aplicadas apenas se o usuário confirmar no Hub. Você nunca altera o Hub automaticamente.\n" +
+    "Seja claro e útil.";
   var TEXT_COLOR_OPTIONS = [
     { label: "Padrão", color: null, swatch: "transparent" },
     { label: "Cinza", color: "#6b6b6b" },
@@ -59,6 +74,36 @@ import {
   var firebaseApp = initializeApp(firebaseConfig);
   var auth = getAuth(firebaseApp);
   var db = getFirestore(firebaseApp);
+  var AiProvider = {
+    sendMessage: async function (options) {
+      var response;
+      var data;
+
+      // Uso local/pessoal: chamada direta no navegador. No futuro, trocar por backend/Firebase Function.
+      response = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + options.apiKey
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [{
+            role: "system",
+            content: SYSTEM_PROMPT
+          }].concat(options.messages),
+          temperature: 0.4
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("DeepSeek request failed: " + response.status);
+      }
+
+      data = await response.json();
+      return data && data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "";
+    }
+  };
 
   var saveTimer = null;
   var normalizeTimer = null;
@@ -69,6 +114,12 @@ import {
   var activeKanbanModal = null;
   var selectedSpreadsheetCell = null;
   var spreadsheetColorMenu = null;
+  var AiState = {
+    apiKey: "",
+    messages: [],
+    isOpen: false,
+    isSending: false
+  };
   var resizeState = null;
 
   var state = {
@@ -107,6 +158,14 @@ import {
     trashCount: document.getElementById("trashCount"),
     treeList: document.getElementById("treeList"),
     editorPanel: document.getElementById("editorPanel"),
+    aiPanel: document.getElementById("aiPanel"),
+    aiSetKey: document.getElementById("aiSetKey"),
+    aiClearKey: document.getElementById("aiClearKey"),
+    aiClose: document.getElementById("aiClose"),
+    aiKeyStatus: document.getElementById("aiKeyStatus"),
+    aiMessages: document.getElementById("aiMessages"),
+    aiForm: document.getElementById("aiForm"),
+    aiPrompt: document.getElementById("aiPrompt"),
     accountName: document.getElementById("accountName"),
     adminButton: document.getElementById("adminButton"),
     logoutButton: document.getElementById("logoutButton")
@@ -1894,6 +1953,10 @@ import {
         documentActions.appendChild(copied);
       }
     }
+
+    documentActions.appendChild(createTextButton("IA", function () {
+      toggleAiPanel();
+    }));
 
     if (canEditItem(item)) {
       documentActions.appendChild(createTextButton("Renomear", function () {
@@ -5171,6 +5234,719 @@ import {
     alert("Compartilhado com " + user.name + ". O moderador verá na próxima atualização.");
   }
 
+  function getDeepSeekApiKey() {
+    return AiState.apiKey;
+  }
+
+  function setDeepSeekApiKey(key) {
+    AiState.apiKey = key || "";
+    updateAiKeyStatus();
+  }
+
+  function clearDeepSeekApiKey() {
+    AiState.apiKey = "";
+    updateAiKeyStatus();
+  }
+
+  async function ensureDeepSeekApiKey() {
+    var key;
+
+    if (getDeepSeekApiKey()) {
+      return getDeepSeekApiKey();
+    }
+
+    key = prompt("Digite sua API key da DeepSeek. Ela ficará apenas em memória até você recarregar ou fechar a página.");
+
+    if (!key || !key.trim()) {
+      return null;
+    }
+
+    setDeepSeekApiKey(key.trim());
+    return getDeepSeekApiKey();
+  }
+
+  function toggleAiPanel() {
+    AiState.isOpen = !AiState.isOpen;
+    renderAiPanel();
+
+    if (AiState.isOpen && elements.aiPrompt) {
+      elements.aiPrompt.focus();
+    }
+  }
+
+  function closeAiPanel() {
+    AiState.isOpen = false;
+    renderAiPanel();
+  }
+
+  function renderAiPanel() {
+    if (!elements.aiPanel) {
+      return;
+    }
+
+    elements.aiPanel.classList.toggle("open", !!AiState.isOpen);
+    updateAiKeyStatus();
+    renderAiMessages();
+  }
+
+  function updateAiKeyStatus() {
+    if (elements.aiKeyStatus) {
+      elements.aiKeyStatus.textContent = getDeepSeekApiKey() ? "Chave configurada nesta sessão" : "Chave não configurada";
+    }
+  }
+
+  async function handleAiSubmit(event) {
+    var promptText = elements.aiPrompt ? elements.aiPrompt.value.trim() : "";
+    var apiKey;
+    var userContent;
+    var answer;
+    var parsedAnswer;
+
+    event.preventDefault();
+
+    if (!promptText || AiState.isSending) {
+      return;
+    }
+
+    apiKey = await ensureDeepSeekApiKey();
+    if (!apiKey) {
+      return;
+    }
+
+    userContent = JSON.stringify({
+      pedido: promptText,
+      contextoHub: buildAiContext()
+    }, null, 2);
+
+    AiState.messages.push({
+      role: "user",
+      content: userContent
+    });
+    AiState.isSending = true;
+    elements.aiPrompt.value = "";
+    renderAiMessages();
+
+    try {
+      answer = await AiProvider.sendMessage({
+        apiKey: apiKey,
+        messages: AiState.messages.filter(function (message) {
+          return message.role === "user" || message.role === "assistant";
+        }).map(function (message) {
+          return {
+            role: message.role,
+            content: message.rawContent || message.content
+          };
+        })
+      });
+
+      parsedAnswer = parseAiResponse(answer || "");
+      AiState.messages.push({
+        role: "assistant",
+        content: parsedAnswer.reply || "Não recebi conteúdo na resposta.",
+        rawContent: answer || "",
+        actions: parsedAnswer.actions,
+        actionsStatus: parsedAnswer.actions.length ? "pending" : "none"
+      });
+    } catch (error) {
+      console.error("Falha ao consultar DeepSeek.", error);
+      AiState.messages.push({
+        role: "error",
+        content: "Não foi possível consultar a IA. Verifique sua chave ou tente novamente."
+      });
+    } finally {
+      AiState.isSending = false;
+      renderAiMessages();
+    }
+  }
+
+  function renderAiMessages() {
+    if (!elements.aiMessages) {
+      return;
+    }
+
+    elements.aiMessages.innerHTML = "";
+
+    AiState.messages.forEach(function (message) {
+      elements.aiMessages.appendChild(renderAiMessage(message));
+    });
+
+    if (AiState.isSending) {
+      var thinking = document.createElement("div");
+      thinking.className = "ai-thinking";
+      thinking.textContent = "Pensando...";
+      elements.aiMessages.appendChild(thinking);
+    }
+
+    elements.aiMessages.scrollTop = elements.aiMessages.scrollHeight;
+  }
+
+  function renderAiMessage(message) {
+    var wrapper = document.createElement("div");
+    var content = document.createElement("div");
+
+    wrapper.className = "ai-message " + message.role;
+    content.textContent = message.role === "user" ? getAiUserDisplayText(message.content) : message.content;
+    wrapper.appendChild(content);
+
+    if (message.role === "assistant" && message.actions && message.actions.length && message.actionsStatus === "pending") {
+      wrapper.appendChild(renderAiActionsPreview(message));
+    }
+
+    if (message.role === "assistant" && message.actionsStatus === "applied") {
+      var applied = document.createElement("div");
+      applied.className = "ai-actions-preview";
+      applied.textContent = "Ações aplicadas.";
+      wrapper.appendChild(applied);
+    }
+
+    if (message.role === "assistant" && message.actionsStatus === "cancelled") {
+      var cancelled = document.createElement("div");
+      cancelled.className = "ai-actions-preview";
+      cancelled.textContent = "Ações canceladas.";
+      wrapper.appendChild(cancelled);
+    }
+
+    return wrapper;
+  }
+
+  function parseAiResponse(rawText) {
+    var parsed;
+    var extracted;
+
+    try {
+      parsed = JSON.parse(rawText);
+    } catch (error) {
+      extracted = extractJsonObject(rawText);
+      if (extracted) {
+        try {
+          parsed = JSON.parse(extracted);
+        } catch (innerError) {
+          parsed = null;
+        }
+      }
+    }
+
+    if (!parsed || typeof parsed !== "object" || !parsed.reply || !Array.isArray(parsed.actions)) {
+      return {
+        reply: rawText,
+        actions: []
+      };
+    }
+
+    return {
+      reply: String(parsed.reply),
+      actions: parsed.actions
+    };
+  }
+
+  function extractJsonObject(text) {
+    var start = text.indexOf("{");
+    var end = text.lastIndexOf("}");
+
+    if (start === -1 || end === -1 || end <= start) {
+      return "";
+    }
+
+    return text.slice(start, end + 1);
+  }
+
+  function renderAiActionsPreview(message) {
+    var preview = document.createElement("div");
+    var title = document.createElement("strong");
+    var list = document.createElement("div");
+    var buttons = document.createElement("div");
+    var apply = document.createElement("button");
+    var cancel = document.createElement("button");
+
+    preview.className = "ai-actions-preview" + (hasReplaceContentAction(message.actions) ? " has-danger" : "");
+    title.textContent = "Ações sugeridas";
+    list.className = "ai-action-list";
+
+    message.actions.forEach(function (action) {
+      var item = document.createElement("div");
+      item.className = "ai-action-item" + (action.type === "replaceContent" ? " ai-action-danger" : "");
+      item.textContent = describeAiAction(action);
+      list.appendChild(item);
+    });
+
+    if (hasReplaceContentAction(message.actions)) {
+      var warning = document.createElement("div");
+      warning.className = "ai-action-danger";
+      warning.textContent = "Esta ação substituirá todo o conteúdo atual.";
+      list.appendChild(warning);
+    }
+
+    buttons.className = "ai-actions-buttons";
+    apply.type = "button";
+    apply.className = "ai-apply-actions";
+    apply.textContent = "Aplicar ações";
+    cancel.type = "button";
+    cancel.className = "ai-cancel-actions";
+    cancel.textContent = "Cancelar";
+
+    apply.addEventListener("click", function () {
+      applyAiActionsFromMessage(message);
+    });
+    cancel.addEventListener("click", function () {
+      message.actionsStatus = "cancelled";
+      renderAiMessages();
+    });
+
+    buttons.appendChild(apply);
+    buttons.appendChild(cancel);
+    preview.appendChild(title);
+    preview.appendChild(list);
+    preview.appendChild(buttons);
+    return preview;
+  }
+
+  function getAiUserDisplayText(content) {
+    try {
+      return JSON.parse(content).pedido || content;
+    } catch (error) {
+      return content;
+    }
+  }
+
+  function buildAiContext() {
+    var item = getSelectedItem();
+    var projectId = item ? getRootProjectId(item.id) : null;
+    var project = projectId ? getItem(projectId) : null;
+    var projectItems = projectId ? state.items.filter(function (candidate) {
+      return !candidate.deletedAt && (candidate.id === projectId || getRootProjectId(candidate.id) === projectId);
+    }).map(function (candidate) {
+      return {
+        id: candidate.id,
+        type: candidate.type,
+        title: candidate.title || getDefaultTitle(candidate.type),
+        parentId: candidate.parentId || null,
+        visibility: candidate.visibility || "private"
+      };
+    }) : [];
+    var documents = projectItems.filter(function (candidate) {
+      return candidate.type === "document";
+    }).map(function (candidate) {
+      return {
+        id: candidate.id,
+        title: candidate.title,
+        parentId: candidate.parentId,
+        visibility: candidate.visibility
+      };
+    });
+
+    return {
+      currentItem: item ? {
+        id: item.id,
+        type: item.type,
+        title: item.title || getDefaultTitle(item.type),
+        parentId: item.parentId || null,
+        visibility: item.visibility || "private",
+        content: (item.type === "document" || item.type === "project") ? prepareAiContent(item.content || "") : ""
+      } : null,
+      breadcrumb: item ? renderBreadcrumb(item.id) : "",
+      rootProject: project ? {
+        id: project.id,
+        type: project.type,
+        title: project.title || getDefaultTitle(project.type),
+        parentId: project.parentId || null,
+        visibility: project.visibility || "private"
+      } : null,
+      projectTree: project ? buildAiTreeSummary(project.id, 0) : [],
+      projectItems: projectItems,
+      documents: documents,
+      allowedActions: getAiAllowedActionExamples()
+    };
+  }
+
+  function buildAiTreeSummary(parentId, depth) {
+    if (depth > 5) {
+      return [];
+    }
+
+    return getChildren(parentId).filter(function (item) {
+      return !item.deletedAt;
+    }).map(function (item) {
+      return {
+        id: item.id,
+        type: item.type,
+        title: item.title || getDefaultTitle(item.type),
+        parentId: item.parentId || null,
+        visibility: item.visibility || "private",
+        children: item.type === "document" ? [] : buildAiTreeSummary(item.id, depth + 1)
+      };
+    });
+  }
+
+  function getAiAllowedActionExamples() {
+    return [
+      { type: "appendContent", itemId: "id", html: "<h2>Nova seção</h2><p>Conteúdo...</p>" },
+      { type: "prependContent", itemId: "id", html: "<p>Conteúdo inicial...</p>" },
+      { type: "replaceContent", itemId: "id", html: "<h2>Novo conteúdo</h2>" },
+      { type: "createDocument", parentId: "id-do-projeto-ou-pasta", title: "Novo documento", content: "<p>Conteúdo inicial</p>" },
+      { type: "createFolder", parentId: "id-do-projeto-ou-pasta", title: "Nova pasta" },
+      { type: "renameItem", itemId: "id", title: "Novo nome" },
+      { type: "insertKanban", itemId: "id", title: "Kanban", columns: [{ title: "A Fazer", cards: [{ title: "Tarefa", checklist: [{ text: "Passo", checked: false }] }] }] },
+      { type: "insertSpreadsheet", itemId: "id", rows: [["Aula", "Tema", "Status"], ["01", "Introdução", "Pendente"]] }
+    ];
+  }
+
+  function prepareAiContent(content) {
+    return content.replace(/src="data:[^"]+"/gi, 'src="[imagem-base64-removida]"').slice(0, 18000);
+  }
+
+  function describeAiAction(action) {
+    var item = action.itemId ? getItem(action.itemId) : null;
+    var parent = action.parentId ? getItem(action.parentId) : null;
+    var itemTitle = item ? item.title || getDefaultTitle(item.type) : action.itemId || "item desconhecido";
+    var parentTitle = parent ? parent.title || getDefaultTitle(parent.type) : action.parentId || "item desconhecido";
+
+    if (action.type === "appendContent") {
+      return "Adicionar conteúdo ao final de: " + itemTitle;
+    }
+    if (action.type === "prependContent") {
+      return "Adicionar conteúdo ao início de: " + itemTitle;
+    }
+    if (action.type === "replaceContent") {
+      return "Substituir todo o conteúdo de: " + itemTitle;
+    }
+    if (action.type === "createDocument") {
+      return 'Criar documento "' + (action.title || "Sem título") + '" dentro de "' + parentTitle + '"';
+    }
+    if (action.type === "createFolder") {
+      return 'Criar pasta "' + (action.title || "Sem título") + '" dentro de "' + parentTitle + '"';
+    }
+    if (action.type === "renameItem") {
+      return 'Renomear "' + itemTitle + '" para "' + (action.title || "Sem título") + '"';
+    }
+    if (action.type === "insertKanban") {
+      return "Inserir Kanban em: " + itemTitle;
+    }
+    if (action.type === "insertSpreadsheet") {
+      return "Inserir planilha em: " + itemTitle;
+    }
+
+    return "Ação não suportada: " + (action.type || "sem tipo");
+  }
+
+  function hasReplaceContentAction(actions) {
+    return actions.some(function (action) {
+      return action.type === "replaceContent";
+    });
+  }
+
+  function applyAiActionsFromMessage(message) {
+    var result = applyAiActions(message.actions || []);
+
+    if (!result.ok) {
+      AiState.messages.push({
+        role: "error",
+        content: result.errors.join("\n")
+      });
+      renderAiMessages();
+      return;
+    }
+
+    message.actionsStatus = "applied";
+    AiState.messages.push({
+      role: "assistant",
+      content: "Ações aplicadas com sucesso.",
+      actionsStatus: "none"
+    });
+    renderAiMessages();
+  }
+
+  function applyAiActions(actions) {
+    var errors = validateAiActions(actions);
+    var changedIds = [];
+    var createdItem = null;
+
+    if (errors.length) {
+      return {
+        ok: false,
+        errors: errors
+      };
+    }
+
+    actions.forEach(function (action) {
+      var item = action.itemId ? getItem(action.itemId) : null;
+      var created;
+
+      if (action.type === "appendContent") {
+        item.content = (item.content || "") + sanitizeAiHtml(action.html);
+        touchAiChangedItem(item, changedIds);
+        return;
+      }
+
+      if (action.type === "prependContent") {
+        item.content = sanitizeAiHtml(action.html) + (item.content || "");
+        touchAiChangedItem(item, changedIds);
+        return;
+      }
+
+      if (action.type === "replaceContent") {
+        item.content = sanitizeAiHtml(action.html);
+        touchAiChangedItem(item, changedIds);
+        return;
+      }
+
+      if (action.type === "createDocument") {
+        created = createAiItem("document", action.parentId, action.title, sanitizeAiHtml(action.content || ""));
+        createdItem = created;
+        changedIds.push(created.id);
+        return;
+      }
+
+      if (action.type === "createFolder") {
+        created = createAiItem("folder", action.parentId, action.title, "");
+        createdItem = created;
+        changedIds.push(created.id);
+        return;
+      }
+
+      if (action.type === "renameItem") {
+        item.title = action.title.trim();
+        touchAiChangedItem(item, changedIds);
+        return;
+      }
+
+      if (action.type === "insertKanban") {
+        item.content = (item.content || "") + createKanbanHtmlFromAiAction(action);
+        touchAiChangedItem(item, changedIds);
+        return;
+      }
+
+      if (action.type === "insertSpreadsheet") {
+        item.content = (item.content || "") + createSpreadsheetHtmlFromAiAction(action);
+        touchAiChangedItem(item, changedIds);
+      }
+    });
+
+    if (createdItem) {
+      state.selectedItemId = createdItem.id;
+    }
+
+    saveState(changedIds, state.selectedItemId);
+    render();
+    return {
+      ok: true,
+      errors: []
+    };
+  }
+
+  function touchAiChangedItem(item, changedIds) {
+    item.updatedAt = nowIso();
+    if (changedIds.indexOf(item.id) === -1) {
+      changedIds.push(item.id);
+    }
+  }
+
+  function createAiItem(type, parentId, title, content) {
+    var parent = getItem(parentId);
+    var createdAt = nowIso();
+    var item = {
+      id: createId(type),
+      type: type,
+      title: (title || getDefaultTitle(type)).trim(),
+      parentId: parentId,
+      projectId: getProjectIdForNewItem(type, parentId, null),
+      ownerId: state.session ? state.session.id : null,
+      visibility: "private",
+      sharedWith: parent && Array.isArray(parent.sharedWith) ? parent.sharedWith.slice() : [],
+      createdAt: createdAt,
+      updatedAt: createdAt
+    };
+
+    if (type === "document") {
+      item.content = content || "";
+    } else {
+      item.isOpen = true;
+      delete item.content;
+    }
+
+    if (parent && (parent.type === "project" || parent.type === "folder")) {
+      parent.isOpen = true;
+      parent.updatedAt = nowIso();
+    }
+
+    state.items.push(item);
+    return item;
+  }
+
+  function validateAiActions(actions) {
+    var errors = [];
+
+    if (!Array.isArray(actions) || !actions.length) {
+      return ["Nenhuma ação válida foi sugerida."];
+    }
+
+    actions.forEach(function (action, index) {
+      var prefix = "Ação " + (index + 1) + ": ";
+      var item = action && action.itemId ? getItem(action.itemId) : null;
+      var parent = action && action.parentId ? getItem(action.parentId) : null;
+
+      if (!action || typeof action !== "object" || !action.type) {
+        errors.push(prefix + "ação sem tipo.");
+        return;
+      }
+
+      if (["appendContent", "prependContent", "replaceContent"].indexOf(action.type) !== -1) {
+        if (!item || (item.type !== "document" && item.type !== "project")) {
+          errors.push(prefix + "itemId inexistente ou incompatível.");
+        }
+        if (item && !canEditItem(item)) {
+          errors.push(prefix + "sem permissão para editar o item.");
+        }
+        if (typeof action.html !== "string") {
+          errors.push(prefix + "html precisa ser string.");
+        }
+        return;
+      }
+
+      if (action.type === "createDocument" || action.type === "createFolder") {
+        if (!parent || (parent.type !== "project" && parent.type !== "folder")) {
+          errors.push(prefix + "parentId inexistente ou incompatível.");
+        }
+        if (parent && !canEditItem(parent)) {
+          errors.push(prefix + "sem permissão para criar dentro do parentId.");
+        }
+        if (!action.title || !String(action.title).trim()) {
+          errors.push(prefix + "title obrigatório.");
+        }
+        if (action.type === "createDocument" && action.content !== undefined && typeof action.content !== "string") {
+          errors.push(prefix + "content precisa ser string.");
+        }
+        return;
+      }
+
+      if (action.type === "renameItem") {
+        if (!item) {
+          errors.push(prefix + "itemId inexistente.");
+        }
+        if (item && !canEditItem(item)) {
+          errors.push(prefix + "sem permissão para renomear o item.");
+        }
+        if (!action.title || !String(action.title).trim()) {
+          errors.push(prefix + "title obrigatório.");
+        }
+        return;
+      }
+
+      if (action.type === "insertKanban") {
+        if (!item || (item.type !== "document" && item.type !== "project")) {
+          errors.push(prefix + "itemId inexistente ou incompatível.");
+        }
+        if (item && !canEditItem(item)) {
+          errors.push(prefix + "sem permissão para editar o item.");
+        }
+        if (!Array.isArray(action.columns)) {
+          errors.push(prefix + "columns precisa ser array.");
+        }
+        return;
+      }
+
+      if (action.type === "insertSpreadsheet") {
+        if (!item || (item.type !== "document" && item.type !== "project")) {
+          errors.push(prefix + "itemId inexistente ou incompatível.");
+        }
+        if (item && !canEditItem(item)) {
+          errors.push(prefix + "sem permissão para editar o item.");
+        }
+        if (!Array.isArray(action.rows)) {
+          errors.push(prefix + "rows precisa ser array.");
+        }
+        return;
+      }
+
+      errors.push(prefix + "tipo não suportado: " + action.type + ".");
+    });
+
+    return errors;
+  }
+
+  function sanitizeAiHtml(html) {
+    var wrapper = document.createElement("div");
+
+    wrapper.innerHTML = html || "";
+    Array.prototype.slice.call(wrapper.querySelectorAll("script, iframe, object, embed")).forEach(function (node) {
+      node.remove();
+    });
+    Array.prototype.slice.call(wrapper.querySelectorAll("*")).forEach(function (node) {
+      Array.prototype.slice.call(node.attributes).forEach(function (attribute) {
+        var name = attribute.name.toLowerCase();
+        var value = attribute.value || "";
+
+        if (name.indexOf("on") === 0 || (/^(href|src)$/i.test(name) && /^\s*javascript:/i.test(value))) {
+          node.removeAttribute(attribute.name);
+        }
+      });
+    });
+
+    return wrapper.innerHTML;
+  }
+
+  function createKanbanHtmlFromAiAction(action) {
+    var wrapper = document.createElement("div");
+    var block;
+    var board;
+
+    wrapper.innerHTML = createKanbanBlockHtml(createId("kanban"));
+    block = wrapper.querySelector(".kanban-block");
+    board = block.querySelector(".kanban-board");
+    board.innerHTML = "";
+
+    if (action.title) {
+      block.querySelector(".kanban-title").textContent = action.title;
+    }
+
+    action.columns.forEach(function (column) {
+      var columnElement = createKanbanColumnElement(column.title || "Nova coluna");
+      var cards = columnElement.querySelector(".kanban-cards");
+
+      (Array.isArray(column.cards) ? column.cards : []).forEach(function (cardData) {
+        var card = createKanbanCardElement(cardData.title || "Novo cartão");
+        var data = getKanbanCardData(card);
+
+        (Array.isArray(cardData.checklist) ? cardData.checklist : []).forEach(function (check) {
+          data.appendChild(createKanbanChecklistItemElement(check.text || "Novo item", check.checked === true));
+        });
+
+        cards.appendChild(card);
+      });
+
+      board.appendChild(columnElement);
+    });
+
+    prepareKanbanBlocks(wrapper, false);
+    block.removeAttribute("data-temp-kanban");
+    return block.outerHTML + "<p><br></p>";
+  }
+
+  function createSpreadsheetHtmlFromAiAction(action) {
+    var wrapper = document.createElement("div");
+    var block;
+    var tbody;
+
+    wrapper.innerHTML = createSpreadsheetBlockHtml(createId("sheet"));
+    block = wrapper.querySelector(".spreadsheet-block");
+    tbody = block.querySelector("tbody");
+    tbody.innerHTML = "";
+
+    action.rows.forEach(function (rowData, rowIndex) {
+      var row = document.createElement("tr");
+      (Array.isArray(rowData) ? rowData : []).forEach(function (cellData) {
+        var cell = document.createElement(rowIndex === 0 ? "th" : "td");
+        cell.setAttribute("contenteditable", "true");
+        cell.textContent = cellData == null ? "" : String(cellData);
+        row.appendChild(cell);
+      });
+      tbody.appendChild(row);
+    });
+
+    normalizeSpreadsheetTable(block.querySelector(".spreadsheet-table"), false);
+    block.removeAttribute("data-temp-sheet");
+    return block.outerHTML + "<p><br></p>";
+  }
+
   async function renderAdminPanel() {
     var users = await AuthStore.syncUsers();
     var overlay = document.createElement("div");
@@ -5465,6 +6241,33 @@ import {
       renderAdminPanel();
     });
 
+    if (elements.aiClose) {
+      elements.aiClose.addEventListener("click", closeAiPanel);
+    }
+
+    if (elements.aiSetKey) {
+      elements.aiSetKey.addEventListener("click", function () {
+        var currentLabel = getDeepSeekApiKey() ? "Trocar API key da DeepSeek" : "Digite sua API key da DeepSeek";
+        var key = prompt(currentLabel + ". Ela ficará apenas em memória até você recarregar ou fechar a página.");
+
+        if (key && key.trim()) {
+          setDeepSeekApiKey(key.trim());
+        }
+      });
+    }
+
+    if (elements.aiClearKey) {
+      elements.aiClearKey.addEventListener("click", function () {
+        clearDeepSeekApiKey();
+      });
+    }
+
+    if (elements.aiForm) {
+      elements.aiForm.addEventListener("submit", handleAiSubmit);
+    }
+
+    renderAiPanel();
+
     document.addEventListener("mousedown", function (event) {
       var menu = document.getElementById("createMenu");
 
@@ -5532,6 +6335,9 @@ import {
       }
       if (event.key === "Escape" && activeKanbanModal) {
         closeKanbanCardModal();
+      }
+      if (event.key === "Escape" && AiState.isOpen) {
+        closeAiPanel();
       }
     });
   }
