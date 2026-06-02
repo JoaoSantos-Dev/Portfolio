@@ -1903,6 +1903,10 @@ import {
       elements.trashToggle.classList.toggle("is-active", !!state.ui.showTrash);
     }
 
+    if (elements.backupToggle) {
+      elements.backupToggle.closest(".backup-menu").classList.toggle("is-hidden", !state.ui.showTrash || state.sidebarCollapsed);
+    }
+
     if (state.ui.showTrash && !state.sidebarCollapsed) {
       renderTrash();
       return;
