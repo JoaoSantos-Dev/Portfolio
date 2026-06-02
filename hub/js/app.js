@@ -29,6 +29,7 @@ import {
   var AI_MODE_KEY = "hub-ai-mode";
   var AI_CONTEXT_OPTIONS_KEY = "hub-ai-context-options";
   var AI_UNDO_KEY = "hub-ai-last-undo";
+  var AI_OPTIONS_COLLAPSED_KEY = "hub-ai-options-collapsed";
   var IMAGE_URL_PATTERN = /\.(png|jpe?g|webp|gif)(\?.*)?$/i;
   var URL_PATTERN = /(https?:\/\/[^\s<>"']+)/g;
   var WIKILINK_PATTERN = /\[\[([^\[\]]+)\]\]/g;
@@ -129,6 +130,7 @@ import {
     messages: [],
     isOpen: false,
     isSending: false,
+    optionsCollapsed: true,
     mode: "confirm",
     contextOptions: {
       current: true,
@@ -174,12 +176,18 @@ import {
     sidebarSearch: document.getElementById("sidebarSearch"),
     trashToggle: document.getElementById("trashToggle"),
     trashCount: document.getElementById("trashCount"),
+    exportBackup: document.getElementById("exportBackup"),
+    importBackup: document.getElementById("importBackup"),
+    backupFileInput: document.getElementById("backupFileInput"),
+    backupStatus: document.getElementById("backupStatus"),
     treeList: document.getElementById("treeList"),
     editorPanel: document.getElementById("editorPanel"),
     aiPanel: document.getElementById("aiPanel"),
     aiSetKey: document.getElementById("aiSetKey"),
     aiClearKey: document.getElementById("aiClearKey"),
     aiClose: document.getElementById("aiClose"),
+    aiOptionsToggle: document.getElementById("aiOptionsToggle"),
+    aiOptionsPanel: document.getElementById("aiOptionsPanel"),
     aiKeyStatus: document.getElementById("aiKeyStatus"),
     aiMessages: document.getElementById("aiMessages"),
     aiForm: document.getElementById("aiForm"),
@@ -725,6 +733,256 @@ import {
 
   async function saveStateAsync() {
     await DataStore.save(state);
+  }
+
+  function setBackupStatus(message) {
+    if (elements.backupStatus) {
+      elements.backupStatus.textContent = message || "";
+    }
+  }
+
+  function buildBackupPayload() {
+    return {
+      app: "Hub",
+      version: "1.0",
+      exportedAt: nowIso(),
+      items: JSON.parse(JSON.stringify(state.items || [])),
+      trash: JSON.parse(JSON.stringify(getDeletedItems())),
+      preferences: JSON.parse(JSON.stringify(state.preferences || {}))
+    };
+  }
+
+  function exportHubBackup() {
+    var now = new Date();
+    var filename = "hub-backup-" + formatBackupDate(now) + ".json";
+
+    downloadJson(filename, buildBackupPayload());
+    setBackupStatus("Backup exportado.");
+  }
+
+  function formatBackupDate(date) {
+    function pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()) + "-" + pad(date.getHours()) + "-" + pad(date.getMinutes());
+  }
+
+  function downloadJson(filename, data) {
+    var blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json"
+    });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function importHubBackup(file) {
+    var reader = new FileReader();
+
+    if (!file) {
+      return;
+    }
+
+    reader.addEventListener("load", async function () {
+      var payload;
+      var validation;
+
+      try {
+        payload = JSON.parse(String(reader.result || ""));
+      } catch (error) {
+        alert("Arquivo de backup inválido.");
+        setBackupStatus("Importação falhou.");
+        return;
+      }
+
+      validation = validateBackupPayload(payload);
+      if (!validation.ok) {
+        alert(validation.message);
+        setBackupStatus("Importação falhou.");
+        return;
+      }
+
+      if (!confirm("Importar este backup vai substituir os dados atuais. Deseja continuar?")) {
+        setBackupStatus("Importação cancelada.");
+        return;
+      }
+
+      try {
+        await applyBackupPayload(payload);
+        setBackupStatus("Backup importado.");
+        alert("Backup importado com sucesso.");
+      } catch (error) {
+        console.error("Falha ao importar backup.", error);
+        alert("Não foi possível importar o backup.");
+        setBackupStatus("Importação falhou.");
+      }
+    });
+
+    reader.readAsText(file);
+  }
+
+  function validateBackupPayload(payload) {
+    if (!payload || payload.app !== "Hub") {
+      return {
+        ok: false,
+        message: "Este arquivo não parece ser um backup do Hub."
+      };
+    }
+
+    if (!Array.isArray(payload.items)) {
+      return {
+        ok: false,
+        message: "Backup inválido: lista de itens ausente."
+      };
+    }
+
+    return {
+      ok: true,
+      message: ""
+    };
+  }
+
+  async function applyBackupPayload(payload) {
+    var previousIds = state.items.map(function (item) {
+      return item.id;
+    });
+    var importedItems = normalizeBackupItems(payload.items);
+    var importedIds = importedItems.map(function (item) {
+      return item.id;
+    });
+    var removeIds = previousIds.filter(function (id) {
+      return importedIds.indexOf(id) === -1;
+    });
+
+    state.items = importedItems;
+    state.selectedItemId = importedItems.find(function (item) {
+      return !item.deletedAt && (item.type === "document" || item.type === "project");
+    }) ? importedItems.find(function (item) {
+      return !item.deletedAt && (item.type === "document" || item.type === "project");
+    }).id : null;
+    state.preferences = Object.assign({
+      theme: "light",
+      headerCollapsed: false
+    }, payload.preferences || {});
+    state = migrateStateIfNeeded(state);
+    applyTheme();
+
+    await DataStore.deleteItems(removeIds);
+    await DataStore.save(state, {
+      itemIds: state.items.map(function (item) {
+        return item.id;
+      }),
+      statusItemId: state.selectedItemId
+    });
+    renderAccount();
+    render();
+  }
+
+  function normalizeBackupItems(items) {
+    var allowedTypes = ["project", "folder", "document"];
+    var usedIds = {};
+    var normalized = [];
+    var byId = {};
+    var now = nowIso();
+
+    items.forEach(function (item) {
+      var id;
+      var type;
+      var next;
+
+      if (!item || allowedTypes.indexOf(item.type) === -1) {
+        return;
+      }
+
+      type = item.type;
+      id = typeof item.id === "string" && item.id.trim() && !usedIds[item.id] ? item.id : createId(type);
+      usedIds[id] = true;
+
+      next = {
+        id: id,
+        type: type,
+        title: typeof item.title === "string" && item.title.trim() ? item.title.trim() : getDefaultTitle(type),
+        parentId: typeof item.parentId === "string" ? item.parentId : null,
+        projectId: typeof item.projectId === "string" ? item.projectId : null,
+        ownerId: state.session ? state.session.id : item.ownerId || null,
+        visibility: item.visibility === "public" ? "public" : "private",
+        sharedWith: Array.isArray(item.sharedWith) ? item.sharedWith.filter(function (value) {
+          return typeof value === "string";
+        }) : [],
+        createdAt: item.createdAt || now,
+        updatedAt: item.updatedAt || now
+      };
+
+      if (item.deletedAt) {
+        next.deletedAt = item.deletedAt;
+      }
+
+      if (type === "project") {
+        next.parentId = null;
+        next.content = sanitizeImportedHtml(item.content || "");
+        next.isOpen = item.isOpen !== false;
+      } else if (type === "document") {
+        next.content = sanitizeImportedHtml(item.content || "");
+      } else {
+        next.isOpen = item.isOpen === true;
+      }
+
+      normalized.push(next);
+      byId[next.id] = next;
+    });
+
+    normalized.forEach(function (item) {
+      if (item.parentId && !byId[item.parentId]) {
+        item.parentId = null;
+      }
+      if (item.parentId && byId[item.parentId] && byId[item.parentId].type === "document") {
+        item.parentId = null;
+      }
+    });
+
+    return normalized;
+  }
+
+  function sanitizeImportedHtml(html) {
+    var wrapper = document.createElement("div");
+
+    wrapper.innerHTML = html || "";
+    Array.prototype.slice.call(wrapper.querySelectorAll("script, iframe, object, embed, form, svg, math")).forEach(function (node) {
+      node.remove();
+    });
+    Array.prototype.slice.call(wrapper.querySelectorAll("*")).forEach(function (node) {
+      Array.prototype.slice.call(node.attributes).forEach(function (attribute) {
+        var name = attribute.name.toLowerCase();
+        var value = attribute.value || "";
+
+        if (name.indexOf("on") === 0) {
+          node.removeAttribute(attribute.name);
+          return;
+        }
+
+        if ((name === "href" || name === "src") && /^(javascript|data|vbscript):/i.test(value.trim())) {
+          node.removeAttribute(attribute.name);
+          return;
+        }
+
+        if (name === "style" && /url\s*\(|expression\s*\(|javascript:/i.test(value)) {
+          node.removeAttribute(attribute.name);
+        }
+      });
+
+      if (/^(input|button|select|textarea)$/i.test(node.tagName) && !node.closest(".kanban-block") && !node.closest(".spreadsheet-block")) {
+        node.remove();
+      }
+    });
+
+    return wrapper.innerHTML;
   }
 
   function getItem(id) {
@@ -5434,6 +5692,7 @@ import {
 
     elements.aiPanel.classList.toggle("open", !!AiState.isOpen);
     updateAiKeyStatus();
+    applyAiOptionsState();
     renderAiMessages();
   }
 
@@ -5458,6 +5717,8 @@ import {
     var savedContext = localStorage.getItem(AI_CONTEXT_OPTIONS_KEY);
     var parsedContext;
 
+    AiState.optionsCollapsed = localStorage.getItem(AI_OPTIONS_COLLAPSED_KEY) !== "false";
+
     if (["reply", "suggest", "confirm", "auto"].indexOf(savedMode) !== -1) {
       AiState.mode = savedMode;
     }
@@ -5474,6 +5735,28 @@ import {
     }
 
     syncAiControls();
+  }
+
+  function toggleAiOptions() {
+    AiState.optionsCollapsed = !AiState.optionsCollapsed;
+    saveAiOptionsPreference();
+    applyAiOptionsState();
+  }
+
+  function saveAiOptionsPreference() {
+    localStorage.setItem(AI_OPTIONS_COLLAPSED_KEY, AiState.optionsCollapsed ? "true" : "false");
+  }
+
+  function applyAiOptionsState() {
+    if (elements.aiOptionsPanel) {
+      elements.aiOptionsPanel.classList.toggle("collapsed", !!AiState.optionsCollapsed);
+    }
+
+    if (elements.aiOptionsToggle) {
+      elements.aiOptionsToggle.classList.toggle("active", !AiState.optionsCollapsed);
+      elements.aiOptionsToggle.textContent = AiState.optionsCollapsed ? "Opções" : "Ocultar opções";
+      elements.aiOptionsToggle.title = AiState.optionsCollapsed ? "Mostrar opções" : "Ocultar opções";
+    }
   }
 
   function syncAiControls() {
@@ -7019,6 +7302,166 @@ import {
     renderApp();
   }
 
+  function setupKeyboardShortcuts() {
+    document.addEventListener("keydown", handleGlobalShortcut);
+  }
+
+  function handleGlobalShortcut(event) {
+    var key = event.key.toLowerCase();
+    var isMod = event.ctrlKey || event.metaKey;
+    var isShift = event.shiftKey;
+
+    if (event.key === "Escape") {
+      closeOpenOverlays();
+      return;
+    }
+
+    if (isModifierShortcut(event, "s")) {
+      event.preventDefault();
+      saveState(state.selectedItemId ? [state.selectedItemId] : [], state.selectedItemId);
+      return;
+    }
+
+    if (isMod && isShift && key === "f") {
+      event.preventDefault();
+      focusGlobalSearch();
+      return;
+    }
+
+    if (state.ui.isPublicView || !isMod) {
+      return;
+    }
+
+    if (!isShift && ["b", "i", "u"].indexOf(key) !== -1 && isEditorShortcutTarget(event.target)) {
+      event.preventDefault();
+      applyFormatting(key === "b" ? "bold" : (key === "i" ? "italic" : "underline"));
+      return;
+    }
+
+    if (!isShift && key === "k" && isEditorShortcutTarget(event.target)) {
+      event.preventDefault();
+      applyLink();
+      return;
+    }
+
+    if (!isShift || isTypingInFormField(event.target)) {
+      return;
+    }
+
+    if (key === "c") {
+      event.preventDefault();
+      focusEditorForShortcut();
+      insertCodeBlock();
+      return;
+    }
+
+    if (key === "t") {
+      event.preventDefault();
+      focusEditorForShortcut();
+      insertToggleBlock();
+      return;
+    }
+
+    if (key === "k") {
+      event.preventDefault();
+      focusEditorForShortcut();
+      insertKanbanBlock();
+      return;
+    }
+
+    if (key === "p") {
+      event.preventDefault();
+      focusEditorForShortcut();
+      insertSpreadsheetBlock();
+    }
+  }
+
+  function isModifierShortcut(event, key) {
+    return (event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === key;
+  }
+
+  function isEditorShortcutTarget(target) {
+    var editor = document.getElementById("documentContent");
+
+    if (!editor || !target || !editor.contains(target)) {
+      return false;
+    }
+
+    if (target.closest && (target.closest(".kanban-block") || target.closest(".spreadsheet-block") || target.closest(".kanban-card-modal"))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function isTypingInFormField(target) {
+    if (!target || !target.closest) {
+      return false;
+    }
+
+    if (target.closest("input, textarea, select, .kanban-block, .spreadsheet-block, .kanban-card-modal")) {
+      return true;
+    }
+
+    return !!(target.isContentEditable && !target.closest("#documentContent"));
+  }
+
+  function focusEditorForShortcut() {
+    var editor = document.getElementById("documentContent");
+    var selection = window.getSelection();
+    var range;
+
+    if (!editor) {
+      return false;
+    }
+
+    editor.focus();
+
+    if (!selection || selection.rangeCount === 0 || !editor.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+      range = document.createRange();
+      range.selectNodeContents(editor);
+      range.collapse(false);
+      selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    return true;
+  }
+
+  function focusGlobalSearch() {
+    if (!elements.sidebarSearch) {
+      return;
+    }
+
+    state.sidebarCollapsed = false;
+    renderSidebar();
+    elements.sidebarSearch.focus();
+    elements.sidebarSearch.select();
+  }
+
+  function closeOpenOverlays() {
+    if (state.createMenu) {
+      closeCreateMenu();
+    }
+    if (state.highlightMenu) {
+      closeHighlightMenu();
+    }
+    if (state.textColorMenu) {
+      closeTextColorMenu();
+    }
+    if (spreadsheetColorMenu) {
+      closeSpreadsheetColorMenu();
+    }
+    if (activeKanbanModal) {
+      closeKanbanCardModal();
+    }
+    closeAdminPanel();
+    if (AiState.isOpen) {
+      closeAiPanel();
+    }
+  }
+
   function bindEvents() {
     elements.toggleSidebar.addEventListener("click", function () {
       state.sidebarCollapsed = !state.sidebarCollapsed;
@@ -7051,6 +7494,20 @@ import {
       });
     }
 
+    if (elements.exportBackup) {
+      elements.exportBackup.addEventListener("click", exportHubBackup);
+    }
+
+    if (elements.importBackup && elements.backupFileInput) {
+      elements.importBackup.addEventListener("click", function () {
+        elements.backupFileInput.value = "";
+        elements.backupFileInput.click();
+      });
+      elements.backupFileInput.addEventListener("change", function () {
+        importHubBackup(elements.backupFileInput.files && elements.backupFileInput.files[0]);
+      });
+    }
+
     elements.logoutButton.addEventListener("click", function () {
       AuthStore.clearSession();
       reloadWithoutQuery();
@@ -7064,6 +7521,10 @@ import {
 
     if (elements.aiClose) {
       elements.aiClose.addEventListener("click", closeAiPanel);
+    }
+
+    if (elements.aiOptionsToggle) {
+      elements.aiOptionsToggle.addEventListener("click", toggleAiOptions);
     }
 
     if (elements.aiSetKey) {
@@ -7122,6 +7583,7 @@ import {
     }
 
     renderAiPanel();
+    setupKeyboardShortcuts();
 
     document.addEventListener("mousedown", function (event) {
       var menu = document.getElementById("createMenu");
@@ -7156,45 +7618,6 @@ import {
       closeSpreadsheetColorMenu();
     });
 
-    document.addEventListener("keydown", function (event) {
-      var isCommand = event.ctrlKey || event.metaKey;
-
-      if (isCommand && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        if (elements.sidebarSearch) {
-          state.sidebarCollapsed = false;
-          renderSidebar();
-          elements.sidebarSearch.focus();
-          elements.sidebarSearch.select();
-        }
-        return;
-      }
-
-      if (isCommand && event.key.toLowerCase() === "s") {
-        event.preventDefault();
-        saveState(state.selectedItemId ? [state.selectedItemId] : [], state.selectedItemId);
-        return;
-      }
-
-      if (event.key === "Escape" && state.createMenu) {
-        closeCreateMenu();
-      }
-      if (event.key === "Escape" && state.highlightMenu) {
-        closeHighlightMenu();
-      }
-      if (event.key === "Escape" && state.textColorMenu) {
-        closeTextColorMenu();
-      }
-      if (event.key === "Escape" && spreadsheetColorMenu) {
-        closeSpreadsheetColorMenu();
-      }
-      if (event.key === "Escape" && activeKanbanModal) {
-        closeKanbanCardModal();
-      }
-      if (event.key === "Escape" && AiState.isOpen) {
-        closeAiPanel();
-      }
-    });
   }
 
   function waitForFirebaseAuth() {
