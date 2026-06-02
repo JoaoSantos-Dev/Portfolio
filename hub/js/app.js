@@ -30,6 +30,7 @@ import {
   var AI_CONTEXT_OPTIONS_KEY = "hub-ai-context-options";
   var AI_UNDO_KEY = "hub-ai-last-undo";
   var AI_OPTIONS_COLLAPSED_KEY = "hub-ai-options-collapsed";
+  var BACKUP_MENU_COLLAPSED_KEY = "hub-backup-menu-collapsed";
   var IMAGE_URL_PATTERN = /\.(png|jpe?g|webp|gif)(\?.*)?$/i;
   var URL_PATTERN = /(https?:\/\/[^\s<>"']+)/g;
   var WIKILINK_PATTERN = /\[\[([^\[\]]+)\]\]/g;
@@ -176,6 +177,8 @@ import {
     sidebarSearch: document.getElementById("sidebarSearch"),
     trashToggle: document.getElementById("trashToggle"),
     trashCount: document.getElementById("trashCount"),
+    backupToggle: document.getElementById("backupToggle"),
+    backupActions: document.getElementById("backupActions"),
     exportBackup: document.getElementById("exportBackup"),
     importBackup: document.getElementById("importBackup"),
     backupFileInput: document.getElementById("backupFileInput"),
@@ -739,6 +742,28 @@ import {
     if (elements.backupStatus) {
       elements.backupStatus.textContent = message || "";
     }
+  }
+
+  function isBackupMenuCollapsed() {
+    return localStorage.getItem(BACKUP_MENU_COLLAPSED_KEY) !== "false";
+  }
+
+  function applyBackupMenuState() {
+    var collapsed = isBackupMenuCollapsed();
+
+    if (elements.backupActions) {
+      elements.backupActions.classList.toggle("collapsed", collapsed);
+    }
+
+    if (elements.backupToggle) {
+      elements.backupToggle.classList.toggle("is-active", !collapsed);
+      elements.backupToggle.textContent = collapsed ? "Dados" : "Ocultar dados";
+    }
+  }
+
+  function toggleBackupMenu() {
+    localStorage.setItem(BACKUP_MENU_COLLAPSED_KEY, isBackupMenuCollapsed() ? "false" : "true");
+    applyBackupMenuState();
   }
 
   function buildBackupPayload() {
@@ -7492,6 +7517,11 @@ import {
         state.ui.showTrash = !state.ui.showTrash;
         renderSidebar();
       });
+    }
+
+    if (elements.backupToggle) {
+      elements.backupToggle.addEventListener("click", toggleBackupMenu);
+      applyBackupMenuState();
     }
 
     if (elements.exportBackup) {

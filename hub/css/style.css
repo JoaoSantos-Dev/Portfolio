@@ -251,6 +251,11 @@ button {
 
 .backup-menu {
   margin: 0 10px 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.backup-actions {
   padding: 8px;
   display: grid;
   gap: 6px;
@@ -259,14 +264,11 @@ button {
   background: rgba(0, 0, 0, 0.08);
 }
 
-.backup-title {
-  color: var(--sidebar-muted);
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.backup-actions.collapsed {
+  display: none;
 }
 
+.backup-toggle,
 .backup-button {
   min-height: 28px;
   border: 1px solid var(--sidebar-border);
@@ -276,6 +278,20 @@ button {
   font-size: 12px;
 }
 
+.backup-toggle {
+  width: 100%;
+  color: var(--sidebar-muted);
+  text-align: left;
+  padding: 6px 8px;
+}
+
+.backup-toggle.is-active {
+  color: var(--sidebar-text);
+  border-color: #5f6159;
+}
+
+.backup-toggle:hover,
+.backup-toggle:focus-visible,
 .backup-button:hover,
 .backup-button:focus-visible {
   background: #3a3b37;

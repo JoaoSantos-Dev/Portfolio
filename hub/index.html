@@ -28,11 +28,13 @@
         <span id="trashCount">0</span>
       </button>
       <div class="backup-menu" aria-label="Backup de dados">
-        <div class="backup-title">Dados</div>
-        <button class="backup-button" id="exportBackup" type="button">Exportar backup</button>
-        <button class="backup-button" id="importBackup" type="button">Importar backup</button>
-        <input class="backup-file-input" id="backupFileInput" type="file" accept="application/json,.json">
-        <div class="backup-status" id="backupStatus" aria-live="polite"></div>
+        <button class="backup-toggle" id="backupToggle" type="button">Dados</button>
+        <div class="backup-actions collapsed" id="backupActions">
+          <button class="backup-button" id="exportBackup" type="button">Exportar backup</button>
+          <button class="backup-button" id="importBackup" type="button">Importar backup</button>
+          <input class="backup-file-input" id="backupFileInput" type="file" accept="application/json,.json">
+          <div class="backup-status" id="backupStatus" aria-live="polite"></div>
+        </div>
       </div>
       <nav class="tree-list" id="treeList" aria-label="Árvore de projetos, pastas e documentos"></nav>
       <div class="sidebar-account">
