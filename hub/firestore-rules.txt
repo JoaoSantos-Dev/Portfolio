@@ -55,6 +55,14 @@ service cloud.firestore {
       allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
+    match /calendarEvents/{eventId} {
+      allow read: if isApproved();
+      allow create: if isApproved()
+        && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isAdmin()
+        || (isApproved() && resource.data.ownerId == request.auth.uid);
+    }
+
     match /system/bootstrap {
       allow create: if signedIn()
         && !exists(/databases/$(database)/documents/system/bootstrap)

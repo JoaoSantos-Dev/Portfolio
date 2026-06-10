@@ -35,7 +35,7 @@ import {
   var URL_PATTERN = /(https?:\/\/[^\s<>"']+)/g;
   var WIKILINK_PATTERN = /\[\[([^\[\]]+)\]\]/g;
   var SYSTEM_PROMPT = "Você é o Assistente do Hub, um sistema pessoal de organização inspirado em Notion, Obsidian, Trello e ferramentas de produtividade.\n" +
-    "Você ajuda o usuário a organizar projetos, páginas, documentos, links, Kanbans, planilhas, toggles, blocos de código e materiais.\n" +
+    "Você ajuda o usuário a organizar projetos, páginas, documentos, links, Kanbans, planilhas, calendário, toggles, blocos de código e materiais.\n" +
     "Regras fundamentais:\n" +
     "- Você nunca altera nada diretamente. O sistema aplicará ações somente conforme o modo escolhido pelo usuário.\n" +
     "- Quando sugerir ações, retorne JSON válido.\n" +
@@ -46,15 +46,19 @@ import {
     "- Preserve o conteúdo existente sempre que possível.\n" +
     "- Prefira appendContent em vez de replaceContent.\n" +
     "- Use replaceContent apenas quando o usuário pedir reescrita completa/substituição.\n" +
-    "- Para Kanban, use insertKanban com columns/cards/checklist.\n" +
+    "- Para Kanban, use SOMENTE insertKanban. Nunca use appendContent/prependContent/replaceContent para criar Kanban.\n" +
+    "- O Hub monta o HTML do Kanban internamente. Você nunca deve gerar HTML de Kanban.\n" +
+    "- Schema rígido do Kanban: {\"type\":\"insertKanban\",\"itemId\":\"ID_DA_PAGINA_ATUAL\",\"title\":\"Kanban\",\"columns\":[{\"title\":\"A Fazer\",\"cards\":[{\"title\":\"Tarefa\",\"checklist\":[{\"text\":\"Passo\",\"checked\":false}]}]}]}.\n" +
+    "- Em insertKanban, columns precisa ser array; cards precisa ser array; checklist precisa ser array; cards sempre usam title; checklist sempre usa text e checked.\n" +
     "- Para planilhas, use insertSpreadsheet com rows.\n" +
+    "- Para calendário, use createCalendarEvent com date, horários e recorrência quando o usuário pedir agenda/evento.\n" +
     "- Para texto normal, use HTML simples e seguro.\n" +
     "- Não gere scripts, iframes, handlers JS ou conteúdo inseguro.\n" +
     "- Seja objetivo e útil.\n" +
     "Para resposta comum, responda em texto normal.\n" +
     "Para ações, responda somente com JSON válido neste formato:\n" +
     'Formato JSON obrigatório: {"reply":"Texto explicando o que será feito.","actions":[{"type":"appendContent","itemId":"ID","html":"<h2>Nova seção</h2><p>Conteúdo...</p>"}]}.\n' +
-    "Tipos suportados: appendContent, prependContent, replaceContent, createDocument, createFolder, renameItem, insertKanban, insertSpreadsheet.\n" +
+    "Tipos suportados: appendContent, prependContent, replaceContent, createDocument, createFolder, renameItem, insertKanban, insertSpreadsheet, createCalendarEvent.\n" +
     "Se não tiver certeza, responda apenas em texto e peça confirmação.";
   var TEXT_COLOR_OPTIONS = [
     { label: "Padrão", color: null, swatch: "transparent" },
@@ -75,6 +79,16 @@ import {
     "#eadcff",
     "#ffe0b8"
   ];
+  var CALENDAR_COLOR_OPTIONS = [
+    "#4f75c9",
+    "#4f8f5f",
+    "#d9822b",
+    "#8a5fbf",
+    "#c94f4f",
+    "#6b6b6b"
+  ];
+  var WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  var MONTH_LABELS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
   var firebaseConfig = {
     apiKey: "AIzaSyCOhhdaRrR3FEJ0Srk41f7oZMuet2u7QzU",
     authDomain: "hubpessoal-d4a88.firebaseapp.com",
@@ -126,6 +140,9 @@ import {
   var activeKanbanModal = null;
   var selectedSpreadsheetCell = null;
   var spreadsheetColorMenu = null;
+  var calendarEvents = [];
+  var calendarDate = new Date();
+  var activeCalendarModalEventId = null;
   var AiState = {
     apiKey: "",
     messages: [],
@@ -138,7 +155,8 @@ import {
       project: false,
       links: false,
       blocks: false,
-      related: false
+      related: false,
+      calendar: false
     }
   };
   var resizeState = null;
@@ -161,6 +179,7 @@ import {
       publicId: null,
       publicActiveId: null,
       projectTab: "cover",
+      currentView: "editor",
       copyFeedbackId: null,
       searchQuery: "",
       showTrash: false,
@@ -632,6 +651,57 @@ import {
     }
   };
 
+  var CalendarStore = {
+    load: async function () {
+      calendarEvents = [];
+
+      if (!auth.currentUser || state.ui.isPublicView) {
+        return calendarEvents;
+      }
+
+      try {
+        var snapshot = await getDocs(collection(db, "calendarEvents"));
+        calendarEvents = snapshot.docs.map(function (eventDoc) {
+          return normalizeCalendarEventData(Object.assign({
+            id: eventDoc.id
+          }, eventDoc.data()), {
+            keepId: true
+          });
+        }).filter(Boolean);
+      } catch (error) {
+        console.error("Falha ao carregar calendário.", error);
+        calendarEvents = [];
+      }
+
+      return calendarEvents;
+    },
+    saveEvent: async function (eventData) {
+      if (!eventData || !eventData.id || !auth.currentUser || state.ui.isPublicView) {
+        return;
+      }
+
+      await setDoc(doc(db, "calendarEvents", eventData.id), eventData, {
+        merge: true
+      });
+    },
+    deleteEvent: async function (eventId) {
+      if (!eventId || !auth.currentUser || state.ui.isPublicView) {
+        return;
+      }
+
+      await deleteDoc(doc(db, "calendarEvents", eventId));
+    },
+    deleteEvents: async function (eventIds) {
+      if (!Array.isArray(eventIds) || !eventIds.length || !auth.currentUser || state.ui.isPublicView) {
+        return;
+      }
+
+      await Promise.all(eventIds.map(function (eventId) {
+        return deleteDoc(doc(db, "calendarEvents", eventId));
+      }));
+    }
+  };
+
   function createId(prefix) {
     return prefix + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
   }
@@ -644,6 +714,315 @@ import {
     var wrapper = document.createElement("div");
     wrapper.textContent = value || "";
     return wrapper.innerHTML;
+  }
+
+  function padDatePart(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function toDateKey(date) {
+    return date.getFullYear() + "-" + padDatePart(date.getMonth() + 1) + "-" + padDatePart(date.getDate());
+  }
+
+  function parseDateKey(value) {
+    var parts = String(value || "").split("-").map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+
+  function isValidDateKey(value) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+    var date;
+
+    if (!match) {
+      return false;
+    }
+
+    date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return date.getFullYear() === Number(match[1]) && date.getMonth() === Number(match[2]) - 1 && date.getDate() === Number(match[3]);
+  }
+
+  function isValidTimeValue(value) {
+    return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(value || ""));
+  }
+
+  function addDays(date, amount) {
+    var next = new Date(date);
+    next.setDate(next.getDate() + amount);
+    return next;
+  }
+
+  function startOfCalendarMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  }
+
+  function endOfCalendarMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  }
+
+  function startOfCalendarGrid(date) {
+    var start = startOfCalendarMonth(date);
+    return addDays(start, -start.getDay());
+  }
+
+  function endOfCalendarGrid(date) {
+    var end = endOfCalendarMonth(date);
+    return addDays(end, 6 - end.getDay());
+  }
+
+  function normalizeCalendarRecurrence(recurrence, eventDate) {
+    var type = recurrence && ["none", "daily", "weekly"].indexOf(recurrence.type) !== -1 ? recurrence.type : "none";
+    var days = Array.isArray(recurrence && recurrence.daysOfWeek) ? recurrence.daysOfWeek : [];
+    var until = recurrence && isValidDateKey(recurrence.until) ? recurrence.until : null;
+    var eventDay = isValidDateKey(eventDate) ? parseDateKey(eventDate).getDay() : new Date().getDay();
+
+    days = days.map(function (day) {
+      return Number(day);
+    }).filter(function (day, index, list) {
+      return day >= 0 && day <= 6 && list.indexOf(day) === index;
+    }).sort(function (a, b) {
+      return a - b;
+    });
+
+    if (type === "weekly" && !days.length) {
+      days = [eventDay];
+    }
+
+    if (type !== "weekly") {
+      days = [];
+    }
+
+    return {
+      type: type,
+      daysOfWeek: days,
+      until: until
+    };
+  }
+
+  function normalizeCalendarColor(color) {
+    var value = String(color || "").trim();
+
+    if (/^#[0-9a-f]{6}$/i.test(value)) {
+      return value;
+    }
+
+    return CALENDAR_COLOR_OPTIONS[0];
+  }
+
+  function normalizeCalendarLinkedItemId(itemId) {
+    var item = typeof itemId === "string" ? getItem(itemId) : null;
+    return item && !isDeleted(item) && (item.type === "document" || item.type === "project") ? item.id : null;
+  }
+
+  function normalizeCalendarId(calendarId) {
+    var item = typeof calendarId === "string" ? getItem(calendarId) : null;
+    return item && !isDeleted(item) && item.type === "calendar" ? item.id : null;
+  }
+
+  function normalizeCalendarProjectId(projectId) {
+    var item = typeof projectId === "string" ? getItem(projectId) : null;
+    return item && !isDeleted(item) && item.type === "project" ? item.id : null;
+  }
+
+  function normalizeCalendarEventData(data, options) {
+    var now = nowIso();
+    var date = data && isValidDateKey(data.date) ? data.date : toDateKey(new Date());
+    var allDay = data && data.allDay === true;
+    var event = {
+      id: options && options.keepId && data && typeof data.id === "string" && data.id.trim() ? data.id : createId("event"),
+      title: data && String(data.title || "").trim() ? String(data.title).trim() : "Evento sem título",
+      description: data && typeof data.description === "string" ? data.description : "",
+      date: date,
+      startTime: allDay ? "" : (data && isValidTimeValue(data.startTime) ? data.startTime : "09:00"),
+      endTime: allDay ? "" : (data && isValidTimeValue(data.endTime) ? data.endTime : "10:00"),
+      allDay: allDay,
+      color: normalizeCalendarColor(data && data.color),
+      calendarId: normalizeCalendarId(data && data.calendarId),
+      projectId: normalizeCalendarProjectId(data && data.projectId),
+      linkedItemId: normalizeCalendarLinkedItemId(data && data.linkedItemId),
+      recurrence: normalizeCalendarRecurrence(data && data.recurrence, date),
+      ownerId: data && data.ownerId ? data.ownerId : (state.session ? state.session.id : null),
+      createdAt: data && data.createdAt ? data.createdAt : now,
+      updatedAt: data && data.updatedAt ? data.updatedAt : now
+    };
+
+    if (event.recurrence.until && event.recurrence.until < event.date) {
+      event.recurrence.until = null;
+    }
+
+    return event;
+  }
+
+  function validateCalendarEvent(eventData) {
+    var errors = [];
+
+    if (!eventData || !String(eventData.title || "").trim()) {
+      errors.push("Título obrigatório.");
+    }
+    if (!eventData || !isValidDateKey(eventData.date)) {
+      errors.push("Data obrigatória.");
+    }
+    if (eventData && !eventData.allDay && eventData.startTime && eventData.endTime && eventData.endTime <= eventData.startTime) {
+      errors.push("Horário final precisa ser maior que o inicial.");
+    }
+    if (eventData && eventData.recurrence && eventData.recurrence.type === "weekly" && !eventData.recurrence.daysOfWeek.length) {
+      errors.push("Selecione pelo menos um dia da semana.");
+    }
+    if (eventData && eventData.recurrence && eventData.recurrence.until && eventData.recurrence.until < eventData.date) {
+      errors.push("A data final da repetição precisa ser depois da data inicial.");
+    }
+
+    return errors;
+  }
+
+  function persistCalendarEvent(eventData) {
+    setSaveStatus("saving");
+    CalendarStore.saveEvent(eventData).then(function () {
+      setSaveStatus("saved");
+    }).catch(function (error) {
+      console.error("Falha ao salvar evento no Firebase.", error);
+      setSaveStatus("error");
+      alert("Não foi possível salvar o evento no Firebase.");
+    });
+  }
+
+  function createCalendarEvent(eventData) {
+    var event = normalizeCalendarEventData(eventData || {});
+    var errors = validateCalendarEvent(event);
+
+    if (errors.length) {
+      throw new Error(errors.join(" "));
+    }
+
+    calendarEvents.push(event);
+    persistCalendarEvent(event);
+    if (getSelectedItem() && getSelectedItem().type === "calendar") {
+      renderMain();
+    }
+    return event;
+  }
+
+  function updateCalendarEvent(eventId, changes) {
+    var index = calendarEvents.findIndex(function (event) {
+      return event.id === eventId;
+    });
+    var event;
+    var errors;
+
+    if (index === -1) {
+      throw new Error("Evento não encontrado.");
+    }
+
+    event = normalizeCalendarEventData(Object.assign({}, calendarEvents[index], changes || {}, {
+      id: eventId,
+      createdAt: calendarEvents[index].createdAt,
+      ownerId: calendarEvents[index].ownerId,
+      updatedAt: nowIso()
+    }), {
+      keepId: true
+    });
+    errors = validateCalendarEvent(event);
+
+    if (errors.length) {
+      throw new Error(errors.join(" "));
+    }
+
+    calendarEvents[index] = event;
+    persistCalendarEvent(event);
+    if (getSelectedItem() && getSelectedItem().type === "calendar") {
+      renderMain();
+    }
+    return event;
+  }
+
+  function deleteCalendarEvent(eventId) {
+    calendarEvents = calendarEvents.filter(function (event) {
+      return event.id !== eventId;
+    });
+    setSaveStatus("saving");
+    CalendarStore.deleteEvent(eventId).then(function () {
+      setSaveStatus("saved");
+    }).catch(function (error) {
+      console.error("Falha ao excluir evento no Firebase.", error);
+      setSaveStatus("error");
+      alert("Não foi possível excluir o evento no Firebase.");
+    });
+    if (getSelectedItem() && getSelectedItem().type === "calendar") {
+      renderMain();
+    }
+  }
+
+  function getCalendarEventsForRange(startDate, endDate) {
+    return getEventOccurrencesForRange(calendarEvents, startDate, endDate);
+  }
+
+  function getEventOccurrencesForRange(events, startDate, endDate) {
+    var occurrences = [];
+    var current = new Date(startDate);
+    var endKey = toDateKey(endDate);
+
+    while (toDateKey(current) <= endKey) {
+      var dateKey = toDateKey(current);
+
+      events.forEach(function (event) {
+        if (isEventOnDate(event, dateKey)) {
+          occurrences.push(Object.assign({}, event, {
+            eventId: event.id,
+            occurrenceDate: dateKey,
+            isRecurring: event.recurrence && event.recurrence.type !== "none"
+          }));
+        }
+      });
+
+      current = addDays(current, 1);
+    }
+
+    return occurrences.sort(function (a, b) {
+      if (a.occurrenceDate !== b.occurrenceDate) {
+        return a.occurrenceDate.localeCompare(b.occurrenceDate);
+      }
+      if (a.allDay !== b.allDay) {
+        return a.allDay ? -1 : 1;
+      }
+      return (a.startTime || "").localeCompare(b.startTime || "") || a.title.localeCompare(b.title);
+    });
+  }
+
+  function isEventOnDate(event, dateKey) {
+    var recurrence = event.recurrence || {
+      type: "none",
+      daysOfWeek: [],
+      until: null
+    };
+
+    if (!event || !isValidDateKey(event.date) || dateKey < event.date) {
+      return false;
+    }
+
+    if (recurrence.until && dateKey > recurrence.until) {
+      return false;
+    }
+
+    if (recurrence.type === "daily") {
+      return true;
+    }
+
+    if (recurrence.type === "weekly") {
+      return recurrence.daysOfWeek.indexOf(parseDateKey(dateKey).getDay()) !== -1;
+    }
+
+    return dateKey === event.date;
+  }
+
+  function formatEventTime(event) {
+    if (event.allDay) {
+      return "Dia todo";
+    }
+
+    if (event.startTime && event.endTime) {
+      return event.startTime + " - " + event.endTime;
+    }
+
+    return event.startTime || event.endTime || "";
   }
 
   async function loadState() {
@@ -693,6 +1072,13 @@ import {
       if (item.type === "document") {
         item.content = item.content || "";
         item.visibility = item.visibility === "public" ? "public" : "private";
+        item.sharedWith = Array.isArray(item.sharedWith) ? item.sharedWith : [];
+        item.projectId = item.projectId || findRootProjectId(item.id);
+      }
+
+      if (item.type === "calendar") {
+        delete item.content;
+        item.visibility = "private";
         item.sharedWith = Array.isArray(item.sharedWith) ? item.sharedWith : [];
         item.projectId = item.projectId || findRootProjectId(item.id);
       }
@@ -773,7 +1159,8 @@ import {
       exportedAt: nowIso(),
       items: JSON.parse(JSON.stringify(state.items || [])),
       trash: JSON.parse(JSON.stringify(getDeletedItems())),
-      preferences: JSON.parse(JSON.stringify(state.preferences || {}))
+      preferences: JSON.parse(JSON.stringify(state.preferences || {})),
+      calendarEvents: JSON.parse(JSON.stringify(calendarEvents || []))
     };
   }
 
@@ -879,6 +1266,12 @@ import {
       return item.id;
     });
     var importedItems = normalizeBackupItems(payload.items);
+    var importedEvents;
+    var previousEventIds = calendarEvents.map(function (event) {
+      return event.id;
+    });
+    var importedEventIds;
+    var removeEventIds;
     var importedIds = importedItems.map(function (item) {
       return item.id;
     });
@@ -888,15 +1281,22 @@ import {
 
     state.items = importedItems;
     state.selectedItemId = importedItems.find(function (item) {
-      return !item.deletedAt && (item.type === "document" || item.type === "project");
+      return !item.deletedAt && (item.type === "document" || item.type === "project" || item.type === "calendar");
     }) ? importedItems.find(function (item) {
-      return !item.deletedAt && (item.type === "document" || item.type === "project");
+      return !item.deletedAt && (item.type === "document" || item.type === "project" || item.type === "calendar");
     }).id : null;
     state.preferences = Object.assign({
       theme: "light",
       headerCollapsed: false
     }, payload.preferences || {});
     state = migrateStateIfNeeded(state);
+    importedEvents = normalizeBackupCalendarEvents(payload.calendarEvents || []);
+    importedEventIds = importedEvents.map(function (event) {
+      return event.id;
+    });
+    removeEventIds = previousEventIds.filter(function (id) {
+      return importedEventIds.indexOf(id) === -1;
+    });
     applyTheme();
 
     await DataStore.deleteItems(removeIds);
@@ -906,12 +1306,43 @@ import {
       }),
       statusItemId: state.selectedItemId
     });
+    calendarEvents = importedEvents;
+    await CalendarStore.deleteEvents(removeEventIds);
+    await Promise.all(calendarEvents.map(function (event) {
+      return CalendarStore.saveEvent(event);
+    }));
     renderAccount();
     render();
   }
 
+  function normalizeBackupCalendarEvents(events) {
+    var usedIds = {};
+
+    if (!Array.isArray(events)) {
+      return [];
+    }
+
+    return events.map(function (event) {
+      var normalized;
+
+      if (!event || typeof event !== "object") {
+        return null;
+      }
+
+      normalized = normalizeCalendarEventData(Object.assign({}, event, {
+        id: typeof event.id === "string" && event.id.trim() && !usedIds[event.id] ? event.id : createId("event"),
+        ownerId: state.session ? state.session.id : event.ownerId || null
+      }), {
+        keepId: true
+      });
+
+      usedIds[normalized.id] = true;
+      return normalized;
+    }).filter(Boolean);
+  }
+
   function normalizeBackupItems(items) {
-    var allowedTypes = ["project", "folder", "document"];
+    var allowedTypes = ["project", "folder", "document", "calendar"];
     var usedIds = {};
     var normalized = [];
     var byId = {};
@@ -955,6 +1386,8 @@ import {
         next.isOpen = item.isOpen !== false;
       } else if (type === "document") {
         next.content = sanitizeImportedHtml(item.content || "");
+      } else if (type === "calendar") {
+        delete next.content;
       } else {
         next.isOpen = item.isOpen === true;
       }
@@ -967,7 +1400,7 @@ import {
       if (item.parentId && !byId[item.parentId]) {
         item.parentId = null;
       }
-      if (item.parentId && byId[item.parentId] && byId[item.parentId].type === "document") {
+      if (item.parentId && byId[item.parentId] && (byId[item.parentId].type === "document" || byId[item.parentId].type === "calendar")) {
         item.parentId = null;
       }
     });
@@ -1193,7 +1626,7 @@ import {
       return true;
     }
 
-    if (item.type === "document") {
+    if (item.type === "document" || item.type === "calendar") {
       return isItemSharedWithUser(getItem(getRootProjectId(item.id)), state.session.id);
     }
 
@@ -1225,7 +1658,7 @@ import {
       return true;
     }
 
-    return item.type === "document" && isItemSharedWithUser(getItem(getRootProjectId(item.id)), state.session.id);
+    return (item.type === "document" || item.type === "calendar") && isItemSharedWithUser(getItem(getRootProjectId(item.id)), state.session.id);
   }
 
   function canManageDeletedItem(item) {
@@ -1241,7 +1674,7 @@ import {
       return true;
     }
 
-    return item.type === "document" && isItemSharedWithUser(getItem(getRootProjectId(item.id)), state.session.id);
+    return (item.type === "document" || item.type === "calendar") && isItemSharedWithUser(getItem(getRootProjectId(item.id)), state.session.id);
   }
 
   function hasAccessibleDescendant(itemId) {
@@ -1324,7 +1757,7 @@ import {
     }
 
     return getDescendants(projectId).filter(function (item) {
-      return item.type === "document";
+      return item.type === "document" || item.type === "calendar";
     });
   }
 
@@ -1416,7 +1849,7 @@ import {
       item.isOpen = true;
     }
 
-    if (type === "project" || type === "document") {
+    if (type === "project" || type === "document" || type === "calendar") {
       item.visibility = "private";
       item.sharedWith = parent && Array.isArray(parent.sharedWith) ? parent.sharedWith.slice() : [];
       if (isModerator() && state.session && item.sharedWith.indexOf(state.session.id) === -1) {
@@ -1428,7 +1861,7 @@ import {
       item.sharedWith = parent && Array.isArray(parent.sharedWith) ? parent.sharedWith.slice() : [];
     }
 
-    if (type === "folder") {
+    if (type === "folder" || type === "calendar") {
       delete item.content;
     }
 
@@ -1520,6 +1953,7 @@ import {
   async function permanentlyDeleteItem(id) {
     var item = getItem(id);
     var ids;
+    var calendarEventIds = [];
 
     if (!item || !canManageDeletedItem(item)) {
       return;
@@ -1536,15 +1970,26 @@ import {
     }
 
     removeItems(ids);
+    calendarEventIds = calendarEvents.filter(function (event) {
+      return event.calendarId && ids.indexOf(event.calendarId) !== -1;
+    }).map(function (event) {
+      return event.id;
+    });
+    calendarEvents = calendarEvents.filter(function (event) {
+      return calendarEventIds.indexOf(event.id) === -1;
+    });
     saveState([], null);
     render();
     await DataStore.deleteItems(ids);
+    await CalendarStore.deleteEvents(calendarEventIds);
   }
 
   function selectItem(id) {
     var item = getItem(id);
 
     state.selectedItemId = id;
+    state.ui.currentView = "editor";
+    state.ui.showTrash = false;
     if (item && item.type === "project") {
       state.ui.projectTab = "cover";
     }
@@ -1555,13 +2000,15 @@ import {
   function toggleOpen(id) {
     var item = getItem(id);
 
-    if (!item || item.type === "document" || state.inlineEdit) {
+    if (!item || (item.type !== "project" && item.type !== "folder") || state.inlineEdit) {
       return;
     }
 
     item.isOpen = !item.isOpen;
     item.updatedAt = nowIso();
     state.selectedItemId = id;
+    state.ui.currentView = "editor";
+    state.ui.showTrash = false;
     if (item.type === "project") {
       state.ui.projectTab = "cover";
     }
@@ -1796,6 +2243,8 @@ import {
     }
 
     state.sidebarCollapsed = false;
+    state.ui.currentView = "editor";
+    state.ui.showTrash = false;
 
     if (parentId) {
       openParents(parentId);
@@ -2035,7 +2484,7 @@ import {
         return;
       }
 
-      if (item.type === "document") {
+      if (item.type === "document" || item.type === "calendar") {
         selectItem(item.id);
       } else {
         toggleOpen(item.id);
@@ -2069,7 +2518,7 @@ import {
       add.setAttribute("aria-label", add.title);
       add.addEventListener("click", function (event) {
         event.stopPropagation();
-        openCreateMenu(item.id, ["folder", "document"], add);
+        openCreateMenu(item.id, ["folder", "document", "calendar"], add);
       });
       row.appendChild(add);
     }
@@ -2146,6 +2595,11 @@ import {
       return;
     }
 
+    if (item.type === "calendar") {
+      renderCalendarView(item.id);
+      return;
+    }
+
     if (item.type === "project") {
       if (!isAdmin() && !isItemSharedWithUser(item, state.session.id)) {
         renderContainerState(item);
@@ -2180,10 +2634,524 @@ import {
       actions.appendChild(createTextButton("Novo documento", function () {
         startInlineCreate("document", null);
       }));
+      actions.appendChild(createTextButton("Novo calendário", function () {
+        startInlineCreate("calendar", null);
+      }));
       empty.appendChild(actions);
     }
 
     elements.editorPanel.appendChild(empty);
+  }
+
+  function renderCalendarView(calendarId) {
+    var calendarItem = calendarId ? getItem(calendarId) : null;
+    var visibleEvents = getCalendarEventsForCalendar(calendarId);
+    var view = document.createElement("section");
+    var header = document.createElement("div");
+    var titleArea = document.createElement("div");
+    var title = document.createElement("h2");
+    var subtitle = document.createElement("div");
+    var actions = document.createElement("div");
+    var grid = document.createElement("div");
+    var visibleStart = startOfCalendarGrid(calendarDate);
+    var visibleEnd = endOfCalendarGrid(calendarDate);
+    var occurrences = getEventOccurrencesForRange(visibleEvents, visibleStart, visibleEnd);
+    var grouped = groupCalendarOccurrencesByDate(occurrences);
+    var cursor = new Date(visibleStart);
+    var dayIndex;
+
+    elements.editorPanel.innerHTML = "";
+
+    view.className = "calendar-view";
+    header.className = "calendar-header";
+    titleArea.className = "calendar-title-area";
+    title.className = "calendar-title";
+    title.textContent = calendarItem ? calendarItem.title || getDefaultTitle("calendar") : "Calendário";
+    subtitle.className = "calendar-subtitle";
+    subtitle.textContent = MONTH_LABELS[calendarDate.getMonth()] + " " + calendarDate.getFullYear() + " · " + String(visibleEvents.length) + " evento(s)";
+
+    actions.className = "calendar-actions";
+    actions.appendChild(createCalendarButton("Hoje", goToToday));
+    actions.appendChild(createCalendarButton("<", goToPreviousMonth));
+    actions.appendChild(createCalendarButton(">", goToNextMonth));
+    actions.appendChild(createCalendarButton("Novo evento", function () {
+      openCalendarEventModal(toDateKey(new Date()), null, calendarId);
+    }, "primary"));
+    if (calendarItem && canEditItem(calendarItem)) {
+      actions.appendChild(createCalendarButton("Renomear", function () {
+        startInlineRename(calendarItem.id);
+      }));
+      actions.appendChild(createCalendarButton("Lixeira", function () {
+        deleteItem(calendarItem.id);
+      }, "danger"));
+    }
+
+    titleArea.appendChild(title);
+    titleArea.appendChild(subtitle);
+    header.appendChild(titleArea);
+    header.appendChild(actions);
+
+    grid.className = "calendar-grid";
+    WEEKDAY_LABELS.forEach(function (label) {
+      var weekday = document.createElement("div");
+      weekday.className = "calendar-weekday";
+      weekday.textContent = label;
+      grid.appendChild(weekday);
+    });
+
+    for (dayIndex = 0; dayIndex < 42; dayIndex += 1) {
+      grid.appendChild(renderCalendarDay(cursor, grouped[toDateKey(cursor)] || [], calendarId));
+      cursor = addDays(cursor, 1);
+    }
+
+    view.appendChild(header);
+    view.appendChild(grid);
+    elements.editorPanel.appendChild(view);
+  }
+
+  function createCalendarButton(label, onClick, extraClass) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "calendar-button" + (extraClass ? " " + extraClass : "");
+    button.textContent = label;
+    button.addEventListener("click", onClick);
+    return button;
+  }
+
+  function getCalendarEventsForCalendar(calendarId) {
+    if (!calendarId) {
+      return calendarEvents.filter(function (event) {
+        var calendar = event.calendarId ? getItem(event.calendarId) : null;
+        return !event.calendarId || (calendar && !isDeleted(calendar));
+      });
+    }
+
+    return calendarEvents.filter(function (event) {
+      return event.calendarId === calendarId;
+    });
+  }
+
+  function renderCalendarDay(date, occurrences, calendarId) {
+    var cell = document.createElement("div");
+    var header = document.createElement("div");
+    var number = document.createElement("span");
+    var events = document.createElement("div");
+    var dateKey = toDateKey(date);
+    var visibleOccurrences = occurrences.slice(0, 4);
+
+    cell.className = "calendar-day";
+    if (date.getMonth() !== calendarDate.getMonth()) {
+      cell.classList.add("outside-month");
+    }
+    if (dateKey === toDateKey(new Date())) {
+      cell.classList.add("today");
+    }
+
+    header.className = "calendar-day-header";
+    number.className = "calendar-day-number";
+    number.textContent = String(date.getDate());
+    header.appendChild(number);
+
+    events.className = "calendar-day-events";
+    visibleOccurrences.forEach(function (occurrence) {
+      events.appendChild(renderCalendarEventPill(occurrence));
+    });
+
+    if (occurrences.length > visibleOccurrences.length) {
+      var more = document.createElement("div");
+      more.className = "calendar-more-events";
+      more.textContent = "+ " + (occurrences.length - visibleOccurrences.length) + " evento(s)";
+      events.appendChild(more);
+    }
+
+    cell.appendChild(header);
+    cell.appendChild(events);
+    cell.addEventListener("click", function () {
+      openCalendarEventModal(dateKey, null, calendarId);
+    });
+    return cell;
+  }
+
+  function renderCalendarEventPill(occurrence) {
+    var button = document.createElement("button");
+    var title = document.createElement("span");
+    var time = document.createElement("span");
+    var linkedItem = occurrence.linkedItemId ? getItem(occurrence.linkedItemId) : null;
+
+    button.type = "button";
+    button.className = "calendar-event-pill" + (occurrence.isRecurring ? " recurring" : "");
+    button.style.setProperty("--calendar-event-color", occurrence.color || CALENDAR_COLOR_OPTIONS[0]);
+    button.title = occurrence.title;
+
+    title.className = "calendar-event-title";
+    title.textContent = occurrence.title + (linkedItem ? " · " + (linkedItem.title || getDefaultTitle(linkedItem.type)) : "");
+    time.className = "calendar-event-time";
+    time.textContent = formatEventTime(occurrence);
+
+    button.appendChild(title);
+    if (time.textContent) {
+      button.appendChild(time);
+    }
+
+    button.addEventListener("click", function (event) {
+      event.stopPropagation();
+      openCalendarEventModal(occurrence.occurrenceDate, occurrence.eventId);
+    });
+    return button;
+  }
+
+  function groupCalendarOccurrencesByDate(occurrences) {
+    var grouped = {};
+
+    occurrences.forEach(function (occurrence) {
+      if (!grouped[occurrence.occurrenceDate]) {
+        grouped[occurrence.occurrenceDate] = [];
+      }
+      grouped[occurrence.occurrenceDate].push(occurrence);
+    });
+
+    return grouped;
+  }
+
+  function goToPreviousMonth() {
+    calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+    renderMain();
+  }
+
+  function goToNextMonth() {
+    calendarDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+    renderMain();
+  }
+
+  function goToToday() {
+    calendarDate = new Date();
+    renderMain();
+  }
+
+  function openCalendarEventModal(dateKey, eventId, calendarId) {
+    var event = eventId ? calendarEvents.find(function (candidate) {
+      return candidate.id === eventId;
+    }) : null;
+    var selectedColor = event ? event.color : CALENDAR_COLOR_OPTIONS[0];
+    var backdrop = document.createElement("div");
+    var modal = document.createElement("section");
+    var form = document.createElement("form");
+    var header = document.createElement("div");
+    var heading = document.createElement("h2");
+    var close = createCalendarButton("×", closeCalendarEventModal);
+    var titleInput = createCalendarField("Título", "input", event ? event.title : "");
+    var descriptionInput = createCalendarField("Descrição", "textarea", event ? event.description : "");
+    var dateInput = createCalendarField("Data", "input", event ? event.date : dateKey);
+    var allDayLabel = document.createElement("label");
+    var allDayInput = document.createElement("input");
+    var startInput = createCalendarField("Início", "input", event ? event.startTime : "09:00");
+    var endInput = createCalendarField("Fim", "input", event ? event.endTime : "10:00");
+    var repeatSelect = createCalendarField("Repetição", "select", event && event.recurrence ? event.recurrence.type : "none");
+    var untilInput = createCalendarField("Repetir até", "input", event && event.recurrence ? event.recurrence.until || "" : "");
+    var calendarSelect = createCalendarField("Calendário", "select", event ? event.calendarId || "" : calendarId || "");
+    var projectSelect = createCalendarField("Projeto vinculado", "select", event ? event.projectId || "" : "");
+    var documentSelect = createCalendarField("Página vinculada", "select", event ? event.linkedItemId || "" : "");
+    var colorField = document.createElement("div");
+    var colorOptions = document.createElement("div");
+    var weekdayField = document.createElement("div");
+    var weekdayOptions = document.createElement("div");
+    var recurringNote = document.createElement("div");
+    var actions = document.createElement("div");
+    var save = createCalendarButton("Salvar", function () {}, "primary");
+    var cancel = createCalendarButton("Cancelar", closeCalendarEventModal);
+    var remove = event ? createCalendarButton("Excluir", function () {}, "danger") : null;
+    var openLinked = event && event.linkedItemId ? createCalendarButton("Abrir página vinculada", function () {
+      closeCalendarEventModal();
+      selectItem(event.linkedItemId);
+    }) : null;
+
+    activeCalendarModalEventId = eventId || null;
+    closeCalendarEventModal();
+    activeCalendarModalEventId = eventId || null;
+
+    backdrop.className = "calendar-modal-backdrop";
+    backdrop.id = "calendarModal";
+    modal.className = "calendar-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", event ? "Editar evento" : "Novo evento");
+    form.className = "calendar-form";
+    header.className = "calendar-modal-header";
+    heading.textContent = event ? "Editar evento" : "Novo evento";
+    close.setAttribute("aria-label", "Fechar");
+
+    titleInput.input.required = true;
+    dateInput.input.type = "date";
+    dateInput.input.required = true;
+    startInput.input.type = "time";
+    endInput.input.type = "time";
+    untilInput.input.type = "date";
+
+    setupCalendarRepeatSelect(repeatSelect.input);
+    repeatSelect.input.value = event && event.recurrence ? event.recurrence.type : "none";
+    renderCalendarOptions(calendarSelect.input, event ? event.calendarId : calendarId || "");
+    renderCalendarProjectOptions(projectSelect.input, event ? event.projectId : "");
+    renderCalendarDocumentOptions(documentSelect.input, projectSelect.input.value, event ? event.linkedItemId : "");
+
+    allDayLabel.className = "calendar-checkbox-row";
+    allDayInput.type = "checkbox";
+    allDayInput.checked = event ? event.allDay : false;
+    allDayLabel.appendChild(allDayInput);
+    allDayLabel.appendChild(document.createTextNode("Dia inteiro"));
+
+    colorField.className = "calendar-form-field";
+    colorField.appendChild(document.createTextNode("Cor"));
+    colorOptions.className = "calendar-color-options";
+    CALENDAR_COLOR_OPTIONS.forEach(function (color) {
+      var colorButton = document.createElement("button");
+      colorButton.type = "button";
+      colorButton.className = "calendar-color-option" + (color === selectedColor ? " is-selected" : "");
+      colorButton.style.setProperty("--calendar-event-color", color);
+      colorButton.setAttribute("aria-label", "Cor " + color);
+      colorButton.addEventListener("click", function () {
+        selectedColor = color;
+        Array.prototype.slice.call(colorOptions.querySelectorAll(".calendar-color-option")).forEach(function (candidate) {
+          candidate.classList.toggle("is-selected", candidate === colorButton);
+        });
+      });
+      colorOptions.appendChild(colorButton);
+    });
+    colorField.appendChild(colorOptions);
+
+    weekdayField.className = "calendar-form-field";
+    weekdayField.appendChild(document.createTextNode("Dias da semana"));
+    weekdayOptions.className = "calendar-weekday-options";
+    WEEKDAY_LABELS.forEach(function (label, day) {
+      var weekdayLabel = document.createElement("label");
+      var checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = String(day);
+      checkbox.checked = event && event.recurrence && event.recurrence.daysOfWeek.indexOf(day) !== -1;
+      weekdayLabel.appendChild(checkbox);
+      weekdayLabel.appendChild(document.createTextNode(label));
+      weekdayOptions.appendChild(weekdayLabel);
+    });
+    weekdayField.appendChild(weekdayOptions);
+
+    recurringNote.className = "calendar-recurring-note";
+    recurringNote.textContent = "Este evento é recorrente. Alterações afetam toda a série.";
+    recurringNote.hidden = !(event && event.recurrence && event.recurrence.type !== "none");
+
+    actions.className = "calendar-modal-actions";
+    save.type = "submit";
+    cancel.type = "button";
+    actions.appendChild(cancel);
+    if (openLinked) {
+      openLinked.type = "button";
+      openLinked.classList.add("calendar-linked-action");
+      actions.appendChild(openLinked);
+    }
+    if (remove) {
+      remove.type = "button";
+      remove.classList.add("danger");
+      remove.addEventListener("click", function () {
+        if (confirm("Excluir este evento?")) {
+          deleteCalendarEvent(event.id);
+          closeCalendarEventModal();
+        }
+      });
+      actions.appendChild(remove);
+    }
+    actions.appendChild(save);
+
+    header.appendChild(heading);
+    header.appendChild(close);
+    form.appendChild(header);
+    form.appendChild(titleInput.wrapper);
+    form.appendChild(descriptionInput.wrapper);
+    form.appendChild(createCalendarFormRow(dateInput.wrapper, allDayLabel));
+    form.appendChild(createCalendarFormRow(startInput.wrapper, endInput.wrapper));
+    form.appendChild(createCalendarFormRow(repeatSelect.wrapper, untilInput.wrapper));
+    form.appendChild(weekdayField);
+    form.appendChild(colorField);
+    form.appendChild(createCalendarFormRow(calendarSelect.wrapper, projectSelect.wrapper));
+    form.appendChild(documentSelect.wrapper);
+    form.appendChild(recurringNote);
+    form.appendChild(actions);
+
+    function syncCalendarModalFields() {
+      var repeatType = repeatSelect.input.value;
+      startInput.input.disabled = allDayInput.checked;
+      endInput.input.disabled = allDayInput.checked;
+      weekdayField.hidden = repeatType !== "weekly";
+      untilInput.wrapper.hidden = repeatType === "none";
+      recurringNote.hidden = repeatType === "none";
+    }
+
+    allDayInput.addEventListener("change", syncCalendarModalFields);
+    repeatSelect.input.addEventListener("change", syncCalendarModalFields);
+    projectSelect.input.addEventListener("change", function () {
+      renderCalendarDocumentOptions(documentSelect.input, projectSelect.input.value, "");
+    });
+
+    form.addEventListener("submit", function (submitEvent) {
+      var nextEvent;
+      var errors;
+
+      submitEvent.preventDefault();
+      nextEvent = normalizeCalendarEventData({
+        id: event ? event.id : null,
+        title: titleInput.input.value,
+        description: descriptionInput.input.value,
+        date: dateInput.input.value,
+        allDay: allDayInput.checked,
+        startTime: startInput.input.value,
+        endTime: endInput.input.value,
+        color: selectedColor,
+        calendarId: calendarSelect.input.value || null,
+        projectId: projectSelect.input.value || null,
+        linkedItemId: documentSelect.input.value || null,
+        recurrence: {
+          type: repeatSelect.input.value,
+          daysOfWeek: Array.prototype.slice.call(weekdayOptions.querySelectorAll("input:checked")).map(function (input) {
+            return Number(input.value);
+          }),
+          until: untilInput.input.value || null
+        },
+        createdAt: event ? event.createdAt : nowIso(),
+        ownerId: event ? event.ownerId : (state.session ? state.session.id : null)
+      }, {
+        keepId: !!event
+      });
+      errors = validateCalendarEvent(nextEvent);
+
+      if (errors.length) {
+        alert(errors.join("\n"));
+        return;
+      }
+
+      if (event) {
+        updateCalendarEvent(event.id, nextEvent);
+      } else {
+        createCalendarEvent(nextEvent);
+      }
+      closeCalendarEventModal();
+    });
+
+    modal.appendChild(form);
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener("click", function (clickEvent) {
+      if (clickEvent.target === backdrop) {
+        closeCalendarEventModal();
+      }
+    });
+
+    syncCalendarModalFields();
+    titleInput.input.focus();
+    titleInput.input.select();
+  }
+
+  function closeCalendarEventModal() {
+    var modal = document.getElementById("calendarModal");
+
+    if (modal) {
+      modal.remove();
+    }
+    activeCalendarModalEventId = null;
+  }
+
+  function createCalendarField(label, type, value) {
+    var wrapper = document.createElement("label");
+    var input = type === "textarea" ? document.createElement("textarea") : (type === "select" ? document.createElement("select") : document.createElement("input"));
+
+    wrapper.appendChild(document.createTextNode(label));
+    wrapper.appendChild(input);
+    if (type !== "select") {
+      input.value = value || "";
+    }
+
+    return {
+      wrapper: wrapper,
+      input: input
+    };
+  }
+
+  function createCalendarFormRow(first, second) {
+    var row = document.createElement("div");
+    row.className = "calendar-form-row";
+    row.appendChild(first);
+    row.appendChild(second);
+    return row;
+  }
+
+  function setupCalendarRepeatSelect(select) {
+    [
+      ["none", "Não repetir"],
+      ["daily", "Todos os dias"],
+      ["weekly", "Dias da semana específicos"]
+    ].forEach(function (optionData) {
+      var option = document.createElement("option");
+      option.value = optionData[0];
+      option.textContent = optionData[1];
+      select.appendChild(option);
+    });
+  }
+
+  function renderCalendarOptions(select, selectedCalendarId) {
+    select.innerHTML = "";
+    appendSelectOption(select, "", "Sem calendário");
+    getCalendarsForSelect().forEach(function (calendar) {
+      appendSelectOption(select, calendar.id, renderBreadcrumb(calendar.id));
+    });
+    select.value = selectedCalendarId || "";
+  }
+
+  function renderCalendarProjectOptions(select, selectedProjectId) {
+    select.innerHTML = "";
+    appendSelectOption(select, "", "Nenhum projeto");
+    getProjectsForSelect().forEach(function (project) {
+      appendSelectOption(select, project.id, project.title || getDefaultTitle(project.type));
+    });
+    select.value = selectedProjectId || "";
+  }
+
+  function renderCalendarDocumentOptions(select, projectId, selectedItemId) {
+    select.innerHTML = "";
+    appendSelectOption(select, "", "Nenhuma página");
+    getDocumentsForSelect(projectId).forEach(function (item) {
+      appendSelectOption(select, item.id, renderBreadcrumb(item.id));
+    });
+    select.value = selectedItemId || "";
+  }
+
+  function appendSelectOption(select, value, label) {
+    var option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    select.appendChild(option);
+  }
+
+  function getProjectsForSelect() {
+    return state.items.filter(function (item) {
+      return item.type === "project" && !isDeleted(item) && canAccessItem(item);
+    }).sort(function (a, b) {
+      return (a.title || "").localeCompare(b.title || "");
+    });
+  }
+
+  function getCalendarsForSelect() {
+    return state.items.filter(function (item) {
+      return item.type === "calendar" && !isDeleted(item) && canAccessItem(item);
+    }).sort(function (a, b) {
+      return renderBreadcrumb(a.id).localeCompare(renderBreadcrumb(b.id));
+    });
+  }
+
+  function getDocumentsForSelect(projectId) {
+    return state.items.filter(function (item) {
+      if (!item || isDeleted(item) || !canAccessItem(item) || (item.type !== "document" && item.type !== "project")) {
+        return false;
+      }
+      return projectId ? item.id === projectId || getRootProjectId(item.id) === projectId : true;
+    }).sort(function (a, b) {
+      return renderBreadcrumb(a.id).localeCompare(renderBreadcrumb(b.id));
+    });
   }
 
   function renderHeader(item, includeToolbar) {
@@ -2310,6 +3278,9 @@ import {
       }));
       actions.appendChild(createTextButton("Nova pasta", function () {
         startInlineCreate("folder", item.id);
+      }));
+      actions.appendChild(createTextButton("Novo calendário", function () {
+        startInlineCreate("calendar", item.id);
       }));
       body.appendChild(actions);
     }
@@ -5322,6 +6293,10 @@ import {
       return "Pasta";
     }
 
+    if (type === "calendar") {
+      return "Calendário";
+    }
+
     return "Documento";
   }
 
@@ -5332,6 +6307,10 @@ import {
 
     if (type === "folder") {
       return "Pasta sem título";
+    }
+
+    if (type === "calendar") {
+      return "Calendário sem título";
     }
 
     return "Documento sem título";
@@ -5346,11 +6325,15 @@ import {
       return "Nova pasta";
     }
 
+    if (type === "calendar") {
+      return "Novo calendário";
+    }
+
     return "Novo documento";
   }
 
   function getIndicator(item) {
-    if (item.type === "document") {
+    if (item.type === "document" || item.type === "calendar") {
       return "";
     }
 
@@ -5364,6 +6347,10 @@ import {
 
     if (item.type === "folder") {
       return "□";
+    }
+
+    if (item.type === "calendar") {
+      return "▤";
     }
 
     return "◻";
@@ -5737,7 +6724,8 @@ import {
       project: false,
       links: false,
       blocks: false,
-      related: false
+      related: false,
+      calendar: false
     };
   }
 
@@ -5812,7 +6800,7 @@ import {
   }
 
   function hasAnyAiContextOption(options) {
-    return !!(options.current || options.project || options.links || options.blocks || options.related);
+    return !!(options.current || options.project || options.links || options.blocks || options.related || options.calendar);
   }
 
   function getAiContextOptions() {
@@ -5847,6 +6835,9 @@ import {
     }
     if (options.related) {
       labels.push("relacionados");
+    }
+    if (options.calendar) {
+      labels.push("calendário");
     }
 
     elements.aiContextSummary.textContent = "Contexto: " + labels.join(" + ");
@@ -6055,8 +7046,29 @@ import {
       }
     }
 
+    if (Array.isArray(parsed)) {
+      return {
+        reply: "Ações recebidas da IA.",
+        actions: normalizeAiActions(parsed)
+      };
+    }
+
+    if (parsed && typeof parsed === "object" && Array.isArray(parsed.actions)) {
+      return {
+        reply: String(parsed.reply || "Ações recebidas da IA."),
+        actions: normalizeAiActions(parsed.actions)
+      };
+    }
+
+    if (parsed && typeof parsed === "object" && parsed.action) {
+      return {
+        reply: String(parsed.reply || "Ação recebida da IA."),
+        actions: normalizeAiActions([parsed.action])
+      };
+    }
+
     if (!parsed || typeof parsed !== "object" || !parsed.reply || !Array.isArray(parsed.actions)) {
-      if (/```json/i.test(trimmed) || /^\{/.test(trimmed) || /"actions"\s*:/.test(trimmed)) {
+      if (/```json/i.test(trimmed) || /^[{\[]/.test(trimmed) || /"actions"\s*:/.test(trimmed)) {
         return {
           reply: "A IA retornou um JSON inválido. Texto bruto:\n\n" + rawText,
           actions: [],
@@ -6072,7 +7084,7 @@ import {
 
     return {
       reply: String(parsed.reply),
-      actions: parsed.actions
+      actions: normalizeAiActions(parsed.actions)
     };
   }
 
@@ -6082,10 +7094,29 @@ import {
     var end = cleaned.lastIndexOf("}");
 
     if (start === -1 || end === -1 || end <= start) {
+      start = cleaned.indexOf("[");
+      end = cleaned.lastIndexOf("]");
+    }
+
+    if (start === -1 || end === -1 || end <= start) {
       return "";
     }
 
     return cleaned.slice(start, end + 1);
+  }
+
+  function normalizeAiActions(actions) {
+    return (Array.isArray(actions) ? actions : []).map(function (action) {
+      var next = action && typeof action === "object" ? Object.assign({}, action) : {};
+      var type = String(next.type || next.actionType || next.action || "").trim();
+
+      if (["createSpreadsheet", "addSpreadsheet", "spreadsheet", "table"].indexOf(type) !== -1) {
+        type = "insertSpreadsheet";
+      }
+
+      next.type = type;
+      return next;
+    });
   }
 
   function renderAiActionsPreview(message) {
@@ -6196,6 +7227,10 @@ import {
       context.relatedDocuments = item && projectId ? buildAiRelatedDocuments(item, projectId) : [];
     }
 
+    if (options.calendar) {
+      context.calendar = buildAiCalendarContext();
+    }
+
     return context;
   }
 
@@ -6213,7 +7248,7 @@ import {
         title: item.title || getDefaultTitle(item.type),
         parentId: item.parentId || null,
         visibility: item.visibility || "private",
-        children: item.type === "document" ? [] : buildAiTreeSummary(item.id, depth + 1)
+        children: (item.type === "document" || item.type === "calendar") ? [] : buildAiTreeSummary(item.id, depth + 1)
       };
     });
   }
@@ -6227,7 +7262,8 @@ import {
       { type: "createFolder", parentId: "id-do-projeto-ou-pasta", title: "Nova pasta" },
       { type: "renameItem", itemId: "id", title: "Novo nome" },
       { type: "insertKanban", itemId: "id", title: "Kanban", columns: [{ title: "A Fazer", cards: [{ title: "Tarefa", checklist: [{ text: "Passo", checked: false }] }] }] },
-      { type: "insertSpreadsheet", itemId: "id", rows: [["Aula", "Tema", "Status"], ["01", "Introdução", "Pendente"]] }
+      { type: "insertSpreadsheet", itemId: "id", rows: [["Aula", "Tema", "Status"], ["01", "Introdução", "Pendente"]] },
+      { type: "createCalendarEvent", title: "Aula de Unity", description: "Revisar projeto", date: "2026-06-10", startTime: "19:00", endTime: "21:00", allDay: false, color: "#4f75c9", calendarId: null, projectId: null, linkedItemId: null, recurrence: { type: "weekly", daysOfWeek: [1, 3], until: null } }
     ];
   }
 
@@ -6269,6 +7305,9 @@ import {
     var documents = state.items.filter(function (item) {
       return !item.deletedAt && item.type === "document";
     });
+    var calendars = state.items.filter(function (item) {
+      return !item.deletedAt && item.type === "calendar";
+    });
     var publicCount = state.items.filter(function (item) {
       return !item.deletedAt && item.visibility === "public";
     }).length;
@@ -6297,6 +7336,8 @@ import {
         };
       }),
       documentCount: documents.length,
+      calendarCount: calendars.length,
+      calendars: calendars.map(getAiItemMetadata).slice(0, 40),
       publicItems: publicCount,
       privateItems: state.items.filter(function (item) {
         return !item.deletedAt && item.visibility !== "public";
@@ -6307,6 +7348,35 @@ import {
       documentsWithManyLinks: documentsWithManyLinks.map(getAiItemMetadata).slice(0, 20),
       lastSelectedItem: state.selectedItemId || null,
       currentProjectTree: projectId ? buildAiTreeSummary(projectId, 0) : []
+    };
+  }
+
+  function buildAiCalendarContext() {
+    var start = new Date();
+    var end = addDays(start, 30);
+
+    return {
+      range: {
+        start: toDateKey(start),
+        end: toDateKey(end)
+      },
+      events: getEventOccurrencesForRange(calendarEvents, start, end).slice(0, 120).map(function (event) {
+        return {
+          eventId: event.eventId,
+          title: event.title,
+          description: event.description || "",
+          date: event.occurrenceDate,
+          time: formatEventTime(event),
+          recurrence: event.recurrence || {
+            type: "none",
+            daysOfWeek: [],
+            until: null
+          },
+          calendarId: event.calendarId || null,
+          projectId: event.projectId || null,
+          linkedItemId: event.linkedItemId || null
+        };
+      })
     };
   }
 
@@ -6446,6 +7516,9 @@ import {
     if (action.type === "insertSpreadsheet") {
       return "Inserir planilha em: " + itemTitle;
     }
+    if (action.type === "createCalendarEvent") {
+      return 'Criar evento "' + (action.title || "Evento sem título") + '" em ' + (action.date || "data não definida");
+    }
 
     return "Ação não suportada: " + (action.type || "sem tipo");
   }
@@ -6486,6 +7559,9 @@ import {
       });
       return action.rows.length > 80 || cellCount > 800;
     }
+    if (action.type === "createCalendarEvent") {
+      return false;
+    }
 
     return action.type === "replaceContent" || /^delete/i.test(action.type) || html.length > 50000;
   }
@@ -6518,6 +7594,7 @@ import {
   }
 
   function applyAiActions(actions, description) {
+    actions = normalizeAiActions(actions);
     var errors = validateAiActions(actions);
     var changedIds = [];
     var createdItem = null;
@@ -6585,6 +7662,12 @@ import {
       if (action.type === "insertSpreadsheet") {
         item.content = (item.content || "") + createSpreadsheetHtmlFromAiAction(action);
         touchAiChangedItem(item, changedIds);
+        return;
+      }
+
+      if (action.type === "createCalendarEvent") {
+        created = createCalendarEvent(action);
+        undoSnapshot.createdCalendarEvents.push(created.id);
       }
     });
 
@@ -6694,7 +7777,8 @@ import {
       }).filter(function (entry) {
         return !!entry.before;
       }),
-      createdItems: []
+      createdItems: [],
+      createdCalendarEvents: []
     };
 
     return snapshot;
@@ -6731,6 +7815,7 @@ import {
     var saved = localStorage.getItem(AI_UNDO_KEY);
     var snapshot;
     var removeIds = [];
+    var removeEventIds = [];
     var changedIds = [];
     var selectedWasRemoved = false;
 
@@ -6769,8 +7854,17 @@ import {
       });
     });
 
+    (snapshot.createdCalendarEvents || []).forEach(function (id) {
+      if (removeEventIds.indexOf(id) === -1) {
+        removeEventIds.push(id);
+      }
+    });
+
     selectedWasRemoved = removeIds.indexOf(state.selectedItemId) !== -1;
     removeItems(removeIds);
+    calendarEvents = calendarEvents.filter(function (event) {
+      return removeEventIds.indexOf(event.id) === -1;
+    });
 
     (snapshot.affectedItems || []).forEach(function (entry) {
       if (entry.before) {
@@ -6791,6 +7885,12 @@ import {
       await DataStore.deleteItems(removeIds);
     } catch (error) {
       console.error("Falha ao remover itens criados pela IA no Firebase.", error);
+    }
+
+    try {
+      await CalendarStore.deleteEvents(removeEventIds);
+    } catch (error) {
+      console.error("Falha ao remover eventos criados pela IA no Firebase.", error);
     }
 
     try {
@@ -6841,6 +7941,9 @@ import {
         if (typeof action.html === "string" && action.html.length > 120000) {
           errors.push(prefix + "html grande demais.");
         }
+        if (typeof action.html === "string" && htmlContainsHubKanban(action.html)) {
+          errors.push(prefix + "Kanban não pode ser criado por HTML. Use somente insertKanban com columns/cards/checklist.");
+        }
         return;
       }
 
@@ -6883,9 +7986,9 @@ import {
         if (item && !canEditItem(item)) {
           errors.push(prefix + "sem permissão para editar o item.");
         }
-        if (!Array.isArray(action.columns)) {
-          errors.push(prefix + "columns precisa ser array.");
-        }
+        validateAiKanbanSchema(action, prefix).forEach(function (message) {
+          errors.push(message);
+        });
         return;
       }
 
@@ -6902,10 +8005,156 @@ import {
         return;
       }
 
+      if (action.type === "createCalendarEvent") {
+        var calendarEvent;
+        var calendarErrors;
+
+        if (!action.title || !String(action.title).trim()) {
+          errors.push(prefix + "title obrigatório.");
+        }
+        if (!isValidDateKey(action.date)) {
+          errors.push(prefix + "date precisa estar no formato YYYY-MM-DD.");
+        }
+        if (action.startTime && !isValidTimeValue(action.startTime)) {
+          errors.push(prefix + "startTime inválido.");
+        }
+        if (action.endTime && !isValidTimeValue(action.endTime)) {
+          errors.push(prefix + "endTime inválido.");
+        }
+        if (action.calendarId && !normalizeCalendarId(action.calendarId)) {
+          errors.push(prefix + "calendarId inexistente ou incompatível.");
+        }
+        if (action.projectId && !normalizeCalendarProjectId(action.projectId)) {
+          errors.push(prefix + "projectId inexistente ou incompatível.");
+        }
+        if (action.linkedItemId && !normalizeCalendarLinkedItemId(action.linkedItemId)) {
+          errors.push(prefix + "linkedItemId inexistente ou incompatível.");
+        }
+
+        calendarEvent = normalizeCalendarEventData(action);
+        calendarErrors = validateCalendarEvent(calendarEvent);
+        calendarErrors.forEach(function (message) {
+          errors.push(prefix + message);
+        });
+        return;
+      }
+
       errors.push(prefix + "tipo não suportado: " + action.type + ".");
     });
 
     return errors;
+  }
+
+  function htmlContainsHubKanban(html) {
+    return /(class\s*=\s*["'][^"']*\bkanban-|data-kanban|kanban-block|kanban-card|kanban-column)/i.test(String(html || ""));
+  }
+
+  function validateAiKanbanSchema(action, prefix) {
+    var errors = [];
+    var cardCount = 0;
+
+    if (action.html !== undefined || action.content !== undefined || action.kanban !== undefined || action.board !== undefined || action.lists !== undefined || action.lanes !== undefined || action.cards !== undefined) {
+      errors.push(prefix + "Kanban deve usar apenas type, itemId, title e columns. Não use HTML nem aliases.");
+    }
+
+    validateAllowedKeys(action, ["type", "itemId", "title", "columns"], prefix + "campos extras não permitidos em insertKanban: ", errors);
+
+    if (typeof action.title !== "string" || !action.title.trim()) {
+      errors.push(prefix + "title do Kanban obrigatório.");
+    }
+    if (typeof action.title === "string" && action.title.length > 80) {
+      errors.push(prefix + "title do Kanban grande demais.");
+    }
+    if (!Array.isArray(action.columns)) {
+      errors.push(prefix + "columns precisa ser array.");
+      return errors;
+    }
+    if (!action.columns.length || action.columns.length > 8) {
+      errors.push(prefix + "columns precisa ter entre 1 e 8 colunas.");
+    }
+
+    action.columns.forEach(function (column, columnIndex) {
+      var columnPrefix = prefix + "columns[" + columnIndex + "]: ";
+
+      if (!column || typeof column !== "object" || Array.isArray(column)) {
+        errors.push(columnPrefix + "coluna precisa ser objeto com title e cards.");
+        return;
+      }
+
+      validateAllowedKeys(column, ["title", "cards"], columnPrefix + "campos extras não permitidos: ", errors);
+
+      if (typeof column.title !== "string" || !column.title.trim()) {
+        errors.push(columnPrefix + "title obrigatório.");
+      }
+      if (typeof column.title === "string" && column.title.length > 60) {
+        errors.push(columnPrefix + "title grande demais.");
+      }
+      if (!Array.isArray(column.cards)) {
+        errors.push(columnPrefix + "cards precisa ser array.");
+        return;
+      }
+
+      (Array.isArray(column.cards) ? column.cards : []).forEach(function (card, cardIndex) {
+        var cardPrefix = columnPrefix + "cards[" + cardIndex + "]: ";
+        cardCount += 1;
+
+        if (!card || typeof card !== "object" || Array.isArray(card)) {
+          errors.push(cardPrefix + "cartão precisa ser objeto com title e checklist.");
+          return;
+        }
+
+        validateAllowedKeys(card, ["title", "checklist"], cardPrefix + "campos extras não permitidos: ", errors);
+
+        if (typeof card.title !== "string" || !card.title.trim()) {
+          errors.push(cardPrefix + "title obrigatório.");
+        }
+        if (typeof card.title === "string" && card.title.length > 140) {
+          errors.push(cardPrefix + "title grande demais.");
+        }
+        if (!Array.isArray(card.checklist)) {
+          errors.push(cardPrefix + "checklist precisa ser array.");
+          return;
+        }
+        if (Array.isArray(card.checklist) && card.checklist.length > 50) {
+          errors.push(cardPrefix + "checklist grande demais.");
+        }
+
+        (Array.isArray(card.checklist) ? card.checklist : []).forEach(function (check, checkIndex) {
+          var checkPrefix = cardPrefix + "checklist[" + checkIndex + "]: ";
+
+          if (!check || typeof check !== "object" || Array.isArray(check)) {
+            errors.push(checkPrefix + "item precisa ser objeto com text e checked.");
+            return;
+          }
+
+          validateAllowedKeys(check, ["text", "checked"], checkPrefix + "campos extras não permitidos: ", errors);
+
+          if (typeof check.text !== "string" || !check.text.trim()) {
+            errors.push(checkPrefix + "text obrigatório.");
+          }
+          if (typeof check.text === "string" && check.text.length > 160) {
+            errors.push(checkPrefix + "text grande demais.");
+          }
+          if (typeof check.checked !== "boolean") {
+            errors.push(checkPrefix + "checked precisa ser boolean.");
+          }
+        });
+      });
+    });
+
+    if (cardCount > 60) {
+      errors.push(prefix + "Kanban grande demais: máximo de 60 cartões.");
+    }
+
+    return errors;
+  }
+
+  function validateAllowedKeys(object, allowedKeys, messagePrefix, errors) {
+    Object.keys(object || {}).forEach(function (key) {
+      if (allowedKeys.indexOf(key) === -1) {
+        errors.push(messagePrefix + key + ".");
+      }
+    });
   }
 
   function sanitizeAiHtml(html) {
@@ -7485,6 +8734,9 @@ import {
     if (activeKanbanModal) {
       closeKanbanCardModal();
     }
+    if (document.getElementById("calendarModal")) {
+      closeCalendarEventModal();
+    }
     closeAdminPanel();
     if (AiState.isOpen) {
       closeAiPanel();
@@ -7505,7 +8757,7 @@ import {
 
     elements.newItem.addEventListener("click", function (event) {
       event.stopPropagation();
-      openCreateMenu(null, ["project", "document"], elements.newItem);
+      openCreateMenu(null, ["project", "document", "calendar"], elements.newItem);
     });
 
     if (elements.sidebarSearch) {
@@ -7519,7 +8771,8 @@ import {
     if (elements.trashToggle) {
       elements.trashToggle.addEventListener("click", function () {
         state.ui.showTrash = !state.ui.showTrash;
-        renderSidebar();
+        state.ui.currentView = "editor";
+        render();
       });
     }
 
@@ -7679,6 +8932,7 @@ import {
       renderAuthView();
       return;
     }
+    await CalendarStore.load();
     renderAccount();
     bindEvents();
     render();
