@@ -1,0 +1,301 @@
+/* Entrada do minigame pelo pódio */
+.podium-item {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  appearance: none;
+  cursor: pointer;
+  transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
+}
+
+.podium-item:hover,
+.podium-item:focus-visible,
+.podium-item.is-highlighted {
+  z-index: 1;
+  filter: saturate(1.18) brightness(1.08);
+  outline: 2px solid #ffd56f;
+  outline-offset: 2px;
+  transform: translateX(-4px);
+  box-shadow: 5px 5px 0 rgba(67, 38, 23, 0.18);
+}
+
+.podium-person small {
+  display: block;
+  max-height: 0;
+  overflow: hidden;
+  color: #ffe9aa;
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  text-transform: uppercase;
+  transition: max-height 160ms ease, opacity 160ms ease;
+}
+
+.podium-item:hover .podium-person small,
+.podium-item:focus-visible .podium-person small,
+.podium-item.is-highlighted .podium-person small {
+  max-height: 1rem;
+  opacity: 1;
+}
+
+body.game-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+.game-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  color: #fff3d2;
+  background: #17211d;
+  isolation: isolate;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  outline: none;
+  touch-action: none;
+}
+
+.game-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 1rem max(1rem, env(safe-area-inset-left));
+  pointer-events: none;
+}
+
+.game-player-card {
+  min-width: min(440px, 54vw);
+  padding: 0.8rem 1.05rem 0.9rem 1.25rem;
+  border-left: 5px solid #ed9d2f;
+  color: #fff0c7;
+  background: rgba(30, 27, 21, 0.9);
+  box-shadow: 7px 8px 0 rgba(20, 22, 18, 0.25);
+  backdrop-filter: blur(5px);
+  pointer-events: auto;
+}
+
+.game-player-card > span,
+.game-player-card small {
+  display: block;
+  color: #efad48;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.game-player-card strong {
+  display: block;
+  margin: 0.12rem 0;
+  overflow: hidden;
+  font-family: var(--display);
+  font-size: clamp(1.65rem, 3vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.game-player-card small {
+  color: #c8b894;
+  letter-spacing: 0.06em;
+}
+
+.game-player-card small b {
+  color: #fff0c7;
+}
+
+.game-player-card small i {
+  color: #efad48;
+  font-style: normal;
+}
+
+.game-actions {
+  display: flex;
+  gap: 0.6rem;
+  pointer-events: auto;
+}
+
+.game-button {
+  min-height: 46px;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(255, 237, 195, 0.65);
+  border-radius: 0;
+  color: #fff1cc;
+  font-family: var(--body);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(37, 31, 24, 0.88);
+  box-shadow: 4px 5px 0 rgba(24, 20, 16, 0.25);
+  cursor: pointer;
+}
+
+.game-button:hover,
+.game-button:focus-visible {
+  color: #2d241a;
+  background: #ffda7a;
+  outline: 2px solid #fff0bd;
+  outline-offset: 2px;
+}
+
+.game-button--sound[aria-pressed="true"] {
+  border-color: #efad48;
+  color: #ffd87b;
+  background: rgba(114, 63, 29, 0.92);
+}
+
+.game-instruction {
+  position: absolute;
+  left: 50%;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  color: #ffedbd;
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(31, 27, 21, 0.82);
+  box-shadow: 5px 6px 0 rgba(20, 19, 16, 0.2);
+  pointer-events: none;
+  transform: translateX(-50%);
+  backdrop-filter: blur(4px);
+}
+
+.game-instruction > span {
+  width: 13px;
+  aspect-ratio: 1;
+  border: 2px solid #efad48;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(239, 173, 72, 0.16);
+  animation: game-tap 1.5s ease-in-out infinite;
+}
+
+@keyframes game-tap {
+  50% { transform: scale(0.65); }
+}
+
+.game-announcement {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: min(420px, calc(100% - 40px));
+  padding: 1.1rem 2rem;
+  color: #ffedbd;
+  text-align: center;
+  border-block: 2px solid #e8972f;
+  background: rgba(37, 29, 21, 0.88);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity 350ms ease, transform 350ms ease;
+  backdrop-filter: blur(5px);
+}
+
+.game-announcement small {
+  display: block;
+  margin-bottom: 0.15rem;
+  color: #efad48;
+  font-size: 0.59rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.game-announcement strong {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 4vw, 2.7rem);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.game-announcement--hidden {
+  opacity: 0;
+  transform: translate(-50%, calc(-50% - 15px));
+}
+
+@media (max-width: 720px) {
+  .game-topbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: max(0.65rem, env(safe-area-inset-top)) 0.65rem 0.65rem;
+  }
+
+  .game-player-card {
+    min-width: 0;
+    width: 100%;
+    padding: 0.58rem 0.72rem 0.65rem 0.9rem;
+    border-left-width: 4px;
+  }
+
+  .game-player-card strong {
+    font-size: clamp(1.25rem, 6vw, 1.85rem);
+  }
+
+  .game-player-card > span,
+  .game-player-card small {
+    font-size: 0.53rem;
+  }
+
+  .game-actions {
+    justify-content: flex-end;
+  }
+
+  .game-button {
+    min-height: 44px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.61rem;
+  }
+
+  .game-instruction {
+    bottom: max(0.7rem, env(safe-area-inset-bottom));
+    width: max-content;
+    max-width: calc(100% - 24px);
+    justify-content: center;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.59rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .game-button--sound {
+    width: 45px;
+    overflow: hidden;
+    padding-inline: 0;
+    font-size: 0;
+  }
+
+  .game-button--sound span {
+    font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-instruction > span {
+    animation: none;
+  }
+}

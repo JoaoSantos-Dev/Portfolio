@@ -1,0 +1,18 @@
+Ana Laís;4
+Ana Luisa;3
+Angelo;3
+Bruno Valerim;5
+Carlos Eduardo;13
+Fernando Prado; 10
+Gabriel Teixeira;4
+Gustavo Bittencourt;4
+Isaac Enir;8
+Isabel Viana;3
+Jorge Matheus;3
+Lucas Samuel;2
+Maria Eduarda;2
+Murilo Morari;9
+Natan;4
+Noan;5
+Pedro Portella;3
+Rodrigo Fernando;15

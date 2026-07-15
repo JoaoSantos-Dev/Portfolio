@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Ranking do Exame de Graduação dos GameDev's, simulado prático da 3ª fase de Programação de Jogos Digitais."
+    />
+    <meta name="theme-color" content="#92cbd5" />
+    <title>Exame de Graduação dos GameDev's</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="game.css" />
+    <script src="script.js" defer></script>
+    <script src="game.js" defer></script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#ranking">Ir direto para o ranking</a>
+
+    <header class="hero">
+      <div class="sun" aria-hidden="true"><span></span></div>
+      <div class="cloud cloud--one" aria-hidden="true"></div>
+      <div class="cloud cloud--two" aria-hidden="true"></div>
+
+      <div class="leaves" aria-hidden="true">
+        <i style="--top: 14%; --delay: -2s; --speed: 10s"></i>
+        <i style="--top: 28%; --delay: -7s; --speed: 13s"></i>
+        <i style="--top: 42%; --delay: -4s; --speed: 11s"></i>
+        <i style="--top: 18%; --delay: -10s; --speed: 15s"></i>
+        <i style="--top: 48%; --delay: -6s; --speed: 12s"></i>
+        <i style="--top: 31%; --delay: -1s; --speed: 14s"></i>
+      </div>
+
+      <div class="hill hill--back" aria-hidden="true"></div>
+      <div class="hill hill--front" aria-hidden="true"></div>
+      <div class="training-posts" aria-hidden="true"><i></i><i></i><i></i></div>
+
+      <div class="hero__content page-shell">
+        <div class="hero__mark" aria-hidden="true"><span></span></div>
+        <div class="hero__copy">
+          <p>Resultado oficial • 3ª fase</p>
+          <h1>Exame de Graduação <em>dos GameDev's</em></h1>
+          <span>Simulado Prático de Programação de Jogos Digitais</span>
+        </div>
+        <div class="max-score" aria-label="Pontuação máxima: 32 pontos">
+          <small>Nota máxima</small>
+          <strong>32</strong>
+          <span>pontos</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-shell main-layout">
+      <section id="ranking" class="ranking-scroll" aria-labelledby="ranking-title">
+        <div class="ranking-scroll__rod ranking-scroll__rod--top" aria-hidden="true"></div>
+
+        <div class="scroll-heading">
+          <div>
+            <p>Classificação geral</p>
+            <h2 id="ranking-title">Ranking do exame</h2>
+          </div>
+          <span class="source-status"><i></i> ranking.txt</span>
+        </div>
+
+        <div id="status-message" class="status-message" role="status" aria-live="polite">
+          <span class="loader" aria-hidden="true"></span>
+          <span>Abrindo o pergaminho...</span>
+        </div>
+
+        <div id="ranking-content" hidden>
+          <div class="ranking-table" role="table" aria-label="Ranking completo do exame">
+            <div class="ranking-head" role="row">
+              <span role="columnheader">Pos.</span>
+              <span role="columnheader">Participante</span>
+              <span role="columnheader">Patente</span>
+              <span role="columnheader">Nota</span>
+              <span role="columnheader">Desempenho</span>
+            </div>
+            <div id="ranking-list" class="ranking-list" role="rowgroup"></div>
+          </div>
+        </div>
+
+        <div class="ranking-scroll__rod ranking-scroll__rod--bottom" aria-hidden="true"></div>
+      </section>
+
+      <aside id="side-content" class="side-content" hidden>
+        <section class="hokage-panel" aria-labelledby="hokage-title">
+          <div class="panel-title panel-title--dark">
+            <span aria-hidden="true">☀</span>
+            <div>
+              <p>Maior resultado</p>
+              <h2 id="hokage-title">Hokage da turma</h2>
+            </div>
+          </div>
+          <div id="hokage-list" class="hokage-list"></div>
+        </section>
+
+        <section class="paper-panel" aria-labelledby="podium-title">
+          <div class="panel-title">
+            <span aria-hidden="true">◆</span>
+            <div>
+              <p>Os três melhores</p>
+              <h2 id="podium-title">Pódio</h2>
+            </div>
+          </div>
+          <div id="podium" class="podium"></div>
+        </section>
+
+        <section class="paper-panel" aria-labelledby="summary-title">
+          <div class="panel-title">
+            <span aria-hidden="true">∿</span>
+            <div>
+              <p>Resumo da missão</p>
+              <h2 id="summary-title">Turma</h2>
+            </div>
+          </div>
+          <div class="stats">
+            <div><strong id="stat-total">—</strong><span>Participantes</span></div>
+            <div><strong id="stat-highest">—</strong><span>Maior nota</span></div>
+            <div><strong id="stat-average">—</strong><span>Média geral</span></div>
+          </div>
+        </section>
+
+        <section class="paper-panel" aria-labelledby="ranks-title">
+          <div class="panel-title">
+            <span aria-hidden="true">▲</span>
+            <div>
+              <p>Faixas de pontuação</p>
+              <h2 id="ranks-title">Patentes</h2>
+            </div>
+          </div>
+          <div id="rank-legend" class="rank-legend"></div>
+        </section>
+      </aside>
+
+      <noscript>
+        <div class="status-message status-message--error">
+          O JavaScript precisa estar ativado para carregar o ranking.
+        </div>
+      </noscript>
+    </main>
+
+    <div
+      id="ceremony-game"
+      class="game-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="game-player-name"
+      hidden
+    >
+      <canvas id="game-canvas" aria-label="Corredor cerimonial da vila"></canvas>
+
+      <div class="game-topbar">
+        <div class="game-player-card">
+          <span id="game-player-place">1º lugar</span>
+          <strong id="game-player-name">Participante</strong>
+          <small><b id="game-player-score">0 / 32 pontos</b> • <i id="game-player-title">Hokage da turma</i></small>
+        </div>
+
+        <div class="game-actions">
+          <button id="game-sound" class="game-button game-button--sound" type="button" aria-pressed="false">
+            <span aria-hidden="true">♪</span> Som: desligado
+          </button>
+          <button id="game-close" class="game-button game-button--close" type="button">
+            <span aria-hidden="true">←</span> Voltar ao ranking
+          </button>
+        </div>
+      </div>
+
+      <div class="game-instruction">
+        <span aria-hidden="true"></span>
+        Clique no corredor para caminhar
+      </div>
+
+      <div id="game-announcement" class="game-announcement" aria-live="polite">
+        <small>Corredor da celebração</small>
+        <strong>A vila espera por você!</strong>
+      </div>
+    </div>
+
+    <footer>
+      <div class="page-shell footer-content">
+        <div class="hero__mark hero__mark--small" aria-hidden="true"><span></span></div>
+        <p><strong>Exame de Graduação dos GameDev's</strong><br />Disciplina, lógica e criatividade.</p>
+        <span>3ª fase • PGD</span>
+      </div>
+    </footer>
+  </body>
+</html>
