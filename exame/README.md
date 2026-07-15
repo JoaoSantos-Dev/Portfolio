@@ -12,6 +12,7 @@ Maria Santos;27
 ```
 
 Linhas vazias ou inválidas são ignoradas. O ranking é ordenado automaticamente da maior para a menor nota.
+Em caso de empate na pontuação, a ordem alfabética dos nomes define as posições.
 
 ## Executar localmente
 

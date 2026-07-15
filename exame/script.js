@@ -62,15 +62,9 @@ function getBaseRank(score) {
 }
 
 function prepareParticipants(participants) {
-  const highestScore = participants[0].score;
-  let previousScore = null;
-  let position = 0;
-
   return participants.map((participant, index) => {
-    if (participant.score !== previousScore) position = index + 1;
-    previousScore = participant.score;
-
-    const isHokage = participant.score === highestScore;
+    const position = index + 1;
+    const isHokage = position === 1;
     return {
       ...participant,
       position,
