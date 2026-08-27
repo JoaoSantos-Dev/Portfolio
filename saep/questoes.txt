@@ -1,1256 +1,359 @@
-TITLE=SAEP_55042
-QUESTION=Você é um artista digital que está trabalhando no desenvolvimento de um jogo digital com atmosfera retrô que demanda a utilização de técnicas específicas na confecção de artefatos multimídia bidimensionais. O estilo a ser aplicado para criar esses elementos é
-A=Pixel art
-B=Arte fractal
-C=Arte vetorial
-D=Desenho realista
-CORRECT=A
----
-TITLE=SAEP_47675
-QUESTION=A empresa X Games deseja criar um jogo utilizando o Microsoft Excel, a mesma deseja aplicar uma linguagem de programação para isso. Qual linguagem compatível deve ser utilizada?
-A=VBA
-B=Python.
-C=Java.
-D=HTML.
-E=Javascript
-CORRECT=A
----
-TITLE=SAEP_71676
-QUESTION=Uma equipe está desenvolvendo um jogo digital para um evento com prazo rígido e requisitos bem definidos desde o início. O escopo do projeto não sofrerá mudanças significativas, e a equipe precisa de uma abordagem que garanta um desenvolvimento estruturado e previsível. Conforme o contexto apresentado, qual metodologia de desenvolvimento adequa-se a essa situação?
-A=Scrum.
-B=Kanban.
-C=Cascata.
-D=Modelo Espiral.
-CORRECT=C
----
-TITLE=SAEP_57279
-QUESTION=Uma equipe de desenvolvimento está programando a mecânica de um jogo de quebra-cabeça digital. O objetivo é garantir que todas as peças do jogo se encaixem corretamente, respondam às interações do jogador e apresentem desafios equilibrados. Para isso, a lógica de programação precisa ser aplicada corretamente no desenvolvimento do sistema de regras do jogo. Conforme o contexto apresentado, qual a principal função da lógica de programação no desenvolvimento do jogo?
-A=Garantir que os quebra-cabeças funcionem corretamente e apresentem desafios equilibrados.
-B=Criar gráficos e efeitos sonoros para tornar o jogo visualmente atrativo.
-C=Adicionar elementos narrativos que tornem a experiência mais envolvente.
-D=Reduzir a complexidade visual do jogo para facilitar a jogabilidade.
-E=Tornar os desafios mais fáceis para aumentar a acessibilidade do jogo.
-CORRECT=A
----
-TITLE=SAEP_79518
-QUESTION=Uma empresa de desenvolvimento de jogos foi contratada para criar um jogo mobile casual com tempo de entrega de 3 meses. O cliente deseja participar do processo, solicitando que a equipe apresente protótipos jogáveis a cada 15 dias para validação e possíveis ajustes. A equipe é enxuta, com desenvolvedores e designers atuando em múltiplas funções, e o escopo do jogo pode ser adaptado ao longo do tempo. Qual metodologia de desenvolvimento deverá ser empregada?
-A=Espiral, pois define todas as funcionalidades do jogo antes do início do desenvolvimento.
-B=Ágil, pois possibilita entregas frequentes e adaptações contínuas ao escopo com envolvimento direto do cliente.
-C=Cascata, pois permite um controle rígido do escopo e cronograma, evitando retrabalhos durante o desenvolvimento.
-D=RAD (Desenvolvimento Rápido de Aplicações), pois elimina a necessidade de protótipos e prioriza a programação direta.
-E=Tradicional incremental, pois garante a entrega do jogo completo somente ao final, evitando mudanças indesejadas no meio do processo.
+TITLE=IOT_001
+QUESTION=Uma indústria deseja acompanhar remotamente a temperatura de uma câmara fria. Um sensor mede a temperatura, um microcontrolador processa a leitura e os dados são enviados pela rede para um painel de supervisão. Conforme o conceito de Internet das Coisas, qual característica define esse sistema como uma solução de IoT?
+A=O uso exclusivo de equipamentos conectados por cabo serial.
+B=A integração entre objetos físicos, sensores, processamento e comunicação de dados pela rede.
+C=A necessidade de o operador registrar manualmente todas as medições.
+D=A utilização de um computador sem conexão com dispositivos físicos.
+E=A execução de um programa que não recebe dados do ambiente.
 CORRECT=B
 ---
-TITLE=SAEP_57181
-QUESTION=Você lidera uma equipe em um estúdio de jogos, trabalhando em um MMORPG (Massively Multiplayer Online Role-Playing Game) épico. O jogo se passa em um universo de fantasia vasto e complexo, com exploração, batalhas e narrativa rica. Recentemente esse jogo passou por diversas atualizações e correções críticas para a melhoria de sua fluidez e dinamicidade, o que fez o produtor pedir à sua equipe que implementasse um plano de contingência para o caso de uma eventual atualização equivocada levar muitos jogadores a não conseguirem acessar o jogo de forma estável. Dentro deste contexto, qual procedimento de teste é essencial para garantir a aderência aos requisitos descritos pelo produtor?
-A=Conduzir testes de regressão para garantir que será possível, caso necessário, substituir temporariamente uma versão atualizada com falhas por uma versão anterior funcional.
-B=Aplicar testes de simulação de tráfego, modelando um grande número de jogadores virtuais para sobrecarregar o servidor e verificar a estabilidade do jogo em condições extremas de carga.
-C=Implementar testes de inteligência artificial avançada, analisando o comportamento dos NPCs em diversas situações para garantir interações realistas e desafiadoras com os jogadores.
-D=Realizar testes de latência de rede em servidores geograficamente distribuídos, analisando a velocidade de comunicação entre diferentes regiões do mundo para garantir uma experiência de jogo sem atrasos para todos os jogadores.
-E=Executar testes de escalabilidade de gráficos, otimizando o jogo para suportar resoluções ultra altas e efeitos visuais de última geração em hardware de ponta, sem comprometer o desempenho em computadores menos potentes.
-CORRECT=A
----
-TITLE=SAEP_79502
-QUESTION=Um programador é responsável por planejar o desenvolvimento de um jogo de simulação em tempo real para dispositivos móveis, com ciclos de atualização frequentes e feedback contínuo dos usuários. Durante o planejamento, é necessário escolher uma metodologia de desenvolvimento que permita iterações rápidas e adaptações baseadas em testes de usabilidade, garantindo a entrega de um produto interativo e robusto. No entanto, a equipe identificou que o cronograma inicial está desalinhado com as demandas do projeto. Qual metodologia de desenvolvimento deve ser aplicada e qual ajuste no processo deve ser proposto?
-A=Implementar a metodologia Espiral, focando em protótipos iniciais, ajustando o cronograma para realizar testes de usabilidade apenas na fase final de desenvolvimento.
-B=Aplicar uma metodologia Ágil genérica, utilizando reuniões semanais para planejar tarefas, ajustando o cronograma para incluir revisões gerais do projeto com base em feedback da equipe.
-C=Adotar a metodologia Kanban, organizando tarefas em um quadro visual, ajustando o cronograma para priorizar a conclusão de tarefas em sequência com revisões semanais de progresso.
-D=Utilizar a metodologia Cascata, definindo todas as fases do projeto em sequência, ajustando o cronograma para estender a fase de planejamento com detalhamento completo das especificações.
-E=Aplicar a metodologia Scrum, dividindo o projeto em sprints de duas semanas com revisões frequentes, ajustando o cronograma para incluir reuniões diárias de acompanhamento e priorização de feedback de usabilidade.
-CORRECT=E
----
-TITLE=SAEP_79538
-QUESTION=Uma empresa está preparando a publicação de um jogo digital para múltiplas plataformas, incluindo consoles, PCs e dispositivos móveis. Durante o processo, a equipe precisa configurar corretamente o ambiente de execução e as versões compatíveis dos sistemas operacionais para cada plataforma. Qual procedimento deve ser realizado para assegurar que o jogo funcione corretamente em todos os dispositivos?
-A=Definir os personagens e níveis que estarão disponíveis em cada plataforma.
-B=Criar backups automáticos dos arquivos do projeto durante o desenvolvimento.
-C=Ajustar as permissões de acesso ao sistema operacional para evitar erros de execução.
-D=Configurar as definições gráficas do jogo para o máximo desempenho possível em um único dispositivo.
-E=Identificar e documentar as versões mínimas de sistema operacional e requisitos do hardware para cada plataforma.
-CORRECT=E
----
-TITLE=SAEP_57139
-QUESTION=Ao projetar elementos para jogos, precisamos analisar e utilizar os fundamentos e ferramentas de UI (User Interface), UX (User Experience) e design de elementos gráficos para criar jogos amigáveis ao usuário. Qual objetivo da análise e utilização desses elementos?
-A=Decidir qual será o enredo principal do jogo.
-B=Escolher qual motor de jogo será utilizado no projeto.
-C=Definir a linguagem de programação a ser usada no jogo.
-D=Garantir que o jogo seja lançado dentro do prazo estabelecido.
-E=Conceber elementos de jogo, considerando usabilidade e interatividade.
-CORRECT=E
----
-TITLE=SAEP_57134
-QUESTION=Os fundamentos de UI (User Interface), UX (User Experience) e o design de elementos gráficos são capacidades fundamentais durante o processo de concepção e criação de um jogo eletrônico. Sua eficaz elaboração permite que se alcance maiores fluidez, clareza e dinamicidade ao usuário. De acordo com o contexto, qual é o principal objetivo dessa elaboração?
-A=Decidir qual será o enredo principal do jogo.
-B=Determinar taxa de quadros por segundo (FPS) do jogo.
-C=Definir o orçamento de marketing para promover o jogo.
-D=Escolher as cores e fontes mais populares entre os jogadores.
-E=Identificar os elementos que gerem a melhor experiência no jogo.
-CORRECT=E
----
-TITLE=SAEP_54290
-QUESTION=Um desenvolvedor de jogos digitais concluiu o desenvolvimento de um novo jogo e está se preparando para publicá-lo em diferentes plataformas, como PC, consoles e dispositivos móveis. O jogo foi projetado para ser executado em várias resoluções de tela e oferecer suporte a diferentes requisitos de hardware e software. O conceito essencial para garantir a adaptabilidade e desempenho adequado do jogo em diferentes dispositivos é o...
-A=Ray Tracing
-B=DirectX 12
-C=Unity Engine
-D=Cross-Platform Development
+TITLE=IOT_002
+QUESTION=Em uma linha de produção, um dispositivo detecta a presença de caixas antes de elas entrarem em uma esteira automatizada. Qual função é desempenhada por esse dispositivo no sistema IoT?
+A=Armazenar dados em nuvem.
+B=Atuar fisicamente sobre a esteira.
+C=Converter a rede Wi-Fi em Bluetooth.
+D=Sensoriar uma condição do ambiente e fornecer um dado ao sistema.
+E=Executar o controle de acesso ao banco de dados.
 CORRECT=D
 ---
-TITLE=SAEP_57272
-QUESTION=Você foi aprovado em um processo seletivo para atuar em uma empresa de jogos eletrônicos e um dos requisitos para esta vaga era de possuir sólidos conhecimentos em linguagem de programação para a criação desses jogos. De acordo com metodologia e padrões de qualidade, usabilidade, interatividade, robustez, acessibilidade e segurança da informação. Você precisa planejar sistemas de jogos eletrônicos para atender ao escopo do projeto e manipular dados em arquivos e bancos de dados utilizando os conhecimentos que foram adquiridos durante o Curso Técnico de Jogos Digitais. Conforme o contexto apresentado, podemos concluir que
-A=sólidos conhecimentos em linguagem de programação são a capacidade de criar personagens bem elaborados.
-B=sólidos conhecimentos em linguagem de programação são a capacidade de programar mecânicas de jogo dificéis.
-C=sólidos conhecimentos em linguagem de programação são a habilidade de projetar interfaces leves com códigos complexos.
-D=sólidos conhecimentos em linguagem de programação são a habilidade de solucionar problemas complexos de programação.
-E=sólidos conhecimentos em linguagem de programação são a capacidade de projetar elementos de interface de usuário eficientes.
-CORRECT=D
----
-TITLE=SAEP_79510
-QUESTION=Durante a manutenção de um jogo de plataforma 2D, a equipe de desenvolvimento identificou que múltiplos trechos de código estão repetindo a lógica de movimentação dos personagens. Essa repetição aumenta o esforço de manutenção e dificulta a implementação de novos recursos. Para resolver o problema, o desenvolvedor decide realizar uma refatoração que permita reutilizar esse código de maneira clara e eficiente. Qual abordagem o desenvolvedor deverá entregar?
-A=Deixar a lógica repetida até que ocorra um erro crítico, e então reorganizar o código com base no problema.
-B=Criar várias funções semelhantes para cada personagem, mantendo estruturas repetidas para facilitar a leitura.
-C=Substituir a lógica de movimentação por comandos visuais no editor de animações, evitando o uso de programação.
-D=Copiar o código de movimentação original e adaptá-lo separadamente para cada personagem, mantendo a lógica independente.
-E=Criar uma função genérica que receba parâmetros como velocidade e direção, e aplicá- la sempre que a movimentação for necessária.
-CORRECT=E
----
-TITLE=SAEP_79534
-QUESTION=Uma equipe de desenvolvimento está finalizando um jogo indie para publicação em uma plataforma digital. O responsável por essa etapa precisa preparar documentos como a ficha técnica do jogo, orientações de instalação, política de privacidade e termos de uso. Esses arquivos devem ser formatados com clareza, padronizados e acessíveis ao público-alvo. Para isso, ele decide utilizar uma ferramenta já conhecida no ambiente de escritório. Considerando o contexto apresentado, a ferramenta mais adequada para a produção dos documentos citados é
-A=excel.
-B=unity.
-C=audacity.
-D=photoshop.
-E=microsoft word.
-CORRECT=E
----
-TITLE=SAEP_79523
-QUESTION=Uma equipe está desenvolvendo um jogo de aventura 3D no motor Unreal Engine, onde o cenário de uma floresta inclui uma trilha sonora ambiente que se intensifica quando o personagem se aproxima de uma área de perigo e um efeito sonoro de impacto ao interagir com objetos destrutíveis. A criação dos elementos audiovisuais deve ser realizada em ferramentas específicas, considerando que a trilha sonora precisa de camadas dinâmicas para transições suaves e o efeito sonoro deve ser nítido, com baixa latência, para reforçar a interatividade. As ferramentas devem suportar exportação para formatos compatíveis com Unreal Engine, atender aos padrões de qualidade e usabilidade, e permitir ajustes para acessibilidade auditiva, como níveis de volume balanceados. Qual técnica deve ser aplicada para criar os elementos audiovisuais?
-A=Utilizar um software de produção de áudio com suporte a camadas dinâmicas para a trilha sonora e edição de efeitos sonoros com baixa latência, exportáveis para Unreal Engine.
-B=Empregar um editor de vídeo com ferramentas de áudio para criar a trilha sonora and o efeito sonoro, focando em sincronização visual
-C=Usar um software de animação 2D para gerar a trilha sonora and o efeito sonoro, priorizando compatibilidade com animações visuais
-D=Desenvolver a trilha sonora and o efeito sonoro em um software de modelagem 3D, integrando-os diretamente ao cenário
-E=Aplicar um editor de áudio básico para criar uma trilha sonora estática and um efeito sonoro genérico sem ajustes de latência
+TITLE=IOT_003
+QUESTION=Um sistema IoT identifica que a temperatura de uma sala ultrapassou o limite configurado e aciona automaticamente um ventilador. Nesse sistema, o ventilador exerce o papel de
+A=atuador, pois realiza uma ação física a partir de um comando do sistema.
+B=sensor, pois mede a temperatura do ambiente.
+C=broker, pois distribui mensagens entre dispositivos.
+D=gateway, pois converte protocolos de rede.
+E=banco de dados, pois registra o histórico de temperatura.
 CORRECT=A
 ---
-TITLE=SAEP_57284
-QUESTION=Imagine que você é um desenvolvedor de jogos eletrônicos trabalhando em um projeto ambicioso de RPG (Role-Playing Game) virtual em um estúdio renomado. A equipe está empolgada em criar um mundo de jogo vasto e envolvente, repleto de personagens, cenários e histórias intrigantes. A integração de elementos multimídia desempenha um papel fundamental para tornar essa experiência única. Conforme o contexto, qual é a função da integração descrita e como ela impacta na experiência do jogador?
-A=Programar puzzles desafiadores, para que os jogadores avancem na história do jogo.
-B=Criar um sistema de comércio no jogo, permitindo que os jogadores comprem e vendam itens.
-C=Codificar o cálculo do dano em batalha, levando a batalhas com animações de combate impressionantes.
-D=Implementar diálogos interativos entre personagens, permitindo que os jogadores tomem decisões que afetam a narrativa.
-E=Determinar quais comandos levam a quais animações do personagem e demais entidades, para criar experiência de jogo imersiva e engajante.
-CORRECT=E
----
-TITLE=SAEP_57274
-QUESTION=Você é um desenvolvedor de jogos eletrônicos e está trabalhando em um jogo virtual de RPG. O jogo possui um sistema de inventário que permite ao jogador armazenar itens. O sistema atual é baseado em uma lista ligada (Linked List), que é eficiente em termos de espaço, mas não é muito eficiente em termos de tempo. Conforme o contexto apresentado, qual é a melhor maneira de melhorar o desempenho do sistema de inventário?
-A=Usar uma biblioteca de inventário externa.
-B=Usar um mecanismo de armazenamento baseado em disco.
-C=Usar uma estrutura de dados mais eficiente, como um hashmap.
-D=Usar um processador gráfico para realizar as operações de inventário.
-E=Usar um algoritmo de busca mais eficiente, como o algoritmo de busca binária.
+TITLE=IOT_004
+QUESTION=Um técnico precisa conectar um sensor portátil a um smartphone a poucos metros de distância, com baixo consumo de energia e sem utilizar a infraestrutura Wi-Fi da empresa. Qual tecnologia é adequada para essa comunicação de curta distância?
+A=Satélite.
+B=Ethernet metropolitana.
+C=Bluetooth.
+D=Fibra óptica.
+E=RFID passivo como enlace contínuo de dados.
 CORRECT=C
 ---
-TITLE=SAEP_57099
-QUESTION=Alunos de Jogos Digitais aprendem a diferenciar metodologias de desenvolvimento de projetos de acordo com as características específicas de jogos eletrônicos. Isso é essencial para garantir que o processo de criação de jogos seja adequado às necessidades de cada projeto. Dentre as metodologias, podemos categorizar entre: metodologias tradicionais e metodologias ágeis. O que diferencia esses dois tipos de metodologias no contexto da criação de jogos?
-A=As metodologias tradicionais enfatizam a entrega contínua de incrementos de software, enquanto as metodologias ágeis seguem um processo sequencial.
-B=As metodologias tradicionais são mais flexíveis e adaptáveis às mudanças de escopo, enquanto as metodologias ágeis são rígidas e inflexíveis.
-C=As metodologias tradicionais são baseadas em iterações curtas e colaboração constante, enquanto as metodologias ágeis seguem uma abordagem sequencial e burocrática.
-D=As metodologias tradicionais enfatizam a colaboração da equipe e a comunicação direta com os clientes, enquanto as metodologias ágeis seguem um processo mais hierárquico.
-E=As metodologias tradicionais priorizam a documentação detalhada e extensa, enquanto as metodologias ágeis valorizam a fragmentação das entregas, a velocidade na entrega e o software funcional.
+TITLE=IOT_005
+QUESTION=Uma placa de desenvolvimento deve enviar dados de sensores diretamente para um servidor na rede local, aproveitando o roteador sem fio já instalado no laboratório. Qual tecnologia de conectividade é a escolha mais direta?
+A=RFID.
+B=Satélite.
+C=NFC.
+D=Infravermelho.
+E=Wi-Fi.
 CORRECT=E
 ---
-TITLE=SAEP_79511
-QUESTION=Uma equipe está desenvolvendo um jogo de exploração em mundo aberto no motor Unity, onde o cenário inclui um templo 3D com detalhes arquitetônicos complexos e um mapa 2D interativo exibido na interface do jogador. A criação do templo 3D exige modelagem poligonal com texturas de alta qualidade para realismo, enquanto o mapa 2D precisa de ícones vetoriais claros e escaláveis para diferentes resoluções de tela. As ferramentas escolhidas devem suportar exportação para formatos compatíveis com Unity, otimização de desempenho para o templo 3D e acessibilidade visual para o mapa, atendendo aos padrões de qualidade e usabilidade do projeto. Qual técnica será utilizada para atender os requisitos?
-A=Empregar um software de design rasterizado para criar o templo 3D and o mapa 2D, focando em resoluções fixas para ambos
-B=Desenvolver o templo 3D and o mapa 2D em um software de edição de vídeo, focando em efeitos visuais dinâmicos
-C=Aplicar um editor de pixel art para desenvolver o mapa 2D and o templo 3D, priorizando estética retrô de baixa resolução
-D=Usar um software de animação 2D para criar o mapa interativo and importar modelos 3D genéricos para o templo sem texturas personalizadas
-E=Utilizar um software de modelagem 3D com suporte a texturas de alta qualidade e otimização poligonal para o templo e um editor vetorial para o mapa 2D interativo.
-CORRECT=E
----
-TITLE=SAEP_57270
-QUESTION=Durante o curso de Desenvolvimento de Jogos Digitais, os alunos aprendem a programar e a criar sistemas de jogos de acordo com os padrões de qualidade estabelecidos. Uma das habilidades essenciais é a capacidade de refatorar o código de um jogo, visto que essa técnica envolve fazer melhorias no código existente para torná-lo mais eficiente e organizado. Conforme o contexto apresentado, a razão pela qual esses alunos devem aprender essa técnica é
-A=reduzir a acessibilidade do jogo.
-B=adicionar novos recursos ao jogo.
-C=aumentar a complexidade do jogo.
-D=economizar tempo na criação de um novo jogo.
-E=melhorar a performance e a organização do código do jogo.
-CORRECT=E
----
-TITLE=SAEP_71691
-QUESTION=Durante o desenvolvimento de um jogo, a equipe percebe que os jogadores estão demorando para entender as funcionalidades da interface. Mesmo após algumas tentativas, muitos não conseguem encontrar comandos essenciais, o que gera frustração e impacta a jogabilidade. Conforme o contexto apresentado, qual princípio está diretamente relacionado ao problema identificado?
-A=Previsibilidade e consistência no design dos menus.
-B=Contraste e legibilidade das informações na tela.
-C=Padronização das cores da interface do jogo.
-D=Feedback visual nas interações do jogador.
-CORRECT=A
----
-TITLE=SAEP_47717
-QUESTION=Ao definir o lançamento de um jogo, tendo como plataforma o computador, a empresa responsável pela produção deve ter em mente quais as configurações mínimas e máximas para que o jogo funcione adequadamente. Levando isso em consideração, qual parâmetro é importante para definir as limitações de configuração?
-A=O tamanho do arquivo de instalação do jogo.
-B=A duração máxima de cada partida.
-C=O número de personagens jogáveis.
-D=A resolução dos gráficos do jogo.
-E=A trilha sonora do jogo.
-CORRECT=D
----
-TITLE=SAEP_79533
-QUESTION=Durante a fase final de um projeto de jogo digital, a equipe de desenvolvimento precisa organizar todos os documentos técnicos e visuais exigidos para a publicação do produto. Para isso, foi definido o uso de softwares de escritório. Um dos objetivos é garantir que os documentos estejam bem estruturados, acessíveis à equipe de forma online e prontos para futuras atualizações, conforme exigências da plataforma onde o jogo será publicado. Para atender os requisitos a equipe deverá
-A=Elaborar um documento único em software de planilhas, usando células mescladas para inserir textos e imagens.
-B=Salvar os arquivos localmente em computadores pessoais e realizar reuniões presenciais para unificar as edições.
-C=Criar arquivos em formato de imagem para ilustrar todos os documentos e compartilhá- los em uma rede social interna.
-D=Usar um editor de texto colaborativo em nuvem com controle de versões, comentários e templates padronizados para documentação técnica.
-E=Dividir o conteúdo da documentação entre os membros da equipe para que cada um crie seu próprio documento com layout e formatação independentes.
-CORRECT=D
----
-TITLE=SAEP_79524
-QUESTION=Uma equipe de desenvolvimento de um jogo de aventura está na etapa de pré-produção e precisa organizar as informações dos elementos interativos (botões, menus, personagens clicáveis e áreas sensíveis) e suas respectivas ações previstas no jogo. O objetivo é que todos os envolvidos – designers, programadores e testadores – possam acessar e editar esse material de forma simultânea, estruturada e segura. O coordenador solicita que a equipe utilize ferramentas adequadas de escritório para registrar essas informações com clareza, favorecendo a colaboração online e a rastreabilidade de alterações. Para construir a documentação colaborativa a equipe deverá
-A=criar uma planilha online para listar os elementos interativos e suas ações, com permissões de edição compartilhada para a equipe.
-B=utilizar um software de texto local para registrar todas as informações, salvando o arquivo para envio posterior por e-mail entre os membros da equipe.
-C=utilizar um software de apresentação para descrever os elementos interativos com imagens e anotações, permitindo sua leitura em reuniões presenciais.
-D=organizar os dados em um editor de texto colaborativo online, utilizando descrições livres e diferentes formatos definidos por cada membro da equipe.
-E=criar documentos separados para cada tipo de elemento interativo e armazená-los em pastas locais, acessadas por meio de compartilhamento manual via pen drive.
-CORRECT=A
----
-TITLE=SAEP_77877
-QUESTION=Você está modelando um objeto tridimensional no Blender, e notou que um dos polígonos do modelo está sem uma face. Para resolver, você deve realizar o procedimento de:
-A=selecionar os três vértices e usar o atalho F do teclado para criar a face.
-B=selecionar as três arestas e usar o atalho S + 0 do teclado para criar a face.
-C=selecionar os três vértices e usar o atalho E + S do teclado para criar a face.
-D=selecionar as três arestas e usar o atalho E + S + 0 do teclado para criar a face.
-CORRECT=A
----
-TITLE=SAEP_57183
-QUESTION=Você foi contratado para atuar em uma empresa de jogos eletrônicos. Durante suas atividades na empresa, você precisará aplicar conhecimentos sobre fundamentos de UI e UX para jogos eletrônicos. A devida e correta aplicação de cada um desses conhecimentos é essencial para criar jogos que proporcionam uma experiência agradável e fluída. Conforme o contexto apresentado, a principal função que você desempenhará nessa empresa será
-A=escrever roteiros complexos para jogos.
-B=modelar personagens em 3D para jogos.
-C=programar a mecânica avançada de jogos.
-D=gerenciar servidores e infraestrutura de jogos.
-E=aplicar princípios de design de interface para jogos.
-CORRECT=E
----
-TITLE=SAEP_47363
-QUESTION=A equipe de arte terá que planejar a arte conceitual de um cenário que foi criada para compor um jogo que está sendo produzido. A ideia seria de um cenário que gerasse um visual cromático agradável e suave, criado utilizando três ou quatro cores vizinhas no círculo cromático bem balanceadas. Qual harmonização de cores o artista empregaria para produzir tal efeito?
-A=Monocromática.
-B=Complementar.
-C=Triádica.
-D=Análoga.
-E=Divídica.
-CORRECT=D
----
-TITLE=SAEP_79592
-QUESTION=Durante o desenvolvimento de um mini jogo de perguntas e respostas, um programador precisa que o jogo verifique se a resposta do jogador está correta. Para isso, ele utiliza uma estrutura condicional que compara a resposta digitada com a resposta certa armazenada em uma variável. A ação lógica que deverá ser aplicada é
-A=sortear aleatoriamente se a resposta será considerada certa ou errada.
-B=verificar se a resposta do jogador é igual à resposta correta armazenada.
-C=comparar a resposta do jogador com todas as respostas incorretas possíveis.
-D=definir que a resposta está correta toda vez que o jogador pressionar a tecla "Enter".
-E=permitir que qualquer resposta seja considerada correta, para manter o jogo acessível.
+TITLE=IOT_006
+QUESTION=Uma empresa deseja identificar automaticamente caixas que passam por um portal de entrada do estoque, usando etiquetas eletrônicas associadas a cada item. Qual tecnologia é apropriada para identificação por radiofrequência?
+A=MQTT.
+B=RFID.
+C=OPC.
+D=PWM.
+E=ADC.
 CORRECT=B
 ---
-TITLE=SAEP_57131
-QUESTION=Ao desenvolver jogos eletrônicos, é essencial considerar a capacidade de parametrizar esses jogos de acordo com os requisitos específicos de hardware e software da aplicação. Além disso, é importante seguir metodologias e padrões de qualidade que garantam usabilidade, interatividade, robustez, acessibilidade e segurança da informação nos jogos. Uma etapa crítica nesse processo é a publicação dos jogos para que possam ser adquiridos pelo público-alvo. Para atender o objetivo, é fundamental
-A=projetar personagens cativantes para os jogos.
-B=fazer a promoção de marketing dos jogos.
-C=testar a fluidez e a dinamicidade do jogo.
-D=criar histórias envolventes para os jogos.
-E=programar os efeitos visuais dos jogos.
+TITLE=IOT_007
+QUESTION=Em um protótipo IoT, o componente responsável por executar o programa, ler sensores e comandar saídas digitais é um
+A=roteador.
+B=transdutor passivo.
+C=microcontrolador.
+D=servidor DNS.
+E=switch não gerenciável.
 CORRECT=C
 ---
-TITLE=SAEP_57089
-QUESTION=Você está estagiando em uma empresa de criação de jogos eletrônicos e está aprendendo a utilizar aplicações e fundamentos de hardware e software de dispositivos no desenvolvimento de documentação para jogos. Uma parte fundamental desse processo é o planejamento de elementos multimídia, parte importante na definição do escopo do projeto de um jogo. Qual é a finalidade desse planejamento?
-A=Otimizar o desempenho do hardware dos dispositivos de jogos.
-B=Garantir que o jogo seja executado em diferentes sistemas operacionais.
-C=Criar uma narrativa envolvente que envolva os jogadores na experiência do jogo.
-D=Testar o jogo em diferentes dispositivos para garantir uma jogabilidade suave.
-E=Elaborar documentação que permita a adequada e integrada criação de elementos visuais e sonoros.
+TITLE=IOT_008
+QUESTION=Durante uma atividade de prototipagem, a equipe precisa ler um botão e acionar um LED utilizando uma plataforma com microcontrolador e pinos de entrada e saída. Qual recurso do conteúdo da UC atende diretamente a essa necessidade?
+A=Arduino.
+B=Satélite.
+C=OPC exclusivamente em nuvem.
+D=RFID passivo.
+E=Servidor de arquivos.
+CORRECT=A
+---
+TITLE=IOT_009
+QUESTION=Em um sistema de controle, um sensor de luminosidade envia uma leitura ao microcontrolador e, de acordo com o valor recebido, uma lâmpada é ligada. Qual sequência representa corretamente o fluxo básico do sistema?
+A=Atuador -> sensor -> processamento.
+B=Processamento -> atuador -> sensor.
+C=Rede -> atuador -> sensor, sem processamento.
+D=Sensor -> processamento -> atuador.
+E=Atuador -> rede -> banco de dados.
+CORRECT=D
+---
+TITLE=IOT_010
+QUESTION=Uma solução IoT utiliza um protocolo leve de mensagens em que dispositivos publicam dados em tópicos e outros dispositivos podem assinar esses tópicos. Qual protocolo corresponde a essa descrição?
+A=FTP.
+B=HDMI.
+C=RFID.
+D=VGA.
+E=MQTT.
 CORRECT=E
 ---
-TITLE=SAEP_79501
-QUESTION=Durante o desenvolvimento de um jogo de estratégia em tempo real (RTS), o programador precisa implementar o sistema de movimentação de múltiplas unidades do exército. O objetivo é que, ao selecionar várias unidades e clicar em um ponto do mapa, todas se desloquem até esse ponto sem se sobrepor. Para isso, ele optou por aplicar uma lógica de “formação em grade”, na qual cada unidade é atribuída a uma célula de uma grade virtual em torno do ponto de destino, respeitando as colisões e mantendo a organização do grupo durante o trajeto. No entanto, testes mostraram que algumas unidades se chocam entre si ao tentar ocupar a mesma célula ou fazem movimentos incoerentes ao desviarem de obstáculos. Qual estratégia de programação deve ser aplicada?
-A=Utilizar uma lógica de movimento em linha reta com base na distância euclidiana de cada unidade até o ponto central de destino.
-B=Atribuir posições aleatórias próximas ao ponto de destino para cada unidade, permitindo movimentos simultâneos e evitando cálculos de colisão.
-C=Implementar um sistema de pathfinding individual com alocação de células exclusivas na formação de grade e detecção preditiva de colisões.
-D=Aplicar uma estrutura de árvore binária para classificar as unidades por proximidade e evitar sobreposição ao organizar o destino por ordem de chegada.
-E=Programar todas as unidades para seguirem uma única unidade “líder”, que define o caminho principal, enquanto as outras seguem com leve atraso temporal.
-CORRECT=C
----
-TITLE=SAEP_79591
-QUESTION=Em um projeto de desenvolvimento de um jogo de estratégia em tempo real, a equipe de programação identificou um comportamento inesperado na inteligência artificial (IA) dos inimigos. Durante os testes iniciais, percebeu-se que, em certas condições de combate, as unidades inimigas não respondem adequadamente às ações do jogador, resultando em uma experiência de jogo inconsistente e frustrante. A análise preliminar do código-fonte da IA não revelou erros óbvios de sintaxe ou lógica básica. A complexidade do sistema de IA, que envolve múltiplos estados e interações com o ambiente do jogo, sugere que o problema pode estar relacionado a cenários específicos ou a uma falha na integração de diferentes módulos. A equipe precisa determinar a causa raiz desse comportamento e garantir que futuras atualizações da IA funcionem conforme o esperado, mantendo a dificuldade e o desafio propostos para o jogador. Qual procedimento de teste deve ser aplicado?
-A=Realizar testes de unidade isolados em cada função da IA, sem simular a interação completa com o ambiente do jogo.
-B=Implementar testes de integração que simulem cenários de combate complexos, observando o comportamento da IA em tempo real e registrando os estados internos.
-C=Conduzir testes de aceitação com jogadores externos para coletar feedback sobre a dificuldade percebida da IA.
-D=Executar testes de carga para verificar se o problema ocorre apenas quando há um grande número de unidades inimigas na tela.
-E=Revisar a documentação de requisitos da IA para identificar possíveis ambiguidades ou lacunas na especificação do comportamento esperado.
+TITLE=IOT_011
+QUESTION=Um dispositivo IoT precisa trocar dados com outros equipamentos da rede. Antes de testar a aplicação, o técnico verifica se o dispositivo possui uma configuração de rede compatível com a infraestrutura. Qual informação é essencial nesse procedimento?
+A=A cor do cabo do sensor.
+B=O endereçamento de rede do dispositivo.
+C=O nome da variável utilizada no código C.
+D=O valor nominal do resistor do LED.
+E=A versão do editor de texto instalado.
 CORRECT=B
 ---
-TITLE=SAEP_57220
-QUESTION=Você está no meio do processo de criação de um jogo eletrônico. Como parte da equipe de design, você precisa aplicar seus conhecimentos em fundamentos de UI, UX e design de elementos gráficos. No atual estágio do projeto, é essencial planejar os elementos multimídia que serão incorporados para atender ao escopo do projeto, garantindo uma experiência de jogo envolvente e agradável. Considerando o contexto apresentado, você necessitará de
-A=trilha sonora intensa e músicas empolgantes.
-B=diálogos de personagens profundos e enriquecedores.
-C=animações complexas e efeitos visuais impressionantes.
-D=fotografias de alta resolução para os elementos de fundo.
-E=projetar efeitos sonoros que fornecerão feedback imediato ao jogador.
-CORRECT=E
----
-TITLE=SAEP_79498
-QUESTION=Uma equipe desenvolve um jogo de aventura 2D no motor Unity, onde o personagem, ao colidir com uma gema, exibe um efeito visual de brilho. A integração deve ser programada em C#, garantindo que o efeito visual seja ativado apenas no momento da colisão com a gema, respeitando padrões de interatividade. O asset do efeito visual já está importado no projeto como um sistema de partículas, mas a lógica para detectar a colisão e ativar o efeito precisa ser implementada. A técnica de programação a ser aplicada é
-A=criar uma função que exiba o efeito visual automaticamente ao carregar o nível do jogo.
-B=configurar um temporizador para ativar o efeito visual em intervalos regulares.
-C=utilizar um loop que ative o efeito visual a cada frame, independentemente da colisão.
-D=implementar um evento de colisão para detectar o contato com a gema e acionar o efeito visual de brilho.
-E=desenvolver um método que exiba o efeito visual quando o personagem atinge um número específico de pontos.
-CORRECT=D
----
-TITLE=SAEP_57108
-QUESTION=Um grupo de recém-formados do itinerário de jogos eletrônicos se candidatou a uma vaga de emprego em uma indústria de criação de jogos. Para que os novatos pudessem ser avaliados, convidaram o Game Designer da empresa para que ele apresentasse um projeto que estava atualmente em desenvolvimento. A ideia do Game Designer foi pedir para que cada candidato à vaga assinasse um termo de confidencialidade e, em seguida, foram instruídos a lerem uma antiga versão do Game Design Document (GDD) do projeto, para em seguida sugerir algumas melhorias para problemas que a equipe já tinha resolvido no projeto. Baseado no contexto o objetivo do GDD é
-A=a criação dos termos de confidencialidades .
-B=registrar informações sobre cada integrante da equipe.
-C=registrar o relatório de erros, a fim de balancear o jogo.
-D=listar todos os designs finais das artes gráficas do projeto.
-E=registrar sobre o funcionamento do jogo: mecânica, arte gráfica, arte sonora e outros.
-CORRECT=E
----
-TITLE=SAEP_79601
-QUESTION=Durante o processo de verificação de qualidade de um jogo multiplayer em desenvolvimento, foram identificadas falhas esporádicas na sincronização de ações entre os jogadores. A equipe de testes já havia aplicado testes funcionais unitários e de interface com sucesso, mas os erros persistem apenas em situações com múltiplos usuários ativos e conexões de internet diferentes. Diante do cenário, os analistas buscam rever os procedimentos adotados e identificar o tipo de teste mais adequado para cobrir essa limitação, sem repetir testes já realizados. Qual procedimento de teste deve ser adotado para garantir a aderência do sistema aos requisitos funcionais?
-A=Aplicar testes de desempenho com foco em carga e estresse, simulando múltiplos usuários interagindo simultaneamente no jogo.
-B=Executar novamente os testes unitários, focando nas funções responsáveis pela troca de dados entre os jogadores.
-C=Reavaliar a usabilidade do jogo em diferentes dispositivos, com foco na interface de cada jogador.
-D=Utilizar testes de regressão para verificar se as falhas surgiram após modificações recentes no código.
-E=Realizar testes exploratórios em sessões controladas com usuários, observando o comportamento do sistema em tempo real.
-CORRECT=A
----
-TITLE=SAEP_79490
-QUESTION=Um técnico em programação de jogos digitais responsável pela publicação de um jogo de quebra-cabeça para dispositivos móveis. Antes da publicação, é necessário criar um documento técnico em um software de escritório, como Microsoft Word, que detalhe os requisitos de compatibilidade de hardware e software, incluindo especificações mínimas de sistema e configurações de acessibilidade, como suporte a leitores de tela para menus do jogo. O documento deve ser claro e estruturado para orientar a equipe de publicação e garantir conformidade com as diretrizes da plataforma de distribuição. Qual estrutura deve ser utilizada em um software de escritório para organizar um documento técnico?
-A=Estruturar um documento no Microsoft Word com parágrafos longos e texto justificado, detalhando os requisitos de publicação em um único bloco, sem uso de cabeçalhos ou tabelas para organização.
-B=Usar o Microsoft Excel para criar uma planilha com os requisitos de hardware e software, organizando os dados em colunas, mas sem incluir descrições de acessibilidade ou formatação para leitores de tela.
-C=Configurar um documento no Microsoft Word com bullet points para listar os requisitos de software, aplicando fontes de tamanho 10 e espaçamento simples, sem considerar a estrutura navegável para acessibilidade.
-D=Elaborar um documento no Microsoft Word com listas numeradas para descrever os requisitos de hardware, utilizando fontes coloridas para destacar seções, mas sem incluir informações sobre acessibilidade para leitores de tela.
-E=Criar um documento no Microsoft Word com seções organizadas por estilos de cabeçalho navegáveis (nível 1 a 3), incluindo tabelas com especificações mínimas de hardware e software e descrições de acessibilidade, como suporte a leitores de tela, conforme padrões WCAG.
-CORRECT=E
----
-TITLE=SAEP_47619
-QUESTION=Na escolha da metodologia ágil a ser utilizada, a equipe de um projeto de jogo educacional deve estar em contato direto com o cliente, pois ele é o foco principal nessa situação. Qual das metodologias demonstra ter como ponto forte a relação entre colaboradores e clientes, para objetivo ser atingido satisfatoriamente?
-A=Lean.
-B=Scrum.
-C=Kanban.
-D=Design Sprint.
-E=Extreme Programming.
-CORRECT=E
----
-TITLE=SAEP_79604
-QUESTION=Durante a homologação de um jogo digital de estratégia em tempo real (RTS), alguns jogadores relataram situações em que unidades do jogo passavam por obstáculos do cenário de forma inconsistente, apenas em momentos de grande movimentação simultânea. A equipe já havia executado testes funcionais e de integração sem registros de falhas. O gerente de qualidade solicitou uma reavaliação da cobertura dos testes aplicados, considerando múltiplos módulos atuando em paralelo, inclusive com comunicação em rede entre instâncias do jogo. Com base na situação apresentada, qual procedimento de teste deve ser analisado para identificar a falha descrita?
-A=Aplicar testes de sistema com simulação de interações em múltiplos módulos, avaliando a integridade do comportamento das unidades em tempo real.
-B=Reforçar os testes de unidade nas funções de movimentação de personagens para isolar a origem do erro.
-C=Conduzir testes de compatibilidade entre versões do sistema operacional nos quais o jogo será executado.
-D=Executar testes de regressão com foco em versões anteriores do comportamento de movimentação.
-E=Revisar o design de níveis do jogo e ajustar o tamanho das colisões nos elementos do cenário.
-CORRECT=A
----
-TITLE=SAEP_47434
-QUESTION=Na concepção conceitual de um cenário que será usado em um jogo que está sendo produzido, o artista ilustrará a cena do ponto de vista de um herói que está sentado na beira de um imenso prédio, observando as ruas e pessoas que estão embaixo, gerando uma perspectiva de sua altura e de sua observação em um ponto estrategicamente superior. Qual perspectiva deve ser empregada para produzir tal efeito?
-A=Aérea.
-B=Oblíqua.
-C=Paralela.
-D=Atmosférica.
-E=Contra plano.
-CORRECT=A
----
-TITLE=SAEP_77519
-QUESTION=Um programador criou um algoritmo de repetição utilizando o comando for, mas ele precisa converter a estrutura para que se repita infinitamente até que um comando de parada seja executado. #include <stdio.h> int main(void) { int contagem = 0; printf("Contagem %i",contagem); for(int i = 0; i< 10; i++){ if(contagem == 10){ break; } contagem++; } printf("Contagem %i",contagem); } Qual conversão deverá ser feita para atender a solicitação?
-A=Utilizando for(;;)
-B=Alterando para while()
-C=Removendo o comando break;
-D=Removendo o comando contagem++;
-CORRECT=A
----
-TITLE=SAEP_71717
-QUESTION=Durante a fase de testes de um jogo digital, a equipe precisa garantir que todas as interações do jogador funcionem corretamente em diferentes situações. Como algumas mecânicas dependem de eventos que ocorrem aleatoriamente no jogo, é necessário escolher uma abordagem que permita testar esses eventos sem depender da sorte. Conforme o contexto apresentado, qual estratégia deve ser selecionada?
-A=Testes automatizados para execução contínua do jogo.
-B=Testes exploratórios para descobrir falhas inesperadas.
-C=Simulação controlada para repetir os eventos aleatórios.
-D=Casos de teste manuais para validar cenários específicos.
+TITLE=IOT_012
+QUESTION=Um sensor fornece ao microcontrolador uma faixa contínua de valores elétricos proporcional à grandeza medida. Como esse tipo de sinal é classificado?
+A=Exclusivamente binário.
+B=Atuador.
+C=Analógico.
+D=Pacote MQTT.
+E=Identificador RFID.
 CORRECT=C
 ---
-TITLE=SAEP_77841
-QUESTION=Para organizar suas demandas, uma empresa desenvolveu um quadro, de acordo com imagem que segue, conforme a demanda vai avançando, seguira mudando de coluna e até ter o status de "concluído" inserido. Ao analisar o quadro, qual metodologia ágil é abordada?
-A=Lean
-B=Scrum
-C=Crystal
-D=Kanban
-CORRECT=D
----
-TITLE=SAEP_54347
-QUESTION=Um time de desenvolvimento de jogos está utilizando a metodologia Scrum para organizar seu novo projeto. Os membros da equipe acabaram de passar pelo primeiro sprint e precisam receber as demandas que precisam executar na próxima Sprint. O time deverá selecionar qual cerimônia para resolver o problema?
-A=Daily
-B=Review
-C=Planning
-D=Retrospective
-CORRECT=C
----
-TITLE=SAEP_57180
-QUESTION=Estudantes do curso de Jogos Digitais aprendem a criar jogos de alta qualidade, considerando os aspectos como usabilidade, interatividade, robustez e segurança da informação. O processo de criação de um jogo eletrônico envolve diversas etapas, inclusive a busca por melhorias e solução de erros no funcionamento da programação. Com base nos aspectos apresentados, qual conhecimento é fundamental?
-A=Aplicação de testes unitários, de integração e de usabilidade.
-B=Modelagem dos elementos tridimensionais a serem animados.
-C=Criação de trilha sonora a ser relacionada aos estágios do jogo.
-D=Divulgação de trailer para o jogo para mostrar seu funcionamento.
-E=Linguagens e paradigmas de programação para desenvolvimento de jogos.
+TITLE=IOT_013
+QUESTION=Um robô deve interromper o movimento quando a distância medida por um sensor for inferior a 20 cm. Nesse caso, configurar o valor de 20 cm no algoritmo corresponde a
+A=parametrizar uma condição de operação do sistema.
+B=substituir o sensor por um atuador.
+C=desativar a comunicação de dados.
+D=converter o robô em um servidor de arquivos.
+E=eliminar a necessidade de controle.
 CORRECT=A
 ---
-TITLE=SAEP_79589
-QUESTION=Durante o desenvolvimento de um jogo de plataforma 2D, o programador precisa evitar que o personagem execute múltiplos saltos enquanto estiver no ar. Para isso, ele dispõe de uma variável booleana que indica se o personagem está tocando o chão. Essa variável é atualizada automaticamente pelo motor do jogo e deve ser usada para controlar o comportamento do salto. Qual lógica deve ser aplicada?
-A=Ativar o salto sempre que o personagem estiver no ar ou quando houver qualquer tipo de colisão.
-B=Definir que o salto será executado apenas quando a variável de contato com o chão estiver falsa.
-C=Configurar o salto para ser ativado a cada novo quadro do jogo, garantindo resposta imediata ao comando do jogador.
-D=Aplicar uma verificação que permita o salto apenas quando a variável que indica contato com o chão estiver verdadeira.
-E=Permitir que o salto ocorra sempre que o jogador pressionar o botão de pular, independentemente da posição do personagem.
+TITLE=IOT_014
+QUESTION=Na UC de IoT, uma linguagem de baixo nível é utilizada para programar microcontroladores e acessar diretamente recursos de hardware. Qual linguagem está prevista no conteúdo formativo?
+A=HTML.
+B=CSS.
+C=SQL.
+D=C.
+E=Markdown.
 CORRECT=D
 ---
-TITLE=SAEP_77703
-QUESTION=Você está revisando um Game Design Document, ele foi descrito de forma supercondensada, ideal para roteirizar um pitch a ser desenvolvido para apresentar o jogo aos investidores. Entende-se que o documento é do tipo:
-A=Technical Design Document
-B=Full Game Design Document
-C=Short Game Design Document
-D=One-Page Game Design Document
-CORRECT=D
----
-TITLE=SAEP_57133
-QUESTION=Uma equipe de desenvolvimento está criando um jogo de plataforma futurista ambientado em um mundo tecnológico avançado, com robôs, naves espaciais e cidades iluminadas por neon. Para proporcionar uma experiência imersiva, é essencial a aplicação de técnicas na criação de artefatos multimídia que harmonizem com essa ambientação. Conforme o contexto apresentado, qual técnica de confecção de artefatos multimídia contribui diretamente para o jogo?
-A=Composição de trilhas sonoras e efeitos para reforçar a atmosfera futurista do jogo.
-B=Modelagem tridimensional dos personagens e cenários para dar maior realismo ao mundo do jogo.
-C=Implementação de algoritmos para controlar o comportamento dos inimigos durante as fases.
-D=Criação de um sistema de menus interativos para facilitar a navegação do jogador.
-E=Definição de um cronograma de desenvolvimento para organizar as etapas do projeto.
-CORRECT=A
----
-TITLE=SAEP_77882
-QUESTION=Foi pedido a você que valide uma arte em 2D do jogo que está sendo desenvolvido na sua empresa. Nesse processo você notou que a imagem criada tinha um aspecto de pixel art, no entanto o jogo foi feito todo com a técnica do digital painting, conforme documentado no Game Design Document (GDD). O que você deve fazer para resolver o problema?
-A=Ignorar a diferença e incluir a novo aspecto de imagem no jogo
-B=Incluir na documentação esse novo aspecto de imagem
-C=Solicitar que a imagem seja refeita respeitando o GDD
-D=Alterar todas as artes do jogo para o novo formato
-CORRECT=C
----
-TITLE=SAEP_79495
-QUESTION=Uma equipe desenvolve um jogo de plataforma 2D no motor Unreal Engine, onde o personagem coleta moedas ao colidir com elas, desencadeando uma animação de coleta e um efeito sonoro específico. A integração deve ser programada em C++, garantindo que a animação e o som sejam ativados simultaneamente apenas quando o personagem entra em contato com a moeda, sem falhas ou atrasos. O código deve respeitar padrões de interatividade e robustez, considerando que os assets de animação e áudio já estão importados no projeto, mas a lógica de colisão e ativação dos elementos multimídia precisa ser implementada. Qual técnica de programação deve ser aplicada?
-A=Implementar um evento de colisão que detecte o contato do personagem com a moeda e acione simultaneamente a animação e o efeito sonoro.
-B=Criar uma função que pré-carregue a animação e o áudio no início do jogo e os ative automaticamente em intervalos regulares
-C=Utilizar um loop contínuo que verifique a posição do personagem e ative a animação e o som independentemente da colisão
-D=Desenvolver um método que ative a animação e o som quando o personagem atingir um número específico de pontos no jogo
-E=Configurar uma estrutura condicional que acione a animação e o som apenas quando a tecla de movimento for pressionada
-CORRECT=A
----
-TITLE=SAEP_77746
-QUESTION=Uma empresa de desenvolvimento de jogos com políticas de utilização de softwares livres optou em utilizar um software sem licença comercial para criar o Game Design Document do seu jogo. Qual ferramenta ele deve usar?
-A=WPS Office
-B=Libre Office
-C=Microsoft Office
-D=SoftMaker Office
+TITLE=IOT_015
+QUESTION=Uma planta industrial precisa registrar automaticamente a temperatura de quatro motores a cada segundo e enviar as leituras para um sistema de supervisão. Qual arquitetura atende melhor ao requisito?
+A=Operadores anotam as temperaturas e digitam os valores ao final do turno.
+B=Sensores conectados a um controlador coletam as leituras e as transmitem automaticamente pela rede ao sistema de supervisão.
+C=Os motores enviam dados sem sensores, controlador ou interface de aquisição.
+D=Um atuador mede cada temperatura e armazena os dados apenas em sua memória interna.
+E=O sistema de supervisão estima as temperaturas sem receber medições físicas.
 CORRECT=B
 ---
-TITLE=SAEP_57282
-QUESTION=No atual cenário de desenvolvimento de jogos eletrônicos, a demanda por profissionais qualificados em lógica de programação é mais alta do que nunca. O Curso Técnico de Jogos Digitais prepara os estudantes para enfrentar os desafios dessa indústria em constante evolução. Qual é a principal razão para o uso de lógica por parte desses profissionais mencionados acima?
-A=Melhorar a a fluidez dos gráficos.
-B=Reduzir os custos de produção de jogos.
-C=Aumentar a variedade de personagens jogáveis.
-D=Eliminar a necessidade de testes de usabilidade.
-E=Garantir que os jogos funcionem corretamente e ofereçam uma experiência de alta qualidade.
+TITLE=IOT_016
+QUESTION=Em um sistema MQTT, um sensor publica a temperatura no tópico fabrica/setor1/temperatura. Um painel precisa receber apenas essas atualizações. Qual configuração deve ser realizada no painel?
+A=Publicar continuamente no mesmo tópico sem assinar nenhum tópico.
+B=Alterar o endereço físico do sensor a cada leitura.
+C=Converter o sensor em etiqueta RFID.
+D=Desabilitar o broker para permitir comunicação direta obrigatória.
+E=Assinar o tópico fabrica/setor1/temperatura no broker MQTT.
 CORRECT=E
 ---
-TITLE=SAEP_77757
-QUESTION=Você precisa organizar os dados sobre as vendas do seu jogo, em um arquivo digital, de forma que o total de vendas por região seja calculado utilizando uma função e identificando através de um gráfico as vendas por região. A ferramenta a ser utilizada para este fim é:
-A=um editor de texto.
-B=um criador de slides.
-C=um criador de anotações.
-D=uma planilha eletrônica.
-CORRECT=D
----
-TITLE=SAEP_79792
-QUESTION=Ao implementar o sistema de pontuação, a função calculaCombo(sequencia) deve aplicar regras de bônus em diferentes padrões de acertos e quebras de combo, sem depender de outros módulos do jogo. Indique o procedimento de teste que valida isoladamente essa função.
-A=Executar o jogo manualmente, anotando bônus de combo ao jogar diversas partidas.
-B=Realizar testes de integração acionando calculaCombo via botões de UI, para verificar end-to-end.
-C=Conduzir testes exploratórios de interface, verificando se o display de combo exibe o valor correto.
-D=Aplicar testes de performance para medir o tempo de execução de calculaCombo em sequência longa.
-E=Criar testes de unidade que invoquem calculaCombo com várias sequências predefinidas e comparem o resultado ao valor esperado.
-CORRECT=E
----
-TITLE=SAEP_79778
-QUESTION=O jogo foi lançado em Windows e mobile. A equipe adotou versionamento semântico (tags vX.Y.Z), pipelines CI/CD com testes automatizados e publicação em CDN. Patches rápidos devem ser aplicados em canary release para 10% dos usuários e, em caso de falha, o sistema precisa acionar rollback automático e manter acesso às versões anteriores na nuvem. Descreva a arquitetura de publicação que atenda a esses requisitos.
-A=Usar GitFlow (release/x.y), publicar em S3 com retenção de builds e invalidation manual do CDN para rollback.
-B=Versionamento por timestamp e scripts shell para Rsync incremental, mantendo symlinks “latest”/“previous”.
-C=Pipeline CI para builds “canary”/“stable” em buckets e feature flags no cliente, sem rollback automático.
-D=Gerar builds em branches feature/*, publicar no CDN com UUID e usar “no-cache” para forçar rollback.
-E=Configurar Git com tags vX.Y.Z, CI com testes, rollback de manifest no CDN e canary release.
-CORRECT=E
----
-TITLE=SAEP_79493
-QUESTION=Uma equipe de desenvolvimento está finalizando um jogo 3D com alto nível de detalhamento gráfico e múltiplas interações em tempo real. O objetivo é publicar esse jogo em múltiplas plataformas, incluindo dispositivos móveis, consoles e PCs. Durante a documentação de publicação, um dos desenvolvedores alerta sobre a importância de considerar as limitações de GPU, memória RAM, sistema operacional e suporte a APIs gráficas nos diferentes dispositivos. Qual fator técnico é mais relevante para justificar a necessidade de adaptação do jogo?
-A=O número de núcleos do processador nos dispositivos utilizados.
-B=O tipo de conexão de rede disponível para atualizações pós- lançamento.
-C=A presença de armazenamento interno expansível nos dispositivos móveis.
-D=A compatibilidade com múltiplas resoluções de tela em diferentes dispositivos.
-E=As diferenças no suporte a bibliotecas gráficas, como DirectX, OpenGL e Vulkan.
-CORRECT=E
----
-TITLE=SAEP_55044
-QUESTION=Você é um designer de jogos digitais trabalhando no desenvolvimento de um ambientado em um mundo mágico e encantador, onde os jogadores podem explorar paisagens exuberantes e interagir com personagens fascinantes. Para criar essa experiência envolvente, você precisa implementar animações fluidas e realistas de personagens em três dimensões (3D) para o jogo. Qual técnica deve ser usada para isso?
-A=Rotoscopia
-B=Cel shading
-C=Stop motion
-D=Motion Capture
-CORRECT=D
----
-TITLE=SAEP_57280
-QUESTION=Você é um estudante de Jogos Digitais em um curso técnico e está participando de um projeto de criação de um jogo de simulação de fazenda. Nesse projeto, sua equipe está enfrentando desafios técnicos, e você está aprendendo a importância da lógica de programação na criação de sistemas complexos. Dentro desse contexto, qual é a principal vantagem da aplicação dessa importante área no desenvolvimento desse jogo de simulação?
-A=Melhorar a estética visual das fazendas virtuais.
-B=Facilitar a compreensão das atividades de fazenda pelos jogadores.
-C=Adicionar elementos de narrativa emocionantes à experiência do jogo.
-D=Implementar e garantir o funcionamento preciso das dinâmicas de simulação.
-E=Reduzir a complexidade do gerenciamento da fazenda para atrair jogadores casuais.
-CORRECT=D
----
-TITLE=SAEP_57196
-QUESTION=Você foi contratado para atuar em uma empresa de jogos. Durante suas atividades na empresa precisará aplicar conhecimentos sobre a concepção conceitual dos elementos gráficos de jogos eletrônicos. Conforme o contexto apresentado, a principal capacidade que você irá aplicar nas atividades será
-A=programar os elementos gráficos dos jogos.
-B=desenvolver narrativas complexas para jogos.
-C=gerenciar servidores e infraestrutura online de jogos.
-D=criar modelos 3D detalhados para personagens de jogos.
-E=aplicar os princípios de usabilidade e interatividade em jogos.
-CORRECT=E
----
-TITLE=SAEP_57157
-QUESTION=Na indústria de criação de jogos eletrônicos, os profissionais devem possuir habilidades sólidas em programação para criar jogos interativos e funcionais. A codificação é uma parte fundamental desse processo, permitindo que os desenvolvedores transformem conceitos de jogos em realidade por meio de linguagem de programação. Conforme o contexto apresentado, qual das habilidades abaixo é essencial na área mencionada?
-A=Design de personagens.
-B=Composição de trilha sonora.
-C=Análise de mercado de jogos.
-D=Conhecimento de marketing digital.
-E=Manipulação de dados em arquivos e bancos de dados.
-CORRECT=E
----
-TITLE=SAEP_71053
-QUESTION=Uma equipe de desenvolvimento finalizou um jogo digital e está se preparando para sua publicação. O jogo será lançado em múltiplas plataformas, como PC e dispositivos móveis, cada uma com requisitos técnicos específicos. Além disso, é necessário criar uma documentação técnica completa que inclua informações sobre os requisitos mínimos de hardware, instruções para instalação e descrição dos procedimentos de atualização e suporte. Represente uma solução para preparar o jogo.
-A=Criar uma única documentação técnica para todas as plataformas, contendo os mesmos requisitos e procedimentos de instalação.
-B=Produzir versões do jogo específicas para cada plataforma, acompanhadas por manuais técnicos independentes e personalizados.
-C=Publicar o jogo simultaneamente em todas as plataformas e ajustar os requisitos técnicos na documentação após coletar feedback dos usuários.
-D=Desenvolver uma documentação centralizada, com seções específicas para cada plataforma, permitindo atualizações modulares conforme necessário.
-CORRECT=D
----
-TITLE=SAEP_71703
-QUESTION=Uma equipe de desenvolvimento concluiu um jogo digital e está se preparando para disponibilizá-lo em diferentes plataformas. Para isso, é necessário considerar fatores como compatibilidade de hardware e software, requisitos específicos das lojas digitais e métodos de distribuição. Conforme o contexto apresentado, qual abordagem deve ser utilizada na publicação do jogo?
-A=Configuração de build específica para cada plataforma.
-B=Implementação de microtransações na versão final.
-C=Otimização gráfica antes do lançamento do jogo.
-D=Criação de versões de teste para depuração.
-CORRECT=A
----
-TITLE=SAEP_54884
-QUESTION=Você é um designer de jogos digitais e está liderando a equipe de desenvolvimento do cenário do jogo. O sucesso do jogo depende não apenas da jogabilidade emocionante, mas também de uma experiência de usuário excepcional, envolvente e satisfatória. Para atingir esse objetivo, você precisa compreender profundamente os fundamentos de UI (Interface do Usuário) e UX (Experiência do Usuário) e aplicá-los de forma eficaz em cada aspecto do cenário do jogo. O princípio de desenvolvimento que garante essa experiência é:
-A=Usabilidade intuitiva
-B=Acesso à informação
-C=Coerência visual e de interação
-D=Customização e personalização
+TITLE=IOT_017
+QUESTION=Vários sensores publicam dados via MQTT e diferentes aplicações precisam receber essas mensagens de forma desacoplada. Qual componente centraliza o recebimento e a distribuição das mensagens entre publishers e subscribers?
+A=Conversor A/D.
+B=Atuador.
+C=Broker MQTT.
+D=Etiqueta RFID.
+E=Osciloscópio.
 CORRECT=C
 ---
-TITLE=SAEP_79777
-QUESTION=Para lançar um jogo na App Store e Google Play, a equipe precisa atender exigências específicas de cada loja: ícones em várias resoluções, capturas de tela localizadas, texto de descrição formatado conforme guidelines, configurações de permissão no manifesto e builds assinados com certificados apropriados. Os ativos e processos necessários para submissão nas lojas serão
-A=submeter o mesmo pacote Android na App Store via compatibilidade cruzada.
-B=enviar somente capturas de tela em alta resolução, omitindo descrições para reduzir tempo de preparação.
-C=usar certificados de desenvolvimento em vez de release para agilizar testes, trocando-os antes do lançamento.
-D=empacotar o APK e o IPA sem ícones extras nem descrições, contando com lojas para gerar previews automáticos.
-E=listar dimensões de ícones, editar descrições em Markdown, preparar capturas em proporções corretas, definir permissões no manifest e usar certificados de release para assinar cada build.
-CORRECT=E
----
-TITLE=SAEP_79795
-QUESTION=Após empacotar o jogo em instaladores para Windows, macOS e Linux, a equipe precisa garantir que nenhum arquivo foi alterado ou corrompido durante o upload ao servidor de distribuição. Para verifica a situação é necessário
-A=testar manualmente o instalador em uma única máquina de teste.
-B=verificar apenas o tamanho de cada instalador no servidor comparado ao local.
-C=executar uma instalação rápida (“smoke test”) para confirmar que o jogo inicia.
-D=conduzir testes de regressão completos após cada upload, rodando todo o jogo.
-E=calcular e comparar checksums (por exemplo, SHA-256) dos arquivos locais e dos mesmos arquivos no servidor após o upload.
-CORRECT=E
----
-TITLE=SAEP_79602
-QUESTION=Durante a etapa inicial do desenvolvimento de um jogo digital, a equipe deve organizar as informações dos elementos multimídia que serão usados no projeto. Para garantir a colaboração entre designers, programadores e testadores, é necessário escolher uma ferramenta que permita acesso e edição simultânea das informações, mantendo o controle das alterações feitas por cada membro da equipe. Qual ferramenta atende melhor às necessidades da equipe?
-A=Editor de texto offline com salvamento local automático
-B=Editor de imagens instalado em cada computador da equipe
-C=Software de apresentação que permite compartilhamento por e-mail
-D=Aplicativo online que possibilita edição simultânea e histórico de versões
-E=Programa de criação de planilhas que exige download e envio manual para compartilhamento
-CORRECT=D
----
-TITLE=SAEP_79505
-QUESTION=Em um jogo de corrida 3D desenvolvido em C#, o sistema de gerenciamento de colisões entre veículos apresenta código desestruturado, com lógica duplicada e sem suporte para acessibilidade, como notificações auditivas para colisões. É necessário refatorar o código para torná-lo modular, eficiente e compatível com notificações acessíveis, garantindo que a funcionalidade de colisão permaneça consistente e facilite futuras atualizações. A abordagem a ser implementada é
-A=reorganizar o código em um script único, agrupando a lógica de colisões em um loop central e adicionando comentários para suportar notificações auditivas via interface de texto.
-B=estruturar a lógica de colisões em uma função centralizada com cálculos baseados em valores fixos, adicionando uma saída visual para a interface e uma variável para rastrear eventos de colisão.
-C=dividir a lógica de colisões em funções separadas para cada tipo de veículo, armazenando resultados em uma variável global e incluindo uma função para reproduzir alertas visuais na tela do jogo.
-D=consolidar a lógica de colisões em uma função principal com condicionais para diferentes tipos de colisão, utilizando variáveis locais para cálculos e adicionando uma chamada para exibir alertas visuais na interface.
-E=criar uma classe modular para gerenciar colisões, encapsulando a lógica de detecção em métodos reutilizáveis, otimizando verificações com estruturas de dados eficientes e integrando uma API de acessibilidade para emitir notificações auditivas.
-CORRECT=E
----
-TITLE=SAEP_57302
-QUESTION=Você faz parte de uma equipe de programação, responsável por criar um jogo de aventura para dispositivos móveis. Este jogo tem por objetivo oferecer aos jogadores uma experiência envolvente onde eles podem explorar um mundo virtual, resolver quebra-cabeças desafiadores e interagir com personagens intrigantes; sendo essencial aplicar lógica de programação para implementar as mecânicas e solucionar os eventuais bugs (erros), garantindo um funcionamento suave e fluído. Conforme o contexto apresentado, qual opção representa a técnica para atingir esse objetivo?
-A=Adotar gráficos 3D altamente detalhados para criar uma experiência visual imersiva e cativante para os jogadores.
-B=Empregar algoritmo de inteligência artificial para a criação de frases para diálogos com personagens não jogáveis (NPCs).
-C=Integrar um sistema de realidade virtual para permitir que os jogadores explorem o mundo virtual do jogo de forma mais imersiva.
-D=Implementar um sistema de sugestões que forneça dicas aos jogadores quando eles estiverem presos em um quebra-cabeça específico.
-E=Iniciar uma campanha publicitária onde jogadores o podem compartilhar nas próprias redes sociais os melhores tempos, aumentando o engajamento.
-CORRECT=D
----
-TITLE=SAEP_79789
-QUESTION=Durante a atualização noturna via CDN, as versões v1.3.0 foram liberadas para América, Europa e Ásia. Relatórios de telemetria indicam que 20 % dos jogadores na Ásia e 10 % na Europa ainda executam a v1.2.0, gerando quebra de sincronização de conteúdo. Qual a técnica de teste?
-A=Ponta-a-ponta (end-to-end) automatizados que simulam download do patch em clientes distribuídos geograficamente, validam hash de versão no cliente e confirmam atualização no servidor de controle de versões.
-B=Exploratórios manuais em um dispositivo por região, sem automação; cada QA testa localmente após disponibilização.
-C=Contrato de API que verificam somente endpoints de busca de versão, ignorando o fluxo de download real.
-D=Desempenho de CDN utilizando ferramentas de carga para medir latência, sem validar conteúdo.
-E=Aceitação em staging usando um único servidor espelho localizado na região principal.
+TITLE=IOT_018
+QUESTION=Uma fábrica possui equipamentos de diferentes fabricantes e precisa padronizar a troca de dados entre dispositivos de automação e o software supervisório. Qual tecnologia do conteúdo da UC foi concebida para favorecer essa interoperabilidade no ambiente industrial?
+A=OPC (Open Platform Communications).
+B=HDMI.
+C=Bluetooth de áudio.
+D=RFID passivo.
+E=PWM.
 CORRECT=A
 ---
-TITLE=SAEP_51076
-QUESTION=Você está trabalhando em um projeto para desenvolver um jogo digital e ficou responsável pelo planejamento da interface do usuário (UI). É importante garantir que a interface do jogo seja fácil de entender e usar para que os usuários tenham uma experiência agradável, projetando-a para facilitar a realização de tarefas comuns do jogo. Qual é o princípio de UI que se refere a essa necessidade?
-A=Clareza
-B=Feedback
-C=Eficiência
-D=Consistência
-E=Flexibilidade
+TITLE=IOT_019
+QUESTION=Uma solução de monitoramento será instalada em um galpão com cobertura de rede sem fio existente. Os sensores precisam transmitir dados continuamente para um servidor local e podem ser alimentados pela rede elétrica. Entre as tecnologias previstas na UC, qual é a mais adequada para aproveitar a infraestrutura existente?
+A=Satélite, porque sempre apresenta menor latência em ambientes internos.
+B=RFID passivo, porque substitui uma conexão contínua à rede IP.
+C=Rádio sem qualquer protocolo ou planejamento de rede.
+D=Wi-Fi, porque permite integrar os dispositivos à rede local já disponível.
+E=Bluetooth, porque obrigatoriamente possui maior alcance que Wi-Fi.
+CORRECT=D
+---
+TITLE=IOT_020
+QUESTION=Sensores ambientais serão instalados em uma região remota sem cobertura de Wi-Fi ou infraestrutura terrestre de comunicação. O sistema deve enviar periodicamente pequenas quantidades de dados a uma central distante. Qual meio de conectividade pode ser considerado quando a cobertura terrestre não está disponível?
+A=USB local.
+B=Comunicação via satélite.
+C=HDMI.
+D=RFID apenas a poucos centímetros.
+E=Barramento interno do microcontrolador.
+CORRECT=B
+---
+TITLE=IOT_021
+QUESTION=Um projeto precisa detectar se uma porta está apenas aberta ou fechada, sem necessidade de medir posições intermediárias. Qual característica de sensor é mais compatível com esse requisito?
+A=Saída contínua proporcional à posição, obrigatoriamente.
+B=Capacidade de atuar mecanicamente sobre a porta.
+C=Saída digital com dois estados lógicos.
+D=Função de broker MQTT incorporada como requisito principal.
+E=Conexão obrigatória via satélite.
 CORRECT=C
 ---
-TITLE=SAEP_79605
-QUESTION=Uma equipe de desenvolvimento está avaliando qual metodologia de projeto aplicar para criar um jogo digital com entregas incrementais e feedback constante dos usuários. Eles consideram que o jogo será complexo e com requisitos que podem mudar durante o processo, e precisam decidir entre metodologias tradicionais, que seguem etapas rígidas, e metodologias ágeis, que permitem maior flexibilidade. Qual metodologia será empregada nesse projeto?
-A=Modelo em espiral, pois foca apenas na análise de riscos, sem permitir entregas incrementais
-B=Scrum (ágil), pois promove entregas rápidas, adaptação contínua e colaboração frequente com o cliente
-C=Modelo V, pois exige validação e verificação rigorosa, dificultando mudanças durante o desenvolvimento
-D=Desenvolvimento incremental tradicional, pois não permite revisões frequentes no escopo durante o projeto
-E=Metodologia em cascata (tradicional), pois prioriza etapas sequenciais e documentação detalhada antes de iniciar o desenvolvimento
-CORRECT=B
+TITLE=IOT_022
+QUESTION=Um reservatório possui sensor de nível e uma bomba. A bomba deve ligar quando o nível cair abaixo de 30% e desligar quando atingir 80%. Qual solução de controle atende ao requisito?
+A=Ligar a bomba continuamente, sem utilizar o sensor.
+B=Publicar o nível em MQTT, mas não executar nenhuma lógica de controle.
+C=Usar a bomba como sensor e o sensor como atuador.
+D=Definir um único comando manual independente da leitura de nível.
+E=Ler o sensor, comparar a medição com os limites definidos e comandar a bomba conforme as condições.
+CORRECT=E
 ---
-TITLE=SAEP_57168
-QUESTION=Você faz parte de uma equipe de desenvolvimento de um jogo de estratégia online. Como parte do processo de desenvolvimento, é essencial garantir que o jogo atenda aos requisitos estabelecidos, proporcionando uma experiência de alta qualidade aos jogadores. Nesse contexto, para garantir que o jogo rode sem gargalos e atrasos e que o servidor de jogo permaneça online mesmo com um grande crescimento no número de jogadores, a seleção adequada de procedimentos de teste é crucial para assegurar que o jogo esteja em conformidade. De acordo com o contexto apresentado, qual é a estratégia de testes necessária?
-A=Realizar testes de resistência, avaliando a capacidade do servidor em lidar com um grande número de jogadores simultâneos, garantindo que o jogo funcione sem problemas mesmo em momentos de alta demanda.
-B=Proceder testes de interface do usuário, avaliando a facilidade de navegação, a disposição dos elementos na tela e a resposta às ações dos jogadores, garantindo uma experiência de usuário intuitiva e agradável.
-C=Conduzir testes de segurança, identificando vulnerabilidades no código do jogo que possam ser exploradas por hackers, protegendo assim as informações dos jogadores e a integridade do jogo.
-D=Testar o desempenho em diferentes dispositivos, incluindo computadores, tablets e smartphones, para garantir que a experiência do jogador seja consistente em todas as plataformas.
-E=Implementar testes de integração, avaliando o quanto o sistema de jogo suporta, sem o surgimento de novos erros, a inserção de novas funcionalidades.
+TITLE=IOT_023
+QUESTION=Um sensor analógico de pressão fornece de 0 a 3,3 V e será conectado a um microcontrolador para registro do processo. Qual recurso é necessário para transformar esse nível elétrico em um valor que o programa possa processar digitalmente?
+A=Conversão analógico-digital (ADC).
+B=Um atuador PWM como entrada.
+C=Uma etiqueta RFID.
+D=Um broker MQTT no pino analógico.
+E=Um endereço IP fixo para converter tensão.
 CORRECT=A
 ---
-TITLE=SAEP_57295
-QUESTION=Você está trabalhando no desenvolvimento de um jogo eletrônico de quebra-cabeça para dispositivos móveis. O jogo tem a proposta de desafiar os jogadores com enigmas complexos e interações criativas. A equipe está focada em garantir uma experiência de jogo envolvente, com quebra-cabeças inovadores e mecanismos de interação intuitivos. Nesse contexto, como garantir as características descritas, melhorando o engajamento e o balanceamento da experiência de jogo?
-A=Adotar gráficos 3D e efeitos visuais sofisticados para criar uma atmosfera imersiva, elevando a experiência visual do jogo.
-B=Integrar um sistema de compra de dicas e soluções, permitindo aos jogadores obterem ajuda quando estiverem presos em um enigma.
-C=Utilizar algoritmos de inteligência artificial para criar quebra-cabeças dinâmicos que se ajustam ao nível de habilidade de cada jogador.
-D=Implementar um sistema de pontuação baseado na velocidade de resolução dos enigmas, incentivando a competição entre os jogadores.
-E=Implantar um sistema de controle por gestos, onde os jogadores podem manipular os quebra-cabeças com movimentos intuitivos na tela sensível ao toque.
+TITLE=IOT_024
+QUESTION=Uma placa IoT está configurada com endereço IP de uma rede diferente daquela usada pelo servidor local. O código do sensor está correto, mas nenhuma mensagem chega ao servidor. Qual ação técnica deve ser priorizada?
+A=Trocar o sensor por outro do mesmo modelo.
+B=Aumentar o brilho do LED da placa.
+C=Reescrever todo o firmware em outra linguagem.
+D=Corrigir os parâmetros de rede para que o dispositivo possa alcançar o servidor.
+E=Remover a interface de comunicação e operar somente offline.
+CORRECT=D
+---
+TITLE=IOT_025
+QUESTION=Dois projetos possuem requisitos distintos: Projeto X precisa de comunicação de curto alcance entre um sensor portátil e um celular; Projeto Y precisa integrar vários dispositivos diretamente à rede IP do laboratório. Qual associação é mais coerente?
+A=X - Satélite; Y - RFID.
+B=X - Bluetooth; Y - Wi-Fi.
+C=X - OPC; Y - PWM.
+D=X - RFID passivo; Y - ADC.
+E=X - C; Y - Arduino.
+CORRECT=B
+---
+TITLE=IOT_026
+QUESTION=Uma equipe descreveu o pipeline de um sistema IoT como: aquisição da variável física, processamento local, transmissão e consumo do dado por uma aplicação. Qual elemento realiza a primeira etapa desse pipeline?
+A=Atuador.
+B=Broker exclusivamente.
+C=Sensor.
+D=Servidor de apresentação.
+E=Roteador sem interface de entrada.
 CORRECT=C
 ---
-TITLE=SAEP_77926
-QUESTION=Um objeto bidimensional de um jogo, desenvolvido na Game Engine Unity, tem um formado de um círculo. Ele deve se deslocar de cima para baixo utilizando a gravidade do jogo, mas foi notado que isso não está acontecendo, o objeto continua estático na posição inicial de quando o jogo foi iniciado. Qual componente deve ser utilizado para resolver o problema?
-A=Rigidbody2D com a opção de Use Gravity habilitada e Is Kinematic habilitada
-B=Rigidbody2D com a opção de Use Gravity habilitada e Is Kinematic desabilitada
-C=Rigidbody2D com a opção de Use Gravity desabilitada e Is Kinematic habilitada
-D=Rigidbody2D com a opção de Use Gravity desabilitada e Is Kinematic desabilitada
-CORRECT=B
----
-TITLE=SAEP_79489
-QUESTION=Uma equipe está desenvolvendo um jogo digital de plataforma 2D no motor Unity, onde um personagem deve pular ao pressionar a tecla "Espaço" e emitir um som específico durante o pulo. O código deve integrar um sprite animado para o movimento do personagem e um arquivo de áudio para o efeito sonoro, garantindo que a ação ocorra de forma sincronizada e sem atrasos. A integração deve ser feita em C#, considerando que o sprite e o áudio já estão importados no projeto, mas o comportamento do pulo e a reprodução do som precisam ser programados para responder ao input do jogador em tempo real, respeitando padrões de usabilidade e robustez. Qual técnica de programação deve ser aplicada?
-A=Utilizar uma estrutura condicional para detectar o input da tecla "Espaço" e disparar a animação do sprite e a reprodução do áudio simultaneamente.
-B=Desenvolver um método que pré-carregue o sprite e o áudio no início do jogo e os ative apenas quando o personagem atingir uma altura específica.
-C=Configurar um evento de colisão para ativar a animação do sprite e o áudio quando o personagem tocar o chão
-D=Criar um loop contínuo que reproduza o áudio e atualize o sprite a cada frame, independentemente do input
-E=Implementar uma função que carregue o sprite e o áudio em sequência, sem verificar o input do jogador.
+TITLE=IOT_027
+QUESTION=Um robô móvel possui sensor de distância. Para evitar colisões, a equipe definiu que o robô deve reduzir a velocidade entre 40 cm e 20 cm e parar abaixo de 20 cm. Qual prática está sendo aplicada?
+A=Parametrização do comportamento do robô a partir das medições do sensor.
+B=Identificação RFID do robô sem controle.
+C=Substituição do sensor por conexão satelital.
+D=Conversão do atuador em banco de dados.
+E=Eliminação da lógica de controle.
 CORRECT=A
 ---
-TITLE=SAEP_54369
-QUESTION=Você foi contratado como audio designer de uma equipe de desenvolvimento de jogos e está trabalhando em um jogo no estilo survival-horror. Seu trabalho será compor os sons, utilizando o modelo IEZA, que envolverão o jogador na atmosfera do jogo, mas que não farão parte do ambiente onde o jogo acontece, pois os mesmos terão a função apenas de afetar as emoções do jogador e não do personagem. O setor desse modelo que corresponde à situação descrita é:
-A=Zona
-B=Afeto
-C=Efeito
-D=Interface
-CORRECT=B
----
-TITLE=SAEP_79521
-QUESTION=Uma equipe desenvolve um jogo de plataforma 2D no motor Unity, que inclui um personagem principal com um sprite animado para movimentos e um objeto 3D simples, como uma caixa de tesouro, no cenário. O sprite 2D deve ser criado com animações fluidas para corrida, e a caixa 3D precisa de uma modelagem básica com texturas para integração no jogo. As ferramentas escolhidas devem suportar exportação para formatos compatíveis com Unity e atender aos padrões de qualidade e usabilidade, garantindo que os elementos sejam visualmente claros e adequados ao escopo do projeto. Qual técnica deve ser aplicada para criar os elementos multimídia?
-A=Empregar um editor de pixel art para criar tanto o sprite 2D quanto a caixa 3D, focando em estética retrô
-B=Desenvolver o sprite 2D and a caixa 3D em um software de animação 2D, priorizando movimentos fluidos
-C=Aplicar um software de design gráfico rasterizado para criar o sprite 2D and a caixa 3D com animações detalhadas
-D=Usar um software de edição de vídeo para criar o sprite animado and importar a caixa 3D de uma biblioteca externa sem texturas
-E=Utilizar um software de modelagem 3D para criar a caixa de tesouro com texturas básicas e um editor de imagens vetoriais para o sprite animado do personagem.
+TITLE=IOT_028
+QUESTION=Um sistema registra temperatura de uma máquina, porém leituras inválidas ocasionais estão sendo gravadas como se fossem reais. Antes de transmitir os dados, qual melhoria é mais adequada no software embarcado?
+A=Desativar o sensor sempre que uma leitura for recebida.
+B=Enviar qualquer valor sem análise para reduzir o código.
+C=Acionar um motor a cada leitura inválida.
+D=Trocar o protocolo por RFID independentemente do problema.
+E=Validar a faixa esperada e tratar leituras inválidas antes do envio.
 CORRECT=E
 ---
-TITLE=SAEP_79585
-QUESTION=No desenvolvimento de jogos digitais, a criação de elementos visuais é uma etapa fundamental. Para que um personagem ou objeto apareça corretamente na tela, ele precisa ser desenhado e modelado de forma que o computador possa interpretá-lo. Um dos primeiros passos nesse processo é a criação de modelos bidimensionais ou tridimensionais que servirão de base para a arte final do jogo. Compreender os conceitos básicos desses elementos é essencial para qualquer profissional da área, pois eles são a fundação de toda a experiência visual que o jogador terá. O artefato multimídia que representa a base visual de um personagem é
-A=Áudio
-B=Sprite
-C=Textura
-D=Animação
-E=Modelo 3D
-CORRECT=B
----
-TITLE=SAEP_79594
-QUESTION=Uma equipe de desenvolvimento de jogos digitais está na fase de testes de um novo jogo de aventura. Durante os testes de funcionalidade, um testador reportou um bug crítico: o personagem principal atravessa uma parede em uma área específica do mapa, o que não deveria acontecer. Este tipo de falha compromete a imersão e a jogabilidade. A equipe precisa identificar a origem do problema e garantir que ele seja corrigido antes do lançamento. Para isso, é fundamental que o procedimento de teste adotado seja capaz de replicar a falha de forma consistente e fornecer informações suficientes para que os programadores possam depurá-la eficientemente. A escolha do método de teste correto é crucial para a qualidade final do jogo. Para identificar a causa raiz deve realizar o teste de
-A=unidade, focando no código de colisão do personagem.
-B=integração, simulando o movimento do personagem na área específica do mapa.
-C=performance, avaliando o impacto do bug na taxa de quadros por segundo.
-D=usabilidade, coletando feedback dos jogadores sobre a experiência com o bug.
-E=regressão, verificando se o bug foi introduzido por uma alteração recente no código.
-CORRECT=B
----
-TITLE=SAEP_70288
-QUESTION=Durante o desenvolvimento de um jogo de plataforma 2D, o time identificou que jogadores têm dificuldade para localizar informações básicas, como pontuação, progresso em níveis e número de vidas restantes. Para resolver esse problema, você foi designado para revisar o Game Design Document (GDD) e ajustar os elementos de UI e UX, assegurando que as informações sejam claras e acessíveis. Exemplifique como esse ajuste irá influenciar na experiencia do usuário.
-A=Aumentará a complexidade visual da interface para impressionar os jogadores.
-B=Irá garantir que todas as informações sejam exibidas simultaneamente na tela inicial.
-C=Facilitará a navegação dos jogadores, destacando informações essenciais de forma intuitiva.
-D=Reduzirá a quantidade de elementos visuais, mantendo a interface o mais minimalista possível.
+TITLE=IOT_029
+QUESTION=Uma planta possui 120 sensores publicando medições e três aplicações consumidoras: supervisão, histórico e alertas. A equipe quer evitar conexões ponto a ponto entre cada sensor e cada aplicação, permitindo que novos consumidores sejam adicionados sem reprogramar todos os sensores. Qual arquitetura atende melhor ao requisito?
+A=Cada sensor mantém uma conexão dedicada com cada aplicação, totalizando múltiplos vínculos ponto a ponto.
+B=Todos os sensores escrevem diretamente na tela do supervisório e não utilizam rede.
+C=Os sensores publicam em tópicos MQTT em um broker, e as aplicações assinam os tópicos necessários.
+D=Cada sensor é substituído por uma etiqueta RFID passiva e deixa de medir variáveis.
+E=O broker é removido e os consumidores passam a compartilhar fisicamente os mesmos pinos dos sensores.
 CORRECT=C
 ---
-TITLE=SAEP_57278
-QUESTION=Uma equipe de desenvolvimento está criando um jogo de aventura para dispositivos móveis. Durante o projeto, os programadores enfrentam desafios técnicos para garantir que o jogo funcione corretamente, com mecânicas responsivas e uma experiência fluida. Para superar essas dificuldades, é fundamental aplicar conceitos de lógica de programação. Conforme o contexto apresentado, qual é a função da lógica de programação no desenvolvimento do jogo?
-A=Criar jogos visualmente impressionantes.
-B=O aluno pode ter escolhido essa alternativa porque, embora a lógica de programação seja importante para o desenvolvimento de jogos, seu principal objetivo não é criar apenas jogos visualmente impressionantes.
-C=Resolver problemas específicos relacionados aos jogos.
-D=Minimizar a interatividade dos jogadores.
-E=Eliminar a necessidade de conhecimentos em multimídia.
-CORRECT=C
----
-TITLE=SAEP_77738
-QUESTION=Um jogo foi construído para poder ser executado em dispositivos móveis que utilizam o sistema operacional iOS, e pensando nisso o desenvolvedor teve que testá-lo. Qual hardware deverá ser utilizado para executar o jogo?
-A=Console
-B=Desktop
-C=Android
-D=iPhone
+TITLE=IOT_030
+QUESTION=Um sistema IoT industrial monitora vibração de motores. Se a rede cair por alguns minutos, as medições não podem ser simplesmente perdidas. Qual estratégia de projeto melhora a robustez da coleta sem deixar de utilizar a conectividade quando ela estiver disponível?
+A=Interromper permanentemente a leitura dos sensores ao detectar a primeira falha de rede.
+B=Substituir todos os sensores por atuadores.
+C=Descartar as amostras enquanto o servidor estiver indisponível.
+D=Armazenar temporariamente as amostras localmente e transmiti-las quando a comunicação for restabelecida.
+E=Manter somente a última leitura e apagar todas as anteriores independentemente do requisito.
 CORRECT=D
 ---
-TITLE=SAEP_57074
-QUESTION=Durante o desenvolvimento de um jogo, a equipe documenta elementos multimídia como imagens, sons e animações. Essa organização garante que todos os componentes sejam utilizados corretamente no projeto. Conforme o contexto apresentado, qual a finalidade do planejamento dos elementos multimídia?
-A=Evitar erros de codificação ao documentar os recursos do jogo.
-B=Facilitar a organização dos arquivos utilizados na programação.
-C=Aprimorar a imersão do jogador com uma narrativa envolvente.
-D=Otimizar o uso de memória dos dispositivos na execução do jogo.
-E=Garantir que os elementos visuais e sonoros sigam a proposta do jogo.
-CORRECT=E
----
-TITLE=SAEP_54674
-QUESTION=Você é um desenvolvedor de jogos digitais trabalhando em um novo projeto com o objetivo de tornar o jogo mais acessível para pessoas com deficiência visual. Nesse projeto, é fundamental utilizar técnicas e recursos no desenvolvimento dos elementos multimídia que facilitem a interação e a jogabilidade para esse público específico. Devemos considerar a capacidade:
-A=Utilizar legendas e áudio descrição
-B=Utilizar cores e contrastes adequados.
-C=Oferecer opções de configuração de teclas personalizadas.
-D=Incluir um modo de jogo com baixa demanda de movimentos rápidos.
-CORRECT=A
----
-TITLE=SAEP_71720
-QUESTION=Uma equipe de desenvolvimento está finalizando um jogo digital e se preparando para publicá-lo em diferentes plataformas. Para evitar problemas após o lançamento, é necessário definir uma estratégia de testes que permita identificar falhas críticas antes da distribuição oficial. Conforme o contexto apresentado, qual estratégia deve ser selecionada para minimizar falhas após a publicação?
-A=Revisão manual da interface e ajustes de design.
-B=Testes exploratórios para encontrar falhas inesperadas.
-C=Beta testing com jogadores reais antes do lançamento oficial.
-D=Testes automatizados para validar funcionalidades do código.
-CORRECT=C
----
-TITLE=SAEP_54246
-QUESTION=Você faz parte de uma equipe de desenvolvimento de jogos digitais que está trabalhando em um novo projeto. O jogo será uma aventura em um mundo aberto, com gráficos 3D, mecânicas de combate e elementos de RPG. Sua função é registrar, na forma de documento, os detalhes dos elementos multimídia, a arquitetura do jogo e as especificações de hardware e software necessárias para rodar o jogo em diferentes dispositivos, visando guiar o resto da equipe. Com isso, seu documento irá descrever...
-A=Modelos de negócio para viabilizar a monetização do jogo.
-B=O projeto dos circuitos eletrônicos para os controles do jogo.
-C=Algoritmos de inteligência artificial para controlar os inimigos no jogo.
-D=A estética visual do jogo, incluindo cenários, personagens e efeitos visuais.
-CORRECT=D
----
-TITLE=SAEP_57300
-QUESTION=Você é um desenvolvedor de jogos eletrônicos e está trabalhando em um jogo de plataforma 2D. No jogo, o jogador controla um personagem que pode saltar de plataforma em plataforma. O jogo usa imagens de alta resolução para criar um ambiente realista. Conforme o contexto apresentado, qual é a melhor maneira de reduzir o tamanho total do arquivo do jogo?
-A=Usar imagens de baixa resolução.
-B=Usar um formato de imagem sem perda.
-C=Usar um formato de imagem com perda.
-D=Usar um formato compactado de imagem.
-E=Usar um algoritmo de compressão de imagem.
-CORRECT=E
----
-TITLE=SAEP_57223
-QUESTION=Atualmente você está trabalhando em um projeto que envolve a criação de modelos 3D para um jogo eletrônico. Como parte da equipe de desenvolvimento, você precisa aplicar seus conhecimentos em modelagem 3D para atender ao escopo do projeto e criar elementos visuais que se encaixem perfeitamente no conceito do jogo, assim garantindo uma experiência de jogo coesa e imersiva Para garantir as experiências mencionadas você precisará de
-A=Variedade de texturas aplicadas aos modelos.
-B=Complexidade das animações dos modelos.
-C=Consistência no estilo e na estética dos modelos.
-D=Um número máximo de polígonos em cada modelo.
-E=Tamanho dos arquivos de textura utilizados nos modelos.
-CORRECT=C
----
-TITLE=SAEP_79496
-QUESTION=Uma equipe desenvolve um jogo de plataforma 2D no motor Unity, onde o personagem exibe uma animação de ataque e reproduz um efeito sonoro ao pressionar a tecla "A". A integração deve ser programada em C#, garantindo que a animação e o som sejam acionados simultaneamente quando a tecla "A" é pressionada, respeitando padrões de interatividade. Os assets de animação e áudio já estão importados no projeto, mas a lógica para detectar o input do jogador e ativar os elementos multimídia precisa ser implementada. A técnica de programação a ser aplicada é
-A=criar uma função que reproduza o efeito sonoro e a animação automaticamente ao iniciar o jogo.
-B=configurar um evento de colisão para disparar a animação e o som quando o personagem toca um inimigo.
-C=implementar um loop que ative a animação e o som a cada frame, independentemente do input do jogador.
-D=desenvolver um método que ative a animação e o som apenas quando o personagem coleta um item específico.
-E=utilizar uma estrutura condicional para detectar o input da tecla "A" e acionar a animação de ataque e o efeito sonoro simultaneamente.
-CORRECT=E
----
-TITLE=SAEP_77770
-QUESTION=Um desenvolvedor de jogos está finalizando um projeto e precisa garantir que todos os elementos do jogo (músicas, sprites e textos) estejam protegidos legalmente contra cópias não autorizadas. Ele deseja saber qual mecanismo jurídico pode ser aplicado para proteger sua obra de forma automática, sem necessidade de registro formal. O mecanismo classifica-se como:
-A=patente.
-B=copyleft.
-C=copyright.
-D=marca registrada.
-CORRECT=C
----
-TITLE=SAEP_79537
-QUESTION=Uma equipe desenvolve um jogo de aventura 2D no motor Unity, onde o personagem principal ativa um som de sino ao interagir com um portão mágico. A criação do som deve ser realizada em uma ferramenta específica, garantindo clareza e exportação em um formato compatível com Unity, como WAV, para atender aos padrões de qualidade e usabilidade do projeto. Para produzir o elemento, deve-se
-A=utilizar um software de edição de áudio para criar um som de sino claro, exportável em formato WAV para Unity.
-B=empregar um editor de vídeo para criar o som, focando em sincronização com efeitos visuais.
-C=desenvolver o som em um software de modelagem 3D, integrando-o ao portão do jogo.
-D=usar um software de animação 2D para criar o som, priorizando compatibilidade com sprites.
-E=aplicar um editor de texto para gravar o som e exportá-lo para o jogo.
-CORRECT=A
----
-TITLE=SAEP_57156
-QUESTION=Você está integrando uma equipe para a criação de um jogo de aventura para dispositivos móveis. O jogo se passa em um mundo mágico repleto de criaturas fantásticas e paisagens deslumbrantes. Como parte da equipe, sua responsabilidade é garantir que os elementos multimídia, incluindo gráficos bidimensionais, modelagem tridimensional e elementos audiovisuais, estejam perfeitamente integrados para proporcionar uma experiência imersiva aos jogadores. Como integrar os elementos supracitados a esse tipo de jogo?
-A=Verificando se a campanha de marketing terá o impacto adequado através da realização de testes controlados do tipo AB para um público reduzido.
-B=Revisando as texturas e os detalhes dos modelos 3D dos personagens e cenários para garantir que estejam visualmente atraentes e em consonância com o estilo artístico planejado.
-C=Testando a gramática e coesão dos textos que aparecem durante o jogo, incluindo diálogos e instruções, para garantir que estejam corretamente integrados ao contexto do jogo.
-D=Validando a lógica de programação por trás dos movimentos dos personagens para assegurar que os elementos multimídia estejam interagindo corretamente com o ambiente virtual.
-E=Provando a compatibilidade do jogo em diferentes dispositivos móveis, garantindo que os elementos multimídia sejam reproduzidos de forma adequada em diferentes tamanhos de tela e resoluções.
+TITLE=IOT_031
+QUESTION=Um ventilador controlado por temperatura liga a 30,0 °C e desliga imediatamente quando a leitura cai para 29,9 °C. Pequenas oscilações fazem o relé ligar e desligar repetidamente. Qual alteração de parametrização reduz esse chaveamento excessivo?
+A=Usar exatamente o mesmo limite para ligar e desligar, mantendo a oscilação.
+B=Definir limites diferentes para acionamento e desligamento, criando uma faixa de histerese.
+C=Remover o sensor e acionar o ventilador aleatoriamente.
+D=Trocar o relé por um endereço IP.
+E=Publicar a temperatura em um tópico e eliminar qualquer regra de controle.
 CORRECT=B
 ---
-TITLE=SAEP_71122
-QUESTION=Você está desenvolvendo o design sonoro de um jogo de sobrevivência ambientado em uma caverna subterrânea. Durante o gameplay, o jogador pode ouvir o som de água gotejando, morcegos voando e ventos passando por rachaduras nas paredes da caverna. Esses sons são contínuos e têm o objetivo de criar uma atmosfera imersiva, representando as características do ambiente onde o jogador está. Utilize o modelo IEZA para categorizar os sons descritos.
-A=Activity.
-B=Effect.
-C=Setting.
-D=Zone.
-CORRECT=D
----
-TITLE=SAEP_79509
-QUESTION=Um game dev é responsável pela manutenção de um jogo de plataforma 2D desenvolvido em C#. O sistema de controle de animações do personagem apresenta código redundante, com lógica repetida para diferentes estados (parado, correndo, pulando), dificultando a adição de novos estados de animação. É necessário refatorar o código para torná-lo mais modular e fácil de manter, garantindo que as animações existentes permaneçam consistentes. Qual abordagem deverá ser implementada?
-A=Manter a estrutura existente do código, mas adicionar comentários para documentar a lógica de cada estado de animação e facilitar futuras alterações.
-B=Dividir a lógica de animações em funções separadas para cada estado, chamando-as diretamente no loop principal do jogo com base na entrada do jogador.
-C=Consolidar a lógica de animações em uma única função com condicionais para cada estado, utilizando variáveis locais para controlar transições de animação.
-D=Reestruturar a lógica de animações em uma função única, utilizando uma variável global para rastrear o estado atual e alternar animações com base em valores fixos.
-E=Criar uma classe para gerenciar estados de animação, utilizando um enumerador para definir estados (parado, correndo, pulando) e um método centralizado para alternar entre eles com base na entrada do jogador.
-CORRECT=E
----
-TITLE=SAEP_57285
-QUESTION=Você recentemente foi aprovado para atuar em uma empresa de jogos eletrônicos. Durante suas atividades na empresa, precisará aplicar conhecimentos sobre linguagem de programação para atender ao escopo do projeto, considerando padrões de qualidade, usabilidade, interatividade, robustez, acessibilidade e segurança da informação. Sendo assim sabemos que é fundamental escolher a linguagem de programação apropriada para cada projeto. Para seguir os requisitos apresentados no contexto os programadores devem
-A=fazer uso de linguagens de programação legado.
-B=fazer uso de técnicas agressivas de programação.
-C=fazer uso exclusivo da criação de gráficos impressionantes.
-D=fazer uso de um único padrão de usabilidade em todos os jogos.
-E=fazer uso de linguagens e paradigmas de programação com orientação a objetos.
-CORRECT=E
----
-TITLE=SAEP_57315
-QUESTION=Durante o desenvolvimento de um jogo eletrônico, você precisa aplicar lógica de programação que foi definida no escopo para criar inimigos que sigam o personagem principal. Isso requer o uso de loops e estruturas condicionais para garantir que os inimigos persigam o personagem de forma funcional. Conforme o contexto apresentado, para seguir o escopo e atender as solicitações do jogo devemos
-A=Utilizar uma função recursiva para calcular o caminho dos inimigos até o personagem, garantindo uma abordagem eficiente.
-B=Utilizar uma estrutura if-else para verificar a posição do personagem principal e, em seguida, mover os inimigos na direção correta.
-C=Utilizar uma estrutura de repetição while para mover os inimigos em direção ao personagem independentemente da posição deste.
-D=Utilizar um loop for para determinar o caminho pelo qual o inimigo se moverá até a posição do personagem principal a cada iteração.
-E=Utilizar uma matriz bidimensional para representar o minimapa do jogo, assim permitindo o posicionamento do personagem principal.
-CORRECT=D
----
-TITLE=SAEP_79771
-QUESTION=Após meses de desenvolvimento, a equipe de um estúdio indie finalizou um jogo 2D com recursos gráficos avançados e suporte a controladores. Para alcançar o maior público possível, decidiu-se lançar simultaneamente nas principais plataformas desktop. É preciso considerar diferentes versões de Windows (7 em diante) e macOS (10.12 em diante), requisitos mínimos de hardware, políticas de instalação segura (sistema de permissões, assinaturas digitais) e experiência do usuário ao instalar o jogo em cada SO. Para garantir o fluxo de empacotamento e instalação a equipe deverá
-A=gerar instaladores nativos (MSI para Windows e .dmg para macOS) usando uma ferramenta de empacotamento multiplataforma e assinar digitalmente cada pacote.
-B=publicar apenas um executável ZIP contendo o binário, deixando ao usuário a tarefa de descompactar e mover arquivos.
-C=hospedar o jogo apenas em um serviço de streaming remoto, exigindo conexão constante para jogar.
-D=distribuir o jogo via repositório de código-fonte (Git), instruindo usuários a compilarem localmente.
-E=enviar o binário bruto por e-mail para cada usuário interessado.
+TITLE=IOT_032
+QUESTION=Um microcontrolador conecta-se ao Wi-Fi e consegue alcançar o gateway da rede, mas não estabelece sessão com o broker MQTT configurado. Outro dispositivo na mesma rede acessa o broker normalmente. Qual verificação deve ser feita primeiro no dispositivo com falha?
+A=Confirmar endereço/porta do broker e parâmetros de conexão configurados no cliente MQTT.
+B=Trocar o sensor de temperatura, pois ele define a porta de rede.
+C=Remover a interface Wi-Fi e usar o LED como meio de comunicação.
+D=Alterar a tensão do sensor para modificar o endereço IP do broker.
+E=Converter o broker em atuador para que aceite conexões.
 CORRECT=A
 ---
-TITLE=SAEP_47520
-QUESTION=No uso design sprint como metodologia de desenvolvimento de projeto escolhido para produção de um jogo, as etapas dever ser desenvolvidas no espaço de cinco dias, visando atingir o objetivo final. Qual é o objetivo principal da fase de entendimento dessa metodologia?
-A=Criar um protótipo funcional do jogo.
-B=Definir as especificações técnicas do jogo.
-C=Analisar a concorrência e criar um jogo similar.
-D=Identificar os principais desafios do usuário final.
-E=Definir o cronograma de desenvolvimento do jogo.
-CORRECT=D
----
-TITLE=SAEP_80192
-QUESTION=Uma empresa de desenvolvimento de jogos digitais está planejando dois novos projetos. O Projeto A é um simulador de voo com requisitos de engenharia altamente complexos e regulamentações rigorosas, onde as especificações iniciais são bem definidas e a mudança é custosa. O Projeto B é um jogo mobile casual, focado em jogabilidade inovadora e monetização por microtransações, onde a agilidade para testar novas funcionalidades e responder ao feedback do mercado é crucial. A equipe precisa alocar recursos e definir a abordagem de desenvolvimento para cada projeto. Qual metodologia de desenvolvimento é mais adequada para cada projeto, considerando suas características?
-A=Projeto A: Scrum, pois permite flexibilidade e rápida adaptação às mudanças. Projeto B: Modelo Cascata, pela natureza bem definida e sequencial de seu desenvolvimento.
-B=Projeto A: Modelo Cascata, por sua natureza linear e a necessidade de requisitos bem definidos desde o início. Projeto B: Scrum, dada a necessidade de iterações rápidas e resposta ao feedback do mercado.
-C=Projeto A: Kanban, por permitir um fluxo contínuo de trabalho. Projeto B: Modelo em Espiral, devido à gestão de riscos em múltiplos ciclos.
-D=Projeto A: XP (Extreme Programming), por focar em código de alta qualidade e refatoração contínua. Projeto B: Lean, pela busca por eficiência e eliminação de desperdícios.
-CORRECT=B
----
-TITLE=SAEP_79544
-QUESTION=Um estúdio de desenvolvimento de jogos digitais está enfrentando desafios para otimizar o desempenho de seu novo título em diferentes plataformas. Relatórios de usuários indicam variações significativas na taxa de quadros por segundo (FPS) e no consumo de bateria, especialmente em dispositivos móveis e consoles de entrada. A equipe de desenvolvimento precisa de uma forma eficiente de coletar dados detalhados sobre o uso de recursos de hardware e software durante a execução do jogo para identificar gargalos e aplicar otimizações precisas. A abordagem que o desenvolver deverá optar é
-A=aumentar a resolução da tela em dispositivos móveis para melhorar a qualidade visual, assumindo que isso não afetará significativamente o desempenho.
-B=desativar todas as funcionalidades de rede e multijogador para garantir que o jogo funcione sem problemas em ambientes offline, otimizando o desempenho.
-C=reduzir a complexidade dos modelos 3D e das texturas para diminuir o consumo de memória em todos os dispositivos, independentemente de suas especificações.
-D=ignorar as especificações de hardware e software dos dispositivos, focando apenas na otimização do código-fonte do jogo para garantir a compatibilidade universal.
-E=implementar um sistema de telemetria para coletar dados de desempenho em tempo real e utilizar essas informações para ajustar dinamicamente as configurações gráficas e de processamento do jogo.
+TITLE=IOT_033
+QUESTION=Uma célula industrial possui um equipamento legado que disponibiliza variáveis por OPC e um novo gateway que publica dados para aplicações IoT via MQTT. A empresa deseja disponibilizar as mesmas variáveis do equipamento legado para um painel baseado em MQTT. Qual solução é tecnicamente coerente?
+A=Conectar o painel diretamente ao motor elétrico, ignorando os dados OPC.
+B=Substituir todas as variáveis por etiquetas RFID sem leitura do equipamento.
+C=Usar somente Bluetooth entre o painel e o equipamento, sem interface com OPC.
+D=Publicar valores aleatórios no broker para representar as variáveis do equipamento.
+E=Utilizar um gateway/aplicação que leia as variáveis via OPC e as publique nos tópicos MQTT correspondentes.
 CORRECT=E
 ---
-TITLE=SAEP_71716
-QUESTION=Uma equipe de desenvolvimento está organizando a navegação da interface de um jogo de estratégia. O objetivo é garantir que os jogadores acessem rapidamente as opções essenciais e que as informações fiquem organizadas de maneira clara. Para isso, é necessário aplicar um princípio de UI/UX que ajude a destacar os elementos mais importantes e facilitar a interação. Conforme o contexto apresentado, qual princípio deve ser aplicado para estruturação do jogo?
-A=Sobreposição de menus, pois agrupa várias opções em camadas diferentes para exibir mais informações na tela ao mesmo tempo.
-B=Hierarquia visual, pois destaca as informações mais importantes e facilita o acesso às opções essenciais.
-C=Repetição de elementos, pois mantém o mesmo design em toda a interface para evitar variações visuais.
-D=Contraste reduzido, pois diminui a intensidade dos núcleos para evitar distrações na interface.
-CORRECT=B
----
-TITLE=SAEP_57188
-QUESTION=Em um curso técnico de Jogos Digitais, a equipe de desenvolvimento de um jogo já lançado percebe que o código-fonte do jogo precisa passar por uma revisão e melhoria significativa. Isso ocorre porque o código atual não está bem organizado, dificultando a manutenção e a adição de novos recursos ao jogo. A equipe decide aplicar uma técnica fundamental para tornar o código mais limpo, organizado e eficiente. Conforme o contexto apresentado, qual conhecimento é essencial para realizar a revisão mencionada?
-A=Narrar
-B=Ilustrar
-C=Modelar
-D=Refatorar
-E=Desenhar
-CORRECT=D
----
-TITLE=SAEP_70334
-QUESTION=Você está desenvolvendo o protótipo de um jogo de corrida. Durante a etapa de planejamento, foram definidos padrões de usabilidade e interatividade para o HUD (heads-up display), incluindo: Exibição constante de informações essenciais, como tempo, posição e velocidade; Localização estratégica dos elementos para minimizar distrações durante o gameplay; Hierarquia visual que permita ao jogador identificar rapidamente o que é mais importante. O líder de projeto pediu que você analisasse o HUD, evidenciando se ele está alinhado aos princípios de UI e UX. Qual característica de um HUD se aplica a esses padrões?
-A=As informações do HUD são organizadas em uma única seção, facilitando a visualização completa com um único olhar.
-B=Os elementos do HUD estão posicionados nas extremidades da tela, respeitando o campo de visão periférico e reduzindo distrações no centro do gameplay.
-C=A hierarquia de informações na HUD é definida pelo tamanho das informações, com os elementos sendo exibidos na mesma área da tela para uniformidade.
-D=As informações do HUD sobre tempo, posição e velocidade são exibidas em um painel centralizado na tela, garantindo que o jogador não precise desviar os olhos do carro.
-CORRECT=B
----
-TITLE=SAEP_79488
-QUESTION=Um técnico em programação de jogos digitais responsável por planejar os elementos multimídia de um jogo de aventura 2D para dispositivos móveis. O projeto exige a criação de um Game Design Document (GDD) em um software de escritório, como Microsoft Word, detalhando os requisitos de interface gráfica, assets de áudio e interatividade. O documento deve seguir padrões de acessibilidade, como uso de cabeçalhos navegáveis para leitores de tela e fontes legíveis, além de organizar informações hierarquicamente para facilitar o entendimento da equipe de desenvolvimento. Qual configuração deve ser aplicada em um software de escritório para estruturar esse Game Design Document (GDD)?
-A=Configurar um modelo de tabela no Microsoft Word para organizar os requisitos de assets multimídia, aplicando estilos de cabeçalho navegáveis (nível 1 a 3) com fontes sans-serif de tamanho mínimo 12 e espaçamento de linha de 1,5, conforme padrões de acessibilidade.
-B=Configurar um modelo de tabela no Microsoft Word para organizar os requisitos de assets multimídia, aplicando estilos de cabeçalho navegáveis (nível 1 a 3) com fontes sans-serif de tamanho mínimo 12 e espaçamento de linha de 1,5, conforme padrões de acessibilidade.
-C=Elaborar um documento no Microsoft Word com parágrafos justificados e fontes serif de tamanho 10, inserindo imagens dos assets multimídia sem texto alternativo, para ilustrar o planejamento.
-D=Estruturar um documento no Microsoft Word com tabelas para os requisitos multimídia, aplicando estilos de fonte em negrito para cabeçalhos, mas sem definir uma hierarquia navegável para acessibilidade.
-E=Configurar um documento no Microsoft Word com listas numeradas para os requisitos multimídia, aplicando fontes sans-serif de tamanho 14, mas utilizando formatação de parágrafo centralizado sem estilos de cabeçalho navegáveis.
-CORRECT=A
----
-TITLE=SAEP_57263
-QUESTION=Você é um desenvolvedor de jogos eletrônicos e precisa refatorar um método de um jogo para melhorar sua performance. O método atual é lento e faz uso excessivo de recursos do sistema. Para atingir o objetivo proposto, deve-se
-A=manter o método como está atualmente.
-B=usar uma ferramenta de refatoração automática.
-C=usar comentários para explicar o que o método faz.
-D=separar o método em métodos menores e mais eficientes.
-E=reescrever o método usando uma linguagem de programação diferente.
-CORRECT=D
----
-TITLE=SAEP_79599
-QUESTION=Durante a fase final de desenvolvimento de um jogo digital educacional, a equipe de testes realizou uma revisão na documentação com base nos requisitos levantados junto ao cliente. No plano de testes, constam os critérios de aceite, os tipos de testes previstos, as ferramentas utilizadas, os responsáveis e os registros dos resultados obtidos em cada execução. No entanto, ao comparar a documentação com os problemas relatados por usuários em versões anteriores, identificou-se a ausência de um procedimento específico para validar o comportamento das interações do jogo em diferentes dispositivos móveis. Qual análise permite aprimorar o planejamento de testes?
-A=Incluir casos de teste voltados à compatibilidade entre dispositivos móveis e mapear o comportamento das interações em diferentes resoluções de tela.
-B=Repetir os testes executados em versões anteriores, priorizando os que apresentaram erros críticos nas plataformas desktop.
-C=Delegar os testes funcionais para o programador responsável, já que ele tem conhecimento mais aprofundado sobre o código-fonte.
-D=Ajustar os critérios de aceite no plano de testes para tolerar pequenos erros nas versões móveis, desde que o jogo funcione em desktop.
-E=Manter o plano de testes como está e realizar correções apenas após o recebimento de feedback dos usuários na próxima atualização.
-CORRECT=A
----
-TITLE=SAEP_57121
-QUESTION=Você está trabalhando em um projeto de jogo eletrônico que requer a integração de elementos multimídia para criar uma experiência imersiva para os jogadores. O jogo é ambientado em um mundo de fantasia e inclui elementos como gráficos 3D, música, efeitos sonoros e narrativa interativa. Para tornar o jogo cativante, é essencial integrar esses elementos de forma coesa, proporcionando uma experiência envolvente aos jogadores. De acordo com a situação apresentada, é preciso
-A=projetar quais funcionalidades são disparadas por cada botão dentro do jogo.
-B=escolher a paleta de cores para as letras que aparecem na tela do trailer do jogo.
-C=definir quais as habilidades de cada personagem, destacando suas características únicas.
-D=desenvolver algoritmos que sincronizem a trilha sonora com eventos específicos do jogo, como momentos de suspense ou ação intensa.
-E=selecionar a resolução de tela mais adequada para garantir que os gráficos sejam renderizados de forma nítida em diferentes dispositivos.
-CORRECT=D
----
-TITLE=SAEP_47333
-QUESTION=A equipe de design de áudio de um jogo deve criar trilhas sonoras com diversos intuitos, entre elas, a situação de mudança de música de fundo para uma mais acelerada representando uma aproximação de situação de combate, onde o jogador tem ciência dessa mudança, mas o mesmo não se apresente no mundo do jogo. Dentre as terminologias de som, em qual se classifica esse tipo descrito?
-A=Não-diegético interativo.
-B=Não-diegético não dinâmico.
-C=Não-diegético adaptativo.
-D=Diegético não dinâmico.
-E=Diegético interativo
-CORRECT=A
----
-TITLE=SAEP_79542
-QUESTION=Uma equipe desenvolve um jogo de ação 2D no motor Unity, onde o personagem principal exibe um sprite animado de ataque e um efeito sonoro de golpe ao interagir com inimigos. Antes da integração final, os elementos multimídia devem ser validados para garantir que o sprite animado tenha quadros suficientes para fluidez visual em diferentes dispositivos e que o efeito sonoro seja claro, com volume ajustado para evitar distorções. A validação deve usar ferramentas específicas, compatíveis com Unity, para confirmar que os elementos atendem aos padrões de qualidade e usabilidade do projeto. Para validar os elementos multimídia é necessário
-A=usar um software de animação 2D para validar apenas a qualidade visual do sprite animado, ignorando o efeito sonoro
-B=aplicar um editor de vídeo para analisar a sincronização do sprite animado and do efeito sonoro, sem ajustes de volume
-C=executar testes manuais no Unity sem ferramentas específicas, verificando apenas a presença do sprite and do som no jogo
-D=empregar um software de modelagem 3D para testar a compatibilidade do sprite animado and do efeito sonoro com o cenário do jogo
-E=utilizar ferramentas de teste visual e de áudio para verificar a fluidez do sprite animado em diferentes dispositivos e o volume do efeito sonoro, ajustando-o para evitar distorções.
-CORRECT=E
----
-TITLE=SAEP_57291
-QUESTION=Um jogo multiplayer precisa armazenar os dados dos jogadores, incluindo nome, e-mail, nível de experiência e pontuação. A estrutura escolhida deve permitir armazenamento seguro e consultas eficientes, garantindo que os dados sejam acessados rapidamente e mantidos de forma organizada. Conforme o contexto apresentado, qual estrutura de dados é adequada?
-A=Arquivo CSV para registrar os dados em formato tabular.
-B=Arquivo JSON para armazenar os dados de forma hierárquica.
-C=Banco de dados não relacional utilizando documentos independentes.
-D=Lista em memória para acesso rápido às informações durante a sessão.
-E=Banco de dados relacional com tabelas estruturadas para organizar os dados.
-CORRECT=E
----
-TITLE=SAEP_57082
-QUESTION=A experiência de usuário perpassa toda a criação de assets para jogos, pois todos os elementos percebidos pelo jogador são importantes para sua experiência ao jogar. Durante o curso, você aprendeu sobre a importância de planejar elementos multimídia para atender ao escopo do projeto e sobre a utilização do Game Design Document (GDD) como uma ferramenta crucial para guiar o desenvolvimento de jogos. Conforme o contexto acima, podemos concluir que esse documento
-A=ajuda a definir as diretrizes de design, estética e estilo que devem ser seguidas ao criar modelos 3D para o jogo.
-B=serve principalmente como um guia para definir os requisitos de hardware necessários para rodar o jogo com gráficos 3D.
-C=é uma ferramenta exclusivamente usada para criar modelos 3D, não influenciando outros aspectos do desenvolvimento do jogo.
-D=é usado apenas para documentar ideias criativas dos desenvolvedores, não desempenhando um papel prático na modelagem 3D.
-E=não tem relação com a criação de modelos 3D para jogos digitais, sendo uma ferramenta separada usada apenas para documentar a história do jogo.
-CORRECT=A
----
-TITLE=SAEP_54567
-QUESTION=Você está supervisionando o desenvolvendo um jogo digital no estilo de suspense psicológico em um ambiente misterioso e sombrio, e deve validar as escolhas da equipe de arte. Para garantir uma experiência imersiva, é fundamental uma boa escolha da paleta de cores que irá compor o cenário, junto com uma iluminação adequada. A harmonização de cores que deve se usado nessa ambientação é:
-A=Análoga
-B=Acromática
-C=Complementar
-D=Monocromática
-CORRECT=B
----
-TITLE=SAEP_57199
-QUESTION=Em um curso técnico de Jogos Digitais, os alunos estão aprendendo sobre a importância da refatoração de código na manutenção de sistemas de jogos eletrônicos. Durante as aulas, o professor destaca que a refatoração não envolve apenas a melhoria da estrutura do código, mas também a correção de problemas e aprimoramento do desempenho dos jogos. Os alunos estão ansiosos para aplicar esse conhecimento em um projeto prático. Conforme o contexto apresentado, qual é o principal objetivo dessa refatoração?
-A=Criar novos jogos a partir do zero.
-B=Melhorar a jogabilidade dos jogos.
-C=Projetar cenários e personagens para jogos.
-D=Desenvolver narrativas envolventes para jogos.
-E=Corrigir problemas e aprimorar o código existente.
-CORRECT=E
----
-TITLE=SAEP_71718
-QUESTION=Uma equipe de desenvolvimento está iniciando um novo projeto de jogo digital e precisa definir a metodologia a ser utilizada. Como o jogo tem requisitos bem definidos desde o início e poucas chances de mudanças no escopo, a equipe busca um modelo que siga etapas sequenciais bem estruturadas. Conforme o contexto apresentado, qual a metodologia correspondente a esse projeto?
-A=Desenvolvimento baseado em prototipagem, pois foca na construção de versões experimentais antes da versão final.
-B=Modelo cascata, pois segue uma sequência linear de fases, sem permitir retornos às etapas anteriores.
-C=Processo iterativo, pois permite a entrega de pequenas versões do jogo em ciclos curtos.
-D=Metodologia ágil, pois prioriza adaptações constantes ao longo do desenvolvimento.
-CORRECT=B
----
-TITLE=SAEP_57206
-QUESTION=Você foi contratado para atuar em uma empresa de jogos eletrônicos. Durante suas atividades na empresa, precisará aplicar conhecimentos sobre a concepção conceitual dos elementos gráficos de jogos e o Game Design Document (GDD). Com base no contexto acima, na empresa que você atua será necessário
-A=programar os elementos gráficos dos jogos.
-B=desenvolver narrativas complexas para jogos.
-C=criar modelos 3D detalhados para personagens de jogos.
-D=compreender e aplicar os princípios de usabilidade e interatividade em jogos.
-E=produzir elementos multimídia de acordo com metodologia e padrões de qualidade para jogos.
-CORRECT=D
----
-TITLE=SAEP_71700
-QUESTION=Uma desenvolvedora de jogos está ajustando a interface do jogo para melhorar a experiência do usuário. Durante os testes, foi observado que os jogadores têm dificuldade em navegar pelos menus e acessar as informações essenciais. Para resolver esse problema, a equipe está revisando os princípios de UI/UX aplicáveis ao projeto. Conforme o contexto apresentado, qual princípio de UI/UX deve ser utilizado?
-A=Eliminar menus e botões para reduzir elementos na tela.
-B=Priorizar efeitos visuais complexos para destacar a estética do jogo.
-C=Utilizar um layout único sem considerar a adaptação para diferentes dispositivos.
-D=Criar botões grandes e bem espaçados para facilitar a interação em telas menores.
-CORRECT=D
----
-TITLE=SAEP_54537
-QUESTION=Você é um desenvolvedor de jogos digitais e está trabalhando em um novo projeto de mundo aberto em 3D. Você precisa utilizar diferentes técnicas para deixar o visual dos ambientes e personagens mais detalhados e realistas sem tornar o processamento mais difícil. Para dominar estas técnicas um técnico deve ser capaz de:
-A=Criar modelos 3D de personagens e objetos no jogo, utilizando detalhes esculturais para enriquecer a aparência visual.
-B=Dominar técnicas de mapeamento UV, texturização procedural e uso de texturas PBR (Physically Based Rendering).
-C=Dominar técnicas de animação avançadas para dar movimentos fluidos e realistas aos personagens e criaturas do jogo.
-D=Programar a inteligência artificial dos inimigos e personagens não jogáveis (NPCs) no mundo aberto do jogo, garantindo desafios estratégicos aos jogadores.
-CORRECT=B
----
-TITLE=SAEP_47690
-QUESTION=A equipe de produção de um jogo de RPG (Role Playing Game) deseja que esse projeto seja lançado em diversos países, para isso, ele terá que ser classificado pela ESRB (Entertainment Software Rating Board) de acordo com a idade do público alvo. O jogo terá cenas contendo violência e sangue de forma moderada e baixo tempo de exposição, e deve atender a maior quantidade de pessoas possíveis como público-alvo. Com base nestas informações, os desenvolvedores, já na produção, deverão supor que o jogo será classificado em qual categoria?
-A=Early Childhood (EC).
-B=Everyone (E).
-C=Teen (T).
-D=Mature (M).
-E=Adults Only (AO).
-CORRECT=D
----
-TITLE=SAEP_77660
-QUESTION=Uma empresa desenvolveu um jogo na Game Engine Unity para incentivar a alimentação saudável e uma das funções é realizar o cálculo de Índice de Massa Corpórea (IMC). O IMC é calculado dividindo o peso da pessoa (em kg) pela altura ao quadrado (em metros). Crie a função descrita respeitando as boas práticas da programação.
-A=void Start() { float imc = calcularimc(130, 1.9f); } public float calcularimc(float peso, float altura) { return peso / (altura * altura); }
-B=void Start() { float imc = CalcularIMC(130, 1.9f); } public float CalcularIMC(float x, float y) { return x / (y * y); }
-C=void Start() { float imc = CalcularIMC(130, 1.9f); } public float CalcularIMC(float peso, float altura) { return peso / (altura * altura); }
-D=void Start() { float conta = CalcularIMC(130, 1.9f); } public float CalcularIMC(float peso, float altura) { return peso / (altura * altura); }
+TITLE=IOT_034
+QUESTION=Um sensor de vibração será utilizado para detectar alterações rápidas em uma máquina. A equipe percebeu que uma leitura a cada 10 segundos não representa adequadamente as mudanças do fenômeno. Qual ajuste é mais apropriado?
+A=Reduzir ainda mais a frequência de leitura para uma amostra por minuto.
+B=Eliminar a medição e estimar o valor com base no horário.
+C=Aumentar a taxa de amostragem de acordo com a dinâmica do sinal a ser monitorado.
+D=Trocar o sensor por uma etiqueta RFID, mantendo a mesma função de vibração.
+E=Aumentar apenas o tamanho do nome da variável no código.
 CORRECT=C
 ---
-TITLE=SAEP_71573
-QUESTION=Um desenvolvedor está preparando um jogo digital para publicação em diferentes plataformas. Ele precisa adaptar o jogo aos requisitos específicos de cada loja digital, ajustando desempenho, compatibilidade e métodos de distribuição para garantir que a aplicação funcione corretamente após o lançamento. Conforme o contexto apresentado, qual o teste utilizado para garantir o funcionamento do jogo?
-A=Teste de carga
-B=Teste de unidade
-C=Teste de segurança
-D=Teste de compatibilidade
+TITLE=IOT_035
+QUESTION=Uma fábrica possui sensores em três setores. A equipe quer que o sistema de supervisão possa receber todas as temperaturas, enquanto uma aplicação de manutenção deve receber apenas os dados do setor 2. Qual organização de tópicos MQTT favorece esse requisito?
+A=Publicar todos os dados em um único tópico sem identificação de setor.
+B=Criar um broker diferente para cada sensor, sem qualquer padrão de nomes.
+C=Enviar os dados somente por broadcast de rede e não utilizar tópicos.
+D=Usar uma hierarquia como fabrica/setor1/temperatura, fabrica/setor2/temperatura e fabrica/setor3/temperatura, permitindo assinaturas específicas.
+E=Utilizar o valor da temperatura como endereço IP do dispositivo.
 CORRECT=D
 ---
-TITLE=SAEP_79593
-QUESTION=No processo de desenvolvimento de jogos digitais, a fase de design de níveis é crucial para a experiência do jogador. Um designer de níveis está trabalhando na criação de um novo mapa para um jogo de plataforma, onde o jogador deve superar obstáculos e inimigos para alcançar o objetivo final. Durante o planejamento, é necessário considerar a progressão da dificuldade, a distribuição de itens e power-ups, e a forma como os elementos do cenário interagem com a mecânica do jogo. A clareza na comunicação dessas ideias para a equipe de programação e arte é fundamental para que o nível seja implementado conforme a visão original. A utilização de ferramentas e técnicas adequadas para descrever o design do nível impacta diretamente a eficiência do desenvolvimento e a qualidade do produto final. Qual tipo de documentação é mais eficaz?
-A=Um vídeo de gameplay conceitual que demonstre a experiência desejada do jogador no nível
-B=Uma planilha com a contagem exata de cada tipo de item e inimigo em cada seção do mapa
-C=Um documento de texto simples com uma lista de todos os obstáculos e inimigos presentes no nível
-D=Um diagrama de fluxo detalhado que ilustre as possíveis rotas do jogador e os eventos-chave do nível
-E=Um documento de design de jogo (GDD) que contenha seções específicas para o design de níveis, incluindo mapas conceituais, descrições de mecânicas e fluxogramas de progressão
-CORRECT=E
----
-TITLE=SAEP_79516
-QUESTION=Um projeto de jogo de cartas para dispositivos móveis requer atualizações frequentes com base em feedback dos jogadores, exigindo flexibilidade para ajustar funcionalidades durante o desenvolvimento. É necessário escolher uma metodologia de desenvolvimento que facilite iterações rápidas e incorporação de feedback, garantindo a entrega de um produto interativo. Qual metodologia de desenvolvimento deve ser aplicada e qual ajuste no processo deve ser proposto?
-A=Aplicar uma metodologia Ágil genérica, utilizando reuniões quinzenais, ajustando o cronograma para revisar o progresso geral do projeto.
-B=Implementar a metodologia Espiral, desenvolvendo protótipos iniciais, ajustando o cronograma para realizar testes apenas na fase final do projeto.
-C=Adotar a metodologia Kanban, gerenciando tarefas em um quadro visual, adjusting o cronograma para priorizar a conclusão de tarefas em ordem fixa.
-D=Aplicar a metodologia Scrum, organizando o projeto em sprints de três semanas, ajustando o cronograma para incluir revisões regulares com base em feedback dos jogadores.
-E=Utilizar a metodologia Cascata, definindo todas as fases do projeto em sequência, ajustando o cronograma para detalhar todas as funcionalidades na fase inicial de planejamento.
-CORRECT=D
----
-TITLE=SAEP_79545
-QUESTION=Em um projeto de desenvolvimento de jogos digitais, a fase de validação de elementos multimídia é crucial para assegurar que os artefatos criados, como modelos 3D, texturas e áudios, atendam aos requisitos técnicos e artísticos estabelecidos no escopo. Uma equipe de desenvolvimento está prestes a integrar um novo conjunto de assets de personagens e cenários. Antes da integração final, é imperativo que esses elementos passem por um rigoroso processo de avaliação para verificar sua conformidade com as especificações de poligonagem, resolução de textura, otimização de LOD (Level of Detail) e sincronização de áudio. A falha em validar adequadamente esses elementos pode resultar em problemas de performance, artefatos visuais indesejados ou inconsistências na experiência do jogador, comprometendo a qualidade final do jogo. Portanto, a aplicação de um método sistemático de avaliação e validação é essencial para garantir a integridade e a funcionalidade dos elementos multimídia no ambiente do jogo. Qual procedimento para validar a conformidade desses artefatos com as especificações técnicas e artísticas?
-A=Realizar testes de estresse no motor do jogo com os novos assets para identificar gargalos de performance
-B=Solicitar a aprovação dos stakeholders do projeto com base em uma apresentação dos elementos multimídia
-C=Comparar visualmente os elementos multimídia com as referências artísticas e documentar as discrepâncias
-D=Implementar um pipeline de validação automatizado que verifique as especificações técnicas dos assets e gere relatórios de conformidade
-E=Conduzir testes de usabilidade com jogadores para coletar feedback sobre a percepção visual e sonora dos novos elementos, ajustando-os conforme as preferências do público-alvo
-CORRECT=D
----
-TITLE=SAEP_57287
-QUESTION=Você é um desenvolvedor de jogos eletrônicos e está trabalhando em um jogo de plataforma 2D. No jogo, o jogador controla um personagem que pode saltar de plataforma em plataforma. O sistema de salto atual é baseado em uma função que calcula a altura do salto com base na velocidade do personagem no momento do salto. (Personagem pulando em jogo Plataforma 2D.) Para que o personagem consiga executar a habilidade mencionada, é preciso aumentar
-A=a gravidade do jogo.
-B=o tamanho do personagem.
-C=o ângulo de salto do personagem.
-D=a velocidade máxima do personagem.
-E=a altura da primeira plataforma do jogo.
-CORRECT=D
----
-TITLE=SAEP_79494
-QUESTION=Uma equipe desenvolve um jogo de ação 2D no motor Unity, onde o personagem principal dispara um efeito sonoro de tiro ao atacar inimigos e uma trilha sonora de fundo que muda para uma versão mais intensa durante combates. A criação dos elementos audiovisuais deve ser realizada em ferramentas específicas, garantindo que o efeito sonoro seja nítido e a trilha sonora tenha transições suaves entre suas versões. As ferramentas devem suportar exportação para formatos compatíveis com Unity (como WAV) e atender aos padrões de qualidade e usability, com ajustes de volume para evitar distorções. Qual técnica deve ser aplicada ?
-A=Empregar um editor de vídeo com ferramentas de áudio para criar o efeito sonoro and a trilha sonora, focando em sincronização com animações visuais
-B=Utilizar um software de produção de áudio com suporte a transições suaves para a trilha sonora e edição de efeitos sonoros nítidos, exportáveis para Unity.
-C=Usar um software de animação 2D para criar o efeito sonoro and a trilha sonora, priorizando compatibilidade com sprites
-D=Desenvolver o efeito sonoro and a trilha sonora em um software de modelagem 3D, integrando-os ao cenário do jogo
-E=Aplicar um editor de áudio básico para criar uma trilha sonora fixa and um efeito sonoro sem ajustes de volume
+TITLE=IOT_036
+QUESTION=Em um sistema de irrigação automatizada, uma válvula é acionada conforme a umidade do solo. Se o sensor for desconectado e retornar um valor impossível, a válvula não deve permanecer aberta indefinidamente. Qual lógica torna o sistema mais seguro?
+A=Tratar qualquer valor como válido e manter a válvula no último estado para sempre.
+B=Detectar leituras fora da faixa esperada, sinalizar falha e levar o atuador a um estado seguro definido.
+C=Aumentar o valor da umidade no software até a válvula fechar.
+D=Ignorar o sensor e abrir a válvula permanentemente.
+E=Substituir o controle por identificação RFID da válvula.
 CORRECT=B
 ---
-TITLE=SAEP_57163
-QUESTION=No desenvolvimento de jogos eletrônicos, a programação desempenha um papel fundamental. Os profissionais dessa área precisam ter a capacidade de criar jogos por meio de linguagem de programação, e isso inclui o conhecimento sobre estruturas de dados, que é essencial para organizar e gerenciar informações dentro dos jogos. Conforme o contexto apresentado, um exemplo desse tipo de estrutura é
-A=a animação de um personagem não-controlável pelo jogador.
-B=a estratégia de financiamento coletivo para um jogo.
-C=os metadados que aparecem na tela de jogo.
-D=o modelo 3D do personagem principal.
-E=a lista de itens de um inventário.
-CORRECT=E
----
-TITLE=SAEP_79603
-QUESTION=Uma equipe de desenvolvimento está finalizando a entrega de um jogo mobile casual. Durante os testes finais, foi observada uma falha recorrente ao acessar o menu de configurações. A falha acontece de forma isolada e não compromete outras áreas do jogo. A documentação aponta que o menu foi recentemente alterado para permitir acessibilidade por comando de voz. A equipe precisa verificar se a alteração está dentro dos requisitos definidos. Qual procedimento de teste contribui para verificar a conformidade da nova funcionalidade com os requisitos do projeto?
-A=Executar testes de estresse para observar o desempenho do sistema durante uso contínuo.
-B=Repetir os testes de usabilidade com usuários, avaliando preferências visuais do menu.
-C=Revisar a documentação do projeto para confirmar se a função de voz está descrita.
-D=Realizar testes funcionais focados no comportamento do menu de configurações.
-E=Realizar testes de segurança no menu para prevenir ataques externos.
-CORRECT=D
----
-TITLE=SAEP_77848
-QUESTION=O jogo que você estava desenvolvendo na Game Engine Unity chegou no estágio final no ano de 2024, e há a necessidade de construir o arquivo executável que será publicado e disponibilizado para download na loja de aplicativos. Para criar o arquivo, você deve:
-A=selecionar a plataforma IOS e clicar em Build para que o formato seja .ipa.
-B=selecionar a plataforma Windows/Mac/Linux e clicar em Build para que o formato do arquivo seja .exe.
-C=selecionar a plataforma Android, marcar a opção Build App Bundle e clicar em Build para que o formato seja .aab.
-D=selecionar a plataforma Android, desmarcar a opção Build App Bundle e clicar em Build para que o formato seja .apk.
-CORRECT=C
----
-TITLE=SAEP_54267
-QUESTION=Você foi designado para liderar a equipe de desenvolvimento de um jogo digital ambicioso que será lançado em múltiplas plataformas. O jogo é um RPG de ação que coloca os jogadores em um mundo vasto e cheio de aventuras. Sua missão é garantir que o jogo seja amigável ao usuário, proporcionando uma experiência de jogo envolvente e intuitiva. Para isso, você precisa aplicar os fundamentos de UI (Interface do Usuário) e UX (Experiência do Usuário) no planejamento do sistema do jogo antes do lançamento. Qual atividade compreende os princípios de UI e UX para atingir tal objetivo?
-A=Criar wireframes e protótipos interativos para planejar a interface do jogo e as interações do usuário.
-B=Realizar testes de usabilidade para coletar feedback dos jogadores e aprimorar a interface do jogo.
-C=Realizar análises estatísticas dos dados de jogabilidade para identificar padrões de comportamento dos jogadores.
-D=Desenvolver um mecanismo de economia virtual dentro do jogo para incentivar a interação dos jogadores com o ambiente.
+TITLE=IOT_037
+QUESTION=Um sensor analógico de nível apresenta 0,5 V com o tanque vazio e 2,5 V com o tanque cheio. O microcontrolador recebe a leitura pelo ADC. Para apresentar o nível em porcentagem de forma coerente, o programa deve
+A=mapear a faixa útil do sensor para 0% a 100%, considerando os valores mínimo e máximo medidos.
+B=usar o valor do endereço IP como porcentagem do tanque.
+C=tratar qualquer tensão acima de 0 V como 100%.
+D=publicar o valor bruto sem considerar a faixa do sensor, mesmo quando a aplicação exige porcentagem.
+E=usar o atuador da válvula como conversor analógico-digital.
 CORRECT=A
 ---
-TITLE=SAEP_57276
-QUESTION=Entre as habilidades desenvolvidas no Curso Técnico de Jogos Digitais, a aplicação da lógica de programação é fundamental. Soma-se a isso o estudo e a prática em codificar sistemas de jogos eletrônicos atendendo os requisitos do projeto. Qual o objetivo dessa habilidade durante a produção de um jogo eletrônico?
-A=Melhorar a estética visual e sonora dos jogos.
-B=Reduzir a complexidade nos estágios dos jogos.
-C=Diminuir a necessidade de conhecimentos em programação.
-D=Aumentar o engajamento de jogadores nos fóruns de comunidade.
-E=Implementar funcionalidades e solucionar problemas específicos aos jogos.
+TITLE=IOT_038
+QUESTION=Um projeto possui dois grupos de dispositivos: sensores vestíveis próximos a smartphones, com bateria limitada, e controladores fixos alimentados pela rede elétrica que precisam acessar diretamente serviços IP do laboratório. Qual combinação melhor atende aos dois cenários?
+A=Satélite para os vestíveis e RFID passivo para os controladores.
+B=Wi-Fi para todos obrigatoriamente, sem considerar consumo ou uso.
+C=RFID para os vestíveis como conexão contínua e Bluetooth para a rede IP dos controladores.
+D=OPC para a camada de rádio dos vestíveis e C como meio físico dos controladores.
+E=Bluetooth para os vestíveis e Wi-Fi para os controladores fixos.
 CORRECT=E
 ---
-TITLE=SAEP_57293
-QUESTION=Imagine que você é um criador de jogos eletrônicos e está trabalhando em um projeto emocionante. No momento atual, diversas equipes estão envolvidas na criação de um novo personagem para o jogo. A sua equipe trabalha utilizando uma IDE (Integrated Development Environment), desenvolvendo uma série de tarefas para implementar as diversas habilidades e movimentos únicos desse personagem. Essas habilidades são cruciais para o progresso do jogador no jogo, e você precisa implementá-las com precisão para garantir uma experiência de jogo agradável. Conforme o contexto apresentado, qual a sua área do conhecimento nesse projeto?
-A=Música e efeitos sonoros.
-B=Gráficos e animações avançadas.
-C=Desenho de cenários e ambientes.
-D=Algoritmos e lógica computacional.
-E=Marketing e propaganda para o jogo.
-CORRECT=D
----
-TITLE=SAEP_79497
-QUESTION=Em um jogo de plataforma 2D com elementos de puzzle, o jogador interage com blocos móveis que ativam mecanismos ao serem posicionados corretamente. Para implementar a lógica desses blocos, o programador precisa garantir que, ao empurrá-los, eles só se movam em direções válidas, não atravessem paredes e obedeçam às regras físicas do cenário (ex: gravidade e colisões). Durante os testes, notou-se que os blocos às vezes atravessam objetos sólidos em certas situações, especialmente em movimentos diagonais rápidos. Qual estratégia deve aplicada para resolver o problema?
-A=Reduzir a velocidade de movimento dos blocos para evitar atravessamentos indesejados.
-B=Adicionar uma checagem de colisão apenas ao final do movimento, ignorando os pontos intermediários.
-C=Aumentar a velocidade de atualização gráfica do jogo para compensar as falhas de detecção de colisão.
-D=Substituir a detecção de colisão por eventos baseados em tempo (timers), ignorando o cálculo por posição.
-E=Implementar a técnica de detecção contínua de colisão (Continuous Collision Detection) com interpolação entre posições.
-CORRECT=E
----
-TITLE=SAEP_79506
-QUESTION=Uma equipe está desenvolvendo um jogo de ação 3D no motor Unreal Engine, onde o personagem principal deve alternar entre um sprite 2D para a interface de usuário (HUD) que exibe seu estado de saúde e um modelo 3D animado para combates no cenário. A criação do sprite 2D e do modelo 3D deve ser realizada em ferramentas específicas, considerando que o sprite precisa de alta resolução para clareza na interface e o modelo 3D deve ter animações otimizadas para desempenho, com texturas detalhadas para garantir realismo visual. A escolha da ferramenta deve atender aos padrões de qualidade e usabilidade, respeitando o escopo do projeto. Qual técnica deve ser aplicada?
-A=Utilizar um software de modelagem 3D com suporte a animações e texturas detalhadas para o modelo 3D e um editor de imagens vetoriais para o sprite 2D da interface.
-B=Usar um software de edição de vídeo para criar o sprite 2D e importar modelos 3D pré-fabricados sem animações personalizadas
-C=Empregar um editor de pixel art para criar tanto o sprite 2D quanto o modelo 3D, priorizando baixa resolução para otimização
-D=Desenvolver o sprite 2D e o modelo 3D em um software de animação 2D, focando em movimentos fluidos para ambos
-E=Aplicar um software de design gráfico rasterizado para criar o sprite 2D e o modelo 3D com texturas básicas
-CORRECT=A
----
-TITLE=SAEP_57095
-QUESTION=Você está trabalhando em um estúdio de criação de jogos eletrônicos. O projeto atual envolve a criação de um jogo de aventura em mundo aberto, onde os jogadores podem explorar diversos cenários, interagir com personagens não- jogáveis (NPCs) e completar missões para avançar na história. Para que esse projeto de jogo seja realizado, você precisa aplicar sua habilidade em lógica de programação para resolver problemas específicos do jogo e codificar sistemas que atendam ao escopo do projeto. A habilidade citada implica em
-A=definir as texturas e modelos 3D dos personagens e cenários do jogo.
-B=escolher as cores e fontes para o design da interface do usuário do jogo.
-C=decidir sobre a trilha sonora e efeitos sonoros para criar uma atmosfera imersiva no jogo.
-D=desenhar o layout das telas de menu e opções do jogo para uma melhor experiência do usuário.
-E=criar um algoritmo para controlar o movimento dos NPCs de acordo com a interação do jogador.
-CORRECT=E
----
-TITLE=SAEP_79595
-QUESTION=Em um jogo de corrida com obstáculos, o desenvolvedor precisa programar a ação que ocorre quando o carro do jogador colide com um objeto na pista. Para que o jogo responda corretamente, é necessário acionar uma função que reduza a velocidade do carro imediatamente após o impacto. Qual estrutura de programação deve ser aplicada para executar essa ação?
-A=Repetir o valor de velocidade do carro em todas as fases do jogo
-B=Inserir uma animação visual do obstáculo para indicar que há algo na pista
-C=Usar uma variável para armazenar a velocidade máxima do carro durante o jogo
-D=Atualizar a pontuação do jogador cada vez que ele se aproxima de um obstáculo
-E=Criar um evento que detecte a colisão e dispare uma função que reduza a velocidade do carro
-CORRECT=E
----
-TITLE=SAEP_57105
-QUESTION=No curso de Jogos Digitais, os alunos estão aprendendo a planejar sistemas de jogos eletrônicos atendendo ao escopo do projeto. Essa etapa é crucial para garantir que os jogos sejam desenvolvidos de acordo com as especificações e requisitos estabelecidos. Qual o objetivo desse planejamento?
-A=Determinar o preço de venda do jogo no mercado
-B=Criar um design de personagens e cenários para o jogo.
-C=Definir a arquitetura e a estrutura do software do jogo.
-D=Estabelecer as datas de lançamento e distribuição do jogo.
-E=Escolher a plataforma de hardware mais barata para o desenvolvimento.
+TITLE=IOT_039
+QUESTION=Uma aplicação de manutenção preditiva recebe dados de temperatura e vibração. O painel mostra valores de vibração incompatíveis com a faixa do sensor. Para localizar a origem do problema, qual sequência de diagnóstico é mais adequada?
+A=Alterar primeiro o layout do painel e, se não resolver, trocar o roteador.
+B=Substituir todos os atuadores antes de verificar a aquisição.
+C=Verificar a leitura bruta do sensor, a conversão/processamento no microcontrolador e, em seguida, o dado transmitido e recebido pela aplicação.
+D=Desabilitar os registros para impedir que o erro seja observado.
+E=Trocar MQTT por RFID sem testar nenhuma etapa do fluxo.
 CORRECT=C
 ---
-TITLE=SAEP_57101
-QUESTION=Você está trabalhando em um estúdio de criação de jogos eletrônicos e foi designado para codificar um sistema de combate para um novo jogo de aventura. Esse jogo requer um sistema de combate dinâmico e interativo, onde os jogadores poderão usar uma variedade de habilidades e estratégias para derrotar inimigos em diferentes cenários. O sistema deve ser capaz de reconhecer ações dos jogadores, como ataques básicos, esquivas e habilidades especiais, e responder de forma precisa e rápida. Quais técnicas utilizar para desenvolver o sistema descrito?
-A=Definir a paleta de cores para os personagens e cenários do jogo.
-B=Projetar o layout dos menus de opções para o sistema de configurações do jogo.
-C=Escolher a trilha sonora para o jogo, criando uma atmosfera sonora imersiva durante as batalhas.
-D=Desenvolver animações para os movimentos dos personagens durante as lutas, tornando os combates visualmente atraentes para os jogadores.
-E=Criar uma função que detecte a entrada do jogador, reconhecendo comandos como ataques, esquivas e habilidades especiais, e execute as ações correspondentes no jogo.
-CORRECT=E
----
-TITLE=SAEP_79597
-QUESTION=Um game dev está desenvolvendo um minigame onde o jogador deve clicar em um botão para ganhar pontos. No momento, o botão aparece na tela, mas não executa nenhuma ação ao ser clicado.Ele já declarou uma variável chamada pontos com valor inicial igual a 0 e deseja fazer com que o valor de pontos aumente sempre que o botão for clicado. Qual elemento da lógica de programação será aplicado?
-A=Adicionar a variável pontos como uma string no botão
-B=Declarar novamente a variável pontos dentro do botão
-C=Aplicar um loop que aumenta a variável continuamente
-D=Definir o valor de pontos diretamente no código de interface gráfica
-E=Criar uma função que será chamada pelo evento de clique do botão
-CORRECT=E
----
-TITLE=SAEP_57172
-QUESTION=Você foi contratado para atuar em uma empresa de jogos eletrônicos e durante suas atividades na empresa precisará aplicar conhecimentos sobre os fundamentos de UI (User Interface), UX (User Experience) e a definição de elementos gráficos e sonoros integrados às mecânicas de jogo. Esses conhecimentos são essenciais para criar jogos que sejam amigáveis ao usuário e ofereçam uma ótima experiência de jogo. Conforme o contexto apresentado, a principal função que você irá desempenhar nas atividades descritas acima é
-A=criar personagens e cenários complexos para os jogos.
-B=elaborar o roteiro e a narrativa dos jogos de forma cativante.
-C=projetar elementos multimídia, para possibilitar boa experiência ao jogador.
-D=testar a jogabilidade e a performance dos jogos em diferentes dispositivos.
-E=escolher a linguagem de programação mais adequada para o desenvolvimento de jogos.
-CORRECT=C
----
-TITLE=SAEP_79596
-QUESTION=Em um projeto de desenvolvimento de um MMORPG (Massively Multiplayer Online Role-Playing Game), a equipe de controle de qualidade identificou uma série de vulnerabilidades de segurança críticas relacionadas à manipulação de dados de inventário e transações financeiras no jogo. Essas vulnerabilidades permitem que jogadores mal-intencionados dupliquem itens raros e manipulem a economia do jogo, comprometendo a integridade do sistema e a experiência dos usuários legítimos. A complexidade do sistema de backend, que envolve múltiplos servidores, bancos de dados distribuídos e interações em tempo real com milhares de jogadores, torna a identificação da causa raiz e a seleção de procedimentos de teste adequados um desafio significativo. A equipe precisa não apenas corrigir as vulnerabilidades existentes, mas também implementar uma estratégia de teste robusta que previna futuras explorações, garantindo a segurança e a confiabilidade do ambiente de jogo. Qual a abordagem de teste mais eficaz ?
-A=Executar testes de carga e estresse para verificar a resiliência do sistema de transações sob alto volume de operações simultâneas.
-B=Revisar as políticas de segurança de dados e privacidade do jogo, garantindo a conformidade com as regulamentações de proteção de dados.
-C=Conduzir testes de penetração (pentests) simulando ataques de jogadores mal-intencionados, explorando falhas conhecidas e desconhecidas no sistema de backend.
-D=Implementar testes de fuzzing nos endpoints da API de transações, injetando dados malformados para descobrir vulnerabilidades de estouro de buffer ou injeção de código.
-E=Realizar testes de caixa branca focados na lógica de negócio das transações e inventário, utilizando ferramentas de análise estática de código para identificar falhas de segurança.
-CORRECT=C
----
-TITLE=SAEP_77476
-QUESTION=Você está desenvolvendo um jogo tridimensional na ferramenta Game Engine Unity, e durante a gameplay, um cubo colidiu com uma esfera e este evento deve gerar apenas uma mensagem no console informando que houve a colisão. Crie o código para resolver o problema:
-A=private OnCollisionStay (Collision collision){ if(collision.gameObject.name == "Cube") { Debug.Log("collision detected"); } }
-B=private OnCollisionEnter (Collision collision){ if(collision.gameObject.name == "Cube") { Debug.Log("collision detected"); } }
-C=private void OnCollisionStay (Collision collision){ if(collision.gameObject.name == "Cube") { Debug.Log("collision detected"); } }
-D=private void OnCollisionEnter(Collision collision){ if(collision.gameObject.name == "Cube") { Debug.Log("collision detected"); } }
+TITLE=IOT_040
+QUESTION=Uma empresa quer monitorar remotamente a temperatura de um forno e desligar o aquecimento quando a temperatura ultrapassar um limite crítico, mantendo histórico das medições. Qual solução integra corretamente sensoriamento, controle e comunicação?
+A=Usar apenas um atuador de desligamento sem medir temperatura nem registrar dados.
+B=Instalar somente um sensor local sem microcontrolador, comunicação ou lógica de controle.
+C=Enviar comandos ao forno por Wi-Fi sem utilizar qualquer realimentação de sensor.
+D=Ler a temperatura com sensor, processar a condição em um microcontrolador, comandar o atuador de segurança e transmitir as medições para o sistema de registro.
+E=Substituir o sensor por uma etiqueta RFID e considerar sua identificação como valor de temperatura.
 CORRECT=D
----
-TITLE=SAEP_71697
-QUESTION=Durante o planejamento de um jogo, a equipe precisa definir os elementos multimídia que serão utilizados. Para isso, é necessário organizar as informações de cada ativo, como imagens, sons e vídeos, em uma planilha eletrônica para garantir uma gestão eficiente do projeto. Para organizar as informações apresentadas, qual software de escritório oferece as ferramentas e funcionalidades aplicável?
-A=Programa de edição de áudio para tratar os efeitos sonoros do jogo.
-B=Software de edição de vídeo para compilar e ajustar sequências animadas.
-C=Ferramenta de ilustração digital para criar e editar elementos gráficos do jogo.
-D=Aplicativo de planilhas para estruturar e gerenciar dados dos ativos multimídia.
-CORRECT=D
----
-TITLE=SAEP_57155
-QUESTION=Você está trabalhando em uma empresa de software e está responsável pela área de jogos eletrônicos. Como parte da equipe de design, você precisa aplicar seus conhecimentos em fundamentos de UI, UX e design de elementos gráficos para tornar o jogo amigável ao usuário. No atual estágio do projeto, é essencial planejar os elementos multimídia que serão incorporados para atender ao escopo do projeto, garantindo uma experiência de jogo envolvente e agradável. Considerando o contexto apresentado, os conhecimentos que devem ser aplicados são referentes a
-A=compor trilha sonora intensa e músicas empolgantes.
-B=tirar fotografias de alta resolução para os elementos de fundo.
-C=escrever diálogos de personagens profundos e enriquecedores.
-D=elaborar animações complexas e efeitos visuais impressionantes.
-E=projetar efeitos sonoros que fornecem feedback imediato ao jogador.
-CORRECT=E
----
-TITLE=SAEP_79796
-QUESTION=Um estúdio finalizou o desenvolvimento de um jogo para desktop e deseja publicá-lo simultaneamente em três plataformas: Windows (Steam), macOS (App Store) e Linux (loja própria). Deve-se elaborar um fluxo de publicação para
-A=definir pipeline que gere executáveis nativos (MSI, .app e AppImage), automatize upload via API de cada loja e envie notificações de sucesso por e-mail.
-B=exportar um único pacote ZIP contendo todos os binários, enviar manualmente por FTP a cada loja e aguardar confirmação de recebimento.
-C=publicar apenas a versão de Windows na Steam e indicar ao usuário macOS/Linux que compile o código-fonte localmente.
-D=criar instalador universal usando Electron para todas as plataformas, sem empregar SDKs específicos de cada loja.
-E=enviar builds de teste via e-mail aos beta testers antes da publicação oficial em lojas.
-CORRECT=A
